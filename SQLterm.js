@@ -20,6 +20,7 @@
 				if ( $.isEmptyObject(data) ) {
 					$this.data({
 						_active_db : null,
+						_sql_query : null,
 						_error_log : [],
 						_query_log : [],
 						_debug     : false
@@ -85,33 +86,35 @@
 
 				stdOut('\nsqlterm> ' + str);
 
+				$this.data('_sql_query', str);
+
 				switch (true) {
 					case /^CREATE/i.test(str):
-						$this.SQLterm('_Create', str);
+						$this.SQLterm('_Create');
 					break;
 
 					case /^DELETE/i.test(str):
-						$this.SQLterm('_Delete', str);
+						$this.SQLterm('_Delete');
 					break;
 
 					case /^DROP/i.test(str):
-						$this.SQLterm('_Drop', str);
+						$this.SQLterm('_Drop');
 					break;
 
 					case /^INSERT/i.test(str):
-						$this.SQLterm('_Insert', str);
+						$this.SQLterm('_Insert');
 					break;
 
 					case /^SELECT/i.test(str):
-						$this.SQLterm('_Select', str);
+						$this.SQLterm('_Select');
 					break;
 
 					case /^SHOW/i.test(str):
-						$this.SQLterm('_Show', str);
+						$this.SQLterm('_Show');
 					break;
 
 					case /^USE/i.test(str):
-						$this.SQLterm('_Use', str);
+						$this.SQLterm('_Use');
 					break;
 
 					case /^help/i.test(str):
@@ -245,9 +248,10 @@
 			});
 		},
 
-		"_Create" : function(str) {
+		"_Create" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					str   = $this.data('_sql_query');
 
 				var type = parseQuery(str)[1];
 				var name = parseQuery(str)[2];
@@ -269,17 +273,19 @@
 			});
 		},
 
-		"_Delete" : function(str) {
+		"_Delete" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this)
+					str   = $this.data('_sql_query');
 
 				// TODO
 			});
 		},
 
-		"_Drop" : function(str) {
+		"_Drop" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this)
+					str   = $this.data('_sql_query');
 
 				var type = parseQuery(str)[1];
 				var name = parseQuery(str)[2];
@@ -300,25 +306,28 @@
 			});
 		},
 
-		"_Insert" : function(str, func) {
+		"_Insert" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					str   = $this.data('_sql_query');
 
 				// TODO
 			});
 		},
 
-		"_Select" : function(str) {
+		"_Select" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					str   = $this.data('_sql_query');
 
 				// TODO
 			});
 		},
 
-		"_Show" : function(str) {
+		"_Show" : function() {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					str   = $this.data('_sql_query');
 
 				var name = parseQuery(str)[1];
 
@@ -342,9 +351,12 @@
 			});
 		},
 
-		"_Use" : function(str) {
+		"_Use" : function() {
 			return this.each(function() {
-				$(this).SQLterm('useDatabase', parseQuery(str)[1]);
+				var $this = $(this),
+					str   = $this.data('_sql_query');
+
+				$this.SQLterm('useDatabase', parseQuery(str)[1]);
 			});
 		}
 	};
