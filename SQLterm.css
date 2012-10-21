@@ -1,0 +1,50 @@
+/*
+ *  SQLterm
+ *  SQL terminal simulator in Javascript (proof of concept)
+ *
+ *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
+ *  Licensed under the MIT license:
+ *  http://www.opensource.org/licenses/mit-license.php
+ *
+ *  Dependencies:
+ *    jquery.js
+ */
+
+* {
+	margin: 0px;
+	padding: 0px;
+}
+
+html, body {
+	height: 100%;
+	overflow: hidden;
+	width: 100%;
+}
+
+#SQLterm {
+	height: 100%;
+	width: 100%;
+}
+
+#SQLterm pre {
+	background-color: #000000;
+	color: #00CC00;
+	font-size: 16px;
+	height: 100%;
+	overflow-y: scroll;
+	padding: 10px 10px 100px 10px;
+	width: 100%;
+}
+
+#SQLterm textarea {
+	background-color: transparent;
+	border: 0px;
+	border-top: 1px solid #00CC00;
+	bottom: 0px;
+	color: #FFFFFF;
+	font-size: 16px;
+	height: 15%;
+	padding: 10px 5px 5px 5px;
+	position: absolute;
+	width: 100%;
+}
