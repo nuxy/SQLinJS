@@ -194,9 +194,7 @@ var _database = [
 
 				if (dbExists(data, name) ) {
 					for (var i = 0; i < data.length; i++) {
-						if (data[i].name == name) {
-							delete data[i];
-						}
+						if (data[i].name == name) delete data[i];
 					}
 
 					stdOut('Query OK, 0 rows effected');
@@ -269,16 +267,14 @@ var _database = [
 					db   = $this.data('_active_db');
 
 				if (db) {
-					if (data.length > 0) {
-						for (var i = 0; i < data.length; i++) {
-							if (data[i].name != db) continue;
+					for (var i = 0; i < data.length; i++) {
+						if (data[i].name != db) continue;
 
-							stdTermOut(data[i]._table, 'Tables');
+						stdTermOut(data[i]._table, 'Tables');
 
-							stdOut('Query OK, 0 rows effected');
+						stdOut('Query OK, 0 rows effected');
 
-							runCallback(func);
-						}
+						runCallback(func);
 					}
 					else {
 						stdErr('No tables used');
