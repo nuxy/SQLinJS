@@ -195,7 +195,7 @@ var _database = [
 				if (dbExists(data, name) ) {
 					for (var i = 0; i < data.length; i++) {
 						if (data[i].name == name) {
-							delete data[i].name;
+							delete data[i];
 						}
 					}
 
@@ -220,7 +220,7 @@ var _database = [
 						if (data[i].name == db) {
 							for (var j = 0; j < data[i]._table.length; j++) {
 								if (data[i]._table[j].name == name) {
-									delete data[i]._table[j].name;
+									delete data[i]._table[j];
 
 									stdOut('Query OK, 0 rows effected');
 
