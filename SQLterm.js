@@ -9,7 +9,7 @@
  *  Dependencies:
  *    jquery.js
  *
- *
+ */
 
 var _database = [
 	{
@@ -30,7 +30,6 @@ var _database = [
 		]
 	}
 ];
-*/
 
 (function($) {
 	var methods = {
@@ -43,7 +42,7 @@ var _database = [
 					$this.data({
 						_active_db : null,
 						_sql_query : null,
-						_database  : [],
+						_database  : _database,
 						_error_log : [],
 						_query_log : []
 					});
@@ -193,7 +192,7 @@ var _database = [
 				var $this = $(this),
 					data = $this.data('_database');
 
-				if (validName(name) && dbExists(data, name) ) {
+				if (dbExists(data, name) ) {
 					for (var i = 0; i < data.length; i++) {
 						if (data[i].name == name) {
 							delete data[i].name;
@@ -212,19 +211,30 @@ var _database = [
 
 		"dropTable" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data = $this.data('_database'),
+					db   = $this.data('_active_db');
 
-				if ( validName(name) ) {
-					var db = $this.data('_active_db');
+				if (db) {
+					for (var i = 0; i < data.length; i++) {
+						if (data[i].name == db) {
+							for (var j = 0; j < data[i]._table.length; j++) {
+								if (data[i]._table[j].name == name) {
+									delete data[i]._table[j].name;
 
-					$this.data(db[$name], null);
+									stdOut('Query OK, 0 rows effected');
 
-					stdOut('Query OK, 0 rows effected');
-
-					runCallback(func);
+									runCallback(func);
+								}
+							}
+						}
+						else {
+							stdErr("Can't drop table '" + name + "'");
+						}
+					}
 				}
 				else {
-					stdErr("Can't drop table '" + name + "'");
+					stdErr('No database selected ');
 				}
 			});
 		},
@@ -246,14 +256,21 @@ var _database = [
 
 		"showTables" : function(func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data = $this.data('_database'),
+					db   = $this.data('_active_db');
 
-				var db = $this.data('_active_db');
 				if (db) {
-					if ($this.data(db).length > 0) {
-						stdOut('Query OK, 0 rows effected');
+					if (data.length > 0) {
+						for (var i = 0; i < data.length; i++) {
+							if (data[i].name == db) {
+								stdTermOut(data[i]._table, 'Tables');
 
-						runCallback(func);
+								stdOut('Query OK, 0 rows effected');
+
+								runCallback(func);
+							}
+						}
 					}
 					else {
 						stdErr('No tables used');
