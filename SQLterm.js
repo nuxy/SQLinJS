@@ -212,25 +212,33 @@ var _database = [
 		"dropTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database'),
-					db   = $this.data('_active_db');
+					data  = $this.data('_database'),
+					db    = $this.data('_active_db'),
+					error = null;
 
 				if (db) {
 					for (var i = 0; i < data.length; i++) {
-						if (data[i].name == db) {
-							for (var j = 0; j < data[i]._table.length; j++) {
-								if (data[i]._table[j].name == name) {
-									delete data[i]._table[j];
+						if (data[i].name != db) {
+							error = true;
+							continue;
+						}
 
-									stdOut('Query OK, 0 rows effected');
-
-									runCallback(func);
-								}
+						for (var j = 0; j < data[i]._table.length; j++) {
+							if (data[i]._table[j].name != name) {
+								error = true;
+								continue;
 							}
+
+							delete data[i]._table[j];
+
+							stdOut('Query OK, 0 rows effected');
+
+							runCallback(func);
 						}
-						else {
-							stdErr("Can't drop table '" + name + "'");
-						}
+					}
+
+					if (error) {
+						stdErr("Can't drop table '" + name + "'");
 					}
 				}
 				else {
@@ -263,13 +271,13 @@ var _database = [
 				if (db) {
 					if (data.length > 0) {
 						for (var i = 0; i < data.length; i++) {
-							if (data[i].name == db) {
-								stdTermOut(data[i]._table, 'Tables');
+							if (data[i].name != db) continue;
 
-								stdOut('Query OK, 0 rows effected');
+							stdTermOut(data[i]._table, 'Tables');
 
-								runCallback(func);
-							}
+							stdOut('Query OK, 0 rows effected');
+
+							runCallback(func);
 						}
 					}
 					else {
