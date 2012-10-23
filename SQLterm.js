@@ -270,14 +270,16 @@ var _database = [
 					for (var i = 0; i < data.length; i++) {
 						if (data[i].name != db) continue;
 
-						stdTermOut(data[i]._table, 'Tables');
+						if (data[i]._table.length > 0) {
+							stdTermOut(data[i]._table, 'Tables');
 
-						stdOut('Query OK, 0 rows effected');
+							stdOut('Query OK, 0 rows effected');
 
-						runCallback(func);
-					}
-					else {
-						stdErr('No tables used');
+							runCallback(func);
+						}
+						else {
+							stdErr('No tables used');
+						}
 					}
 				}
 				else {
