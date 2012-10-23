@@ -8,7 +8,29 @@
  *
  *  Dependencies:
  *    jquery.js
- */
+ *
+ *
+
+var _database = [
+	{
+		name   : 'accounts',
+		_table : [
+			{
+				name  : 'user',
+				_defs : {
+					uid : 'INT', name : 'VARCHAR'
+				},
+				_data : [
+					{ uid : 1, name : 'Jack' },
+					{ uid : 2, name : 'John' },
+					{ uid : 3, name : 'Mark' },
+					{ uid : 4, name : 'Mary' }
+				]
+			}
+		]
+	}
+];
+*/
 
 (function($) {
 	var methods = {
@@ -21,9 +43,9 @@
 					$this.data({
 						_active_db : null,
 						_sql_query : null,
+						_database  : [],
 						_error_log : [],
-						_query_log : [],
-						_debug     : false
+						_query_log : []
 					});
 
 					$this.SQLterm('initTerminal');
@@ -134,10 +156,14 @@
 
 		"createDatabase" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data = $this.data('_database');
 
-				if ( validName(name) ) {
-					$this.data(name, []);
+				if (validName(name) && ! dbExists(data, name) ) {
+					$this.data('_database').push({
+						database : name,
+						_tables  : []
+					});
 
 					stdOut('Query OK, 0 rows effected');
 
@@ -164,10 +190,11 @@
 
 		"dropDatabase" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data = $this.data();
 
-				if ( validName(name) && $this.data(name) ) {
-					$this.removeData(name);
+				if (validName(name) && ! dbExists(data, name) ) {
+					delete $this.data('_database')[name];
 
 					stdOut('Query OK, 0 rows effected');
 
@@ -200,9 +227,12 @@
 
 		"showDatabases" : function(func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data = $this.data('_database');
 
-				stdTermOut('Databases', $this.data());
+				if (data) {
+					stdTermOut(data, 'Databases');
+				}
 
 				stdOut('Query OK, 0 rows effected');
 
@@ -233,9 +263,10 @@
 
 		"useDatabase" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this)
+					data = $this.data('_database');
 
-				if ( validName(name) && $this.data(name) ) {
+				if (validName(name) && $.inArray(name, data) ) {
 					$this.data('_active_db', name);
 
 					stdOut('Database changed');
@@ -431,27 +462,36 @@
 	/*
 	 * Print tablular format message to console
 	 */
-	function stdTermOut(title, data) {
-		var size  = 0,
-			names = [];
+	function stdTermOut(data, title) {
+		var size  = title.length,
+			vals = [];
 
-		for (var name in data) {
-			//if (/^_/.test(name) ) { continue }
+		for (var i = 0; i < data.length; i++) {
+			for (var key in data[i]) {
+				if (/^_/.test(key) ) continue;
 
-			var len = name.length;
-			if (size < len) {
-				size = len;
+				var len = data[i][key].length;
+				if (size < len) {
+					size = len;
+				}
+
+				vals.push(data[i][key]);
 			}
-			names.push(name);
 		}
 
-		if (names.length > 0) {
-			size = size + 2;   // row boundary
-
+		if (vals.length > 0) {
 			genTermHeader(size, title);
 
-			for (var i = 0; i < names.length; i++) {
-				genTermRow(size - names[i].length, names[i]);
+			for (var j = 0; j < vals.length; j++) {
+				if (typeof vals[j] == 'object') {
+					for (var key in vals[j]) {
+						genTermRow(size - vals[j][key].length, vals[j][key]);
+					}
+				}
+				else
+				if (typeof vals[j] == 'string') {
+					genTermRow(size - vals[j].length, vals[j]);
+				}
 			}
 
 			genTermRow(size);
@@ -473,9 +513,20 @@
 	function genTermRow(size, value) {
 		stdOut(
 			(value)
-				? '+' + value + (new Array(size).join(' ')) + '+'
-				: '+' +         (new Array(size).join('-')) + '+'
+				? '+ ' + value + (new Array(size + 2).join(' ')) + '+'
+				: '+'  +         (new Array(size + 3).join('-')) + '+'
 		);
+	}
+
+	/*
+	 * Return true if database exists
+	 */
+	function dbExists(data, name) {
+		if (!name) { return false }
+
+		for (var i = 0; i < data.length; i++) {
+			if (data[i].database == name) return true;
+		}
 	}
 
 	/*
