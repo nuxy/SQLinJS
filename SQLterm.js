@@ -161,8 +161,8 @@ var _database = [
 
 				if (validName(name) && ! dbExists(data, name) ) {
 					$this.data('_database').push({
-						database : name,
-						_tables  : []
+						name   : name,
+						_table : []
 					});
 
 					stdOut('Query OK, 0 rows effected');
@@ -191,10 +191,14 @@ var _database = [
 		"dropDatabase" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data();
+					data = $this.data('_database');
 
-				if (validName(name) && ! dbExists(data, name) ) {
-					delete $this.data('_database')[name];
+				if (validName(name) && dbExists(data, name) ) {
+					for (var i = 0; i < data.length; i++) {
+						if (data[i].name == name) {
+							delete data[i].name;
+						}
+					}
 
 					stdOut('Query OK, 0 rows effected');
 
@@ -525,7 +529,7 @@ var _database = [
 		if (!name) { return false }
 
 		for (var i = 0; i < data.length; i++) {
-			if (data[i].database == name) return true;
+			if (data[i].name == name) return true;
 		}
 	}
 
