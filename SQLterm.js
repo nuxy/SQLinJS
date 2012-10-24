@@ -311,9 +311,10 @@ var _database = [
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var type = parseQuery(str)[1];
-				var name = parseQuery(str)[2];
-				var defs = parseQuery(str)[3];
+				var elms = parseQuery(str),
+					type = elms[1],
+					name = elms[2],
+					defs = elms[3];
 
 				switch (true) {
 					case /DATABASE/i.test(type):
@@ -345,8 +346,9 @@ var _database = [
 				var $this = $(this)
 					str   = $this.data('_sql_query');
 
-				var type = parseQuery(str)[1];
-				var name = parseQuery(str)[2];
+				var elms = parseQuery(str),
+					type = elms[1],
+					name = elms[2];
 
 				switch (true) {
 					case /DATABASE/i.test(type):
@@ -444,10 +446,25 @@ var _database = [
 	 * Return an array of SQL statement elements
 	 */
 	function parseQuery(str) {
-		var elms = str.split(' ');
-		for (var i = 0; i < elms.length; i++) {
-			elms[i] = $.trim(elms[i]);
+		if (!str) { return false }
+
+		var elms = str.split(/\s+/);
+
+		if ( /^CREATE TABLE/i.test(str) ) {
+			var arr = ( str.replace(/^[\w\s]+\((.*)\)$/m, '$1') )
+				.split(/\s*,\s*/);
+
+			var obj = {};
+
+			for (var i = 0; i < arr.length; i++) {
+				var val = arr[i].split(/\s+/);
+				obj[ val[0] ] = val[1];
+			}
+
+			elms.splice(3, elms.length - 3);
+			elms[3] = obj;
 		}
+
 		return elms;
 	}
 
@@ -495,7 +512,7 @@ var _database = [
 
 		for (var i = 0; i < data.length; i++) {
 			for (var key in data[i]) {
-				if (/^_/.test(key) ) continue;
+				if ( /^_/.test(key) ) continue;
 
 				var len = data[i][key].length;
 				if (size < len) {
