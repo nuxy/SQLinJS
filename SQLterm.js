@@ -8,7 +8,6 @@
  *
  *  Dependencies:
  *    jquery.js
- *
  */
 
 var _database = [
@@ -18,7 +17,7 @@ var _database = [
 			{
 				name  : 'user',
 				_defs : {
-					uid : 'INT', name : 'VARCHAR'
+					uid : 'int(10)', name : 'char(10)'
 				},
 				_data : [
 					{ uid : 1, name : 'Jack' },
@@ -43,7 +42,6 @@ var _database = [
 						_active_db : null,
 						_sql_query : null,
 						_database  : _database,
-						_error_log : [],
 						_query_log : []
 					});
 
@@ -438,31 +436,34 @@ var _database = [
 	 * Return true if in valid format - [a-zA-Z0-9_]
 	 */
 	function validName(str) {
-		if (!str) { return false }
+		if (!str) return false;
 		return /^\w+$/g.test(str);
 	}
 
 	/*
-	 * Return an array of SQL statement elements
+	 * Return SQL statement elements as array/object literal
 	 */
 	function parseQuery(str) {
-		if (!str) { return false }
+		if (!str) return false;
 
 		var elms = str.split(/\s+/);
 
-		if ( /^CREATE TABLE/i.test(str) ) {
-			var arr = ( str.replace(/^[\w\s]+\((.*)\)$/m, '$1') )
-				.split(/\s*,\s*/);
+		switch (true) {
+			case /^CREATE TABLE/i.test(str):
+				elms.splice(3, elms.length - 3);
 
-			var obj = {};
+				// return ['CREATE','TABLE','example', { id : 'int(10)', name : 'char(10)' }]
 
-			for (var i = 0; i < arr.length; i++) {
-				var val = arr[i].split(/\s+/);
-				obj[ val[0] ] = val[1];
-			}
+				var arr = str.replace(/^[\w\s]+\((.*)\)$/m,'$1').split(/\s*,\s*/),
+					obj = {};
 
-			elms.splice(3, elms.length - 3);
-			elms[3] = obj;
+				for (var i = 0; i < arr.length; i++) {
+					var val = arr[i].split(/\s+/);
+					obj[ val[0] ] = val[1];
+				}
+
+				elms[3] = obj;
+			break;
 		}
 
 		return elms;
@@ -566,7 +567,7 @@ var _database = [
 	 * Return true if database exists
 	 */
 	function dbExists(data, name) {
-		if (!name) { return false }
+		if (!name) return false;
 
 		for (var i = 0; i < data.length; i++) {
 			if (data[i].name == name) return true;
