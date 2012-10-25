@@ -116,6 +116,10 @@ var _database = [
 						$this.SQLterm('_Delete');
 					break;
 
+					case /^DESCRIBE/i.test(str):
+						$this.SQLterm('_Describe');
+					break;
+
 					case /^DROP/i.test(str):
 						$this.SQLterm('_Drop');
 					break;
@@ -173,6 +177,19 @@ var _database = [
 		},
 
 		"createTable" : function(name, defs, func) {
+			return this.each(function() {
+				var $this = $(this);
+
+				if ( validName(name) ) {
+
+					// TODO
+
+					runCallback(func);
+				}
+			});
+		},
+
+		"describeTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this);
 
@@ -336,6 +353,18 @@ var _database = [
 					str   = $this.data('_sql_query');
 
 				// TODO
+			});
+		},
+
+		"_Describe" : function() {
+			return this.each(function() {
+				var $this = $(this)
+					str   = $this.data('_sql_query');
+
+				var elms = parseQuery(str),
+					name = elms[1];
+
+				$this.SQLterm('describeTable', name);
 			});
 		},
 
