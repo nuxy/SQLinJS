@@ -239,8 +239,8 @@ var _database = {
 		"dropTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					used = $this.data('_active_db'),
+					data = $this.data('_database')[used];
 
 				if (used) {
 					if (data[name]) {
@@ -588,6 +588,13 @@ var _database = {
 				? '+' + value + (new Array(size + 2).join(' ')) + '+'
 				: '+' +         (new Array(size + 3).join('-')) + '+'
 		);
+	}
+
+	/*
+	 * Append white space to the right side of a string
+	 */
+	function padStr(str, len) {
+		return str + (new Array(len).join(' ')).slice(0, len - str.length);
 	}
 
 	/*
