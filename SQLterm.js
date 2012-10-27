@@ -10,25 +10,34 @@
  *    jquery.js
  */
 
-var _database = [
-	{
-		name   : 'accounts',
-		_table : [
-			{
-				name  : 'user',
-				_defs : {
-					uid : 'int(10)', name : 'char(10)'
-				},
-				_data : [
-					{ uid : 1, name : 'Jack' },
-					{ uid : 2, name : 'John' },
-					{ uid : 3, name : 'Mark' },
-					{ uid : 4, name : 'Mary' }
-				]
-			}
-		]
+var _database = {
+	accounts : {
+		profile : {
+			_cols : ['id','user_id','active'],
+			_defs : {
+				id : 'int(10)', user_id : 'int(10)', active : 'int(10)'
+			},
+			_data : [
+				{ id : 1, user_id : 1, active : 1 },
+				{ id : 2, user_id : 2, active : 0 },
+				{ id : 3, user_id : 3, active : 0 },
+				{ id : 4, user_id : 4, active : 0 }
+			]
+		},
+		user : {
+			_cols : ['id','name'],
+			_defs : {
+				id : 'int(10)', name : 'char(10)'
+			},
+			_data : [
+				{ id : 1, name : 'Jack' },
+				{ id : 2, name : 'Johnathan' },
+				{ id : 3, name : 'Mark' },
+				{ id : 4, name : 'Mary' }
+			]
+		}
 	}
-];
+};
 
 (function($) {
 	var methods = {
@@ -160,11 +169,14 @@ var _database = [
 				var $this = $(this),
 					data = $this.data('_database');
 
-				if (validName(name) && ! dbExists(data, name) ) {
-					$this.data('_database').push({
-						name   : name,
-						_table : []
-					});
+				if (validName(name) && !data[name]) {
+
+					// create an empty database
+					$this.data('_database')[name] = {
+						_cols : [],
+						_defs : {},
+						_data : []
+					};
 
 					stdOut('Query OK, 0 rows effected');
 
@@ -178,9 +190,11 @@ var _database = [
 
 		"createTable" : function(name, defs, func) {
 			return this.each(function() {
-				var $this = $(this);
-
-				if ( validName(name) ) {
+				var $this = $(this),
+					used = $this.data('_active_db'),
+					data = $this.data('_database')[used];
+					
+				if (validName(name) && !data[name]) {
 
 					// TODO
 
@@ -191,9 +205,11 @@ var _database = [
 
 		"describeTable" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					used = $this.data('_active_db'),
+					data = $this.data('_database')[used];
 
-				if ( validName(name) ) {
+				if (data[name]) {
 
 					// TODO
 
@@ -207,10 +223,8 @@ var _database = [
 				var $this = $(this),
 					data = $this.data('_database');
 
-				if (dbExists(data, name) ) {
-					for (var i = 0; i < data.length; i++) {
-						if (data[i].name == name) delete data[i];
-					}
+				if (data[name]) {
+					delete data[name];
 
 					stdOut('Query OK, 0 rows effected');
 
@@ -225,32 +239,14 @@ var _database = [
 		"dropTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data  = $this.data('_database'),
-					db    = $this.data('_active_db'),
-					error = null;
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
 
-				if (db) {
-					for (var i = 0; i < data.length; i++) {
-						if (data[i].name != db) {
-							error = true;
-							continue;
-						}
-
-						for (var j = 0; j < data[i]._table.length; j++) {
-							if (data[i]._table[j].name != name) {
-								error = true;
-								continue;
-							}
-
-							delete data[i]._table[j];
-
-							stdOut('Query OK, 0 rows effected');
-
-							runCallback(func);
-						}
+				if (used) {
+					if (data[name]) {
+						delete data[name];
 					}
-
-					if (error) {
+					else {
 						stdErr("Can't drop table '" + name + "'");
 					}
 				}
@@ -265,8 +261,10 @@ var _database = [
 				var $this = $(this),
 					data = $this.data('_database');
 
-				if (data) {
-					stdTermOut(data, 'Databases');
+				// TODO
+
+				if (!$.isEmptyObject(data) ) {
+					stdTermOut($.makeArray(data), 'Databases');
 				}
 
 				stdOut('Query OK, 0 rows effected');
@@ -278,15 +276,15 @@ var _database = [
 		"showTables" : function(func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database'),
-					db   = $this.data('_active_db');
+					used = $this.data('_active_db'),
+					data = $this.data('_database')[used];
 
-				if (db) {
-					for (var i = 0; i < data.length; i++) {
-						if (data[i].name != db) continue;
+				// TODO
 
-						if (data[i]._table.length > 0) {
-							stdTermOut(data[i]._table, 'Tables');
+				if (used) {
+					for (var key in data) {
+						if (data[key]) {
+							stdTermOut(key, 'Tables');
 
 							stdOut('Query OK, 0 rows effected');
 
@@ -305,10 +303,10 @@ var _database = [
 
 		"useDatabase" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this)
+				var $this = $(this),
 					data = $this.data('_database');
 
-				if (validName(name) && $.inArray(name, data) ) {
+				if (data[name]) {
 					$this.data('_active_db', name);
 
 					stdOut('Database changed');
@@ -457,7 +455,7 @@ var _database = [
 			return methods.init.apply(this, arguments);
 		}
 		else {
-			$.error('Method ' +  method + ' does not exist on SQLterm');
+			$.error('Method ' +  method + ' does not exist in SQLterm');
 		}
 	};
 
@@ -587,20 +585,9 @@ var _database = [
 	function genTermRow(size, value) {
 		stdOut(
 			(value)
-				? '+ ' + value + (new Array(size + 2).join(' ')) + '+'
-				: '+'  +         (new Array(size + 3).join('-')) + '+'
+				? '+' + value + (new Array(size + 2).join(' ')) + '+'
+				: '+' +         (new Array(size + 3).join('-')) + '+'
 		);
-	}
-
-	/*
-	 * Return true if database exists
-	 */
-	function dbExists(data, name) {
-		if (!name) return false;
-
-		for (var i = 0; i < data.length; i++) {
-			if (data[i].name == name) return true;
-		}
 	}
 
 	/*
