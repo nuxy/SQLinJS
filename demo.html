@@ -19,7 +19,11 @@
 	<script src="SQLterm.js"></script>
 	<script>
 	$(document).ready(function() {
-		$('body').SQLterm();
+		var terminal = $('body').SQLterm();
+
+		$.getJSON('demo.json', function(data) {
+			terminal.SQLterm('importDatabase', data);
+		});
 	});
 	</script>
 

@@ -44,11 +44,8 @@
 			return this.each(function() {
 				var $this = $(this);
 
-				var screen
-					= $('<pre></pre>');
-
-				var input
-					= $('<textarea></textarea>');
+				var screen = $('<pre></pre>');
+				var input  = $('<textarea></textarea>');
 
 				var terminal
 					= $('<div></div>')
@@ -154,6 +151,12 @@
 				$this.data('_query_log').push( logFormat(str) );
 
 				runCallback(func);
+			});
+		},
+
+		"importDatabase" : function(data) {
+			return this.each(function() {
+				$(this).data('_database', data);
 			});
 		},
 
