@@ -167,7 +167,7 @@ var _database = {
 		"createDatabase" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database');
+					data  = $this.data('_database');
 
 				if (validName(name) && !data[name]) {
 
@@ -191,8 +191,8 @@ var _database = {
 		"createTable" : function(name, defs, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used = $this.data('_active_db'),
-					data = $this.data('_database')[used];
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
 					
 				if (validName(name) && !data[name]) {
 
@@ -206,8 +206,8 @@ var _database = {
 		"describeTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used = $this.data('_active_db'),
-					data = $this.data('_database')[used];
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
 
 				if (data[name]) {
 
@@ -221,7 +221,7 @@ var _database = {
 		"dropDatabase" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database');
+					data  = $this.data('_database');
 
 				if (data[name]) {
 					delete data[name];
@@ -239,8 +239,8 @@ var _database = {
 		"dropTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used = $this.data('_active_db'),
-					data = $this.data('_database')[used];
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
 
 				if (used) {
 					if (data[name]) {
@@ -259,13 +259,19 @@ var _database = {
 		"showDatabases" : function(func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database');
+					data  = $this.data('_database'),
+					name  = 'Database',
+					count = 0;
 
 				if (data) {
-					stdTermOut(['Database'], getObjKeys(data, 'Database') );
+					var vals = getObjKeys(data, name);
+
+					count = vals.length;
+
+					stdTermOut([name], vals);
 				}
 
-				stdOut('Query OK, 0 rows effected');
+				stdOut(count + ' rows in set');
 
 				runCallback(func);
 			});
@@ -274,14 +280,20 @@ var _database = {
 		"showTables" : function(func) {
 			return this.each(function() {
 				var $this = $(this),
-					used = $this.data('_active_db'),
-					data = $this.data('_database')[used];
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used],
+					name  = 'Tables' + '_in_' + used,
+					count = 0;
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						stdTermOut(['Tables'], getObjKeys(data, 'Tables') );
+						var vals = getObjKeys(data, name);
 
-						stdOut('Query OK, 0 rows effected');
+						count = vals.length;
+
+						stdTermOut([name], vals);
+
+						stdOut(count + ' rows in set');
 
 						runCallback(func);
 					}
@@ -298,7 +310,7 @@ var _database = {
 		"useDatabase" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data = $this.data('_database');
+					data  = $this.data('_database');
 
 				if (data[name]) {
 					$this.data('_active_db', name);
