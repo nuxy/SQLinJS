@@ -260,18 +260,16 @@ var _database = {
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data('_database'),
-					name  = 'Database',
-					count = 0;
+					name  = 'Database';
 
 				if (data) {
-					var vals = getObjKeys(data, name);
-
-					count = vals.length;
+					var vals  = getObjKeys(data, name),
+						count = vals.length;
 
 					stdTermOut([name], vals);
 				}
 
-				stdOut(count + ' rows in set');
+				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
 
 				runCallback(func);
 			});
@@ -282,18 +280,16 @@ var _database = {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used],
-					name  = 'Tables' + '_in_' + used,
-					count = 0;
+					name  = 'Tables' + '_in_' + used;
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						var vals = getObjKeys(data, name);
-
-						count = vals.length;
+						var vals  = getObjKeys(data, name),
+							count = vals.length;
 
 						stdTermOut([name], vals);
 
-						stdOut(count + ' rows in set');
+						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
 
 						runCallback(func);
 					}
