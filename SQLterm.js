@@ -10,35 +10,6 @@
  *    jquery.js
  */
 
-var _database = {
-	accounts : {
-		profile : {
-			_cols : ['id','user_id','active','created'],
-			_defs : {
-				id : 'int(10)', user_id : 'int(10)', active : 'int(10)'
-			},
-			_data : [
-				{ id : 1, user_id : 1, active : 1, created : '0000-00-00 00:00:00' },
-				{ id : 2, user_id : 2, active : 0, created : '0000-00-00 00:00:00' },
-				{ id : 3, user_id : 3, active : 0, created : '0000-00-00 00:00:00' },
-				{ id : 4, user_id : 4, active : 0, created : '0000-00-00 00:00:00' }
-			]
-		},
-		user : {
-			_cols : ['id','name'],
-			_defs : {
-				id : 'int(10)', name : 'char(10)'
-			},
-			_data : [
-				{ id : 1, name : 'Jack' },
-				{ id : 2, name : 'Johnathan' },
-				{ id : 3, name : 'Mark' },
-				{ id : 4, name : 'Mary' }
-			]
-		}
-	}
-};
-
 (function($) {
 	var methods = {
 		"init" : function() {
@@ -50,7 +21,7 @@ var _database = {
 					$this.data({
 						_active_db : null,
 						_sql_query : null,
-						_database  : _database,
+						_database  : null,
 						_query_log : []
 					});
 
