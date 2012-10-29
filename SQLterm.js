@@ -260,11 +260,14 @@
 						count = vals.length;
 
 					stdTermOut([name], vals);
+
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
+
+					runCallback(func);
 				}
-
-				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
-
-				runCallback(func);
+				else {
+					stdOut('No databases exist');
+				}
 			});
 		},
 
