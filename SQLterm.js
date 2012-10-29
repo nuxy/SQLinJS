@@ -13,15 +13,15 @@
 var _database = {
 	accounts : {
 		profile : {
-			_cols : ['id','user_id','active'],
+			_cols : ['id','user_id','active','created'],
 			_defs : {
 				id : 'int(10)', user_id : 'int(10)', active : 'int(10)'
 			},
 			_data : [
-				{ id : 1, user_id : 1, active : 1 },
-				{ id : 2, user_id : 2, active : 0 },
-				{ id : 3, user_id : 3, active : 0 },
-				{ id : 4, user_id : 4, active : 0 }
+				{ id : 1, user_id : 1, active : 1, created : '0000-00-00 00:00:00' },
+				{ id : 2, user_id : 2, active : 0, created : '0000-00-00 00:00:00' },
+				{ id : 3, user_id : 3, active : 0, created : '0000-00-00 00:00:00' },
+				{ id : 4, user_id : 4, active : 0, created : '0000-00-00 00:00:00' }
 			]
 		},
 		user : {
@@ -261,10 +261,8 @@ var _database = {
 				var $this = $(this),
 					data = $this.data('_database');
 
-				// TODO
-
-				if (!$.isEmptyObject(data) ) {
-					stdTermOut($.makeArray(data), 'Databases');
+				if (data) {
+					stdTermOut(['Database'], getObjKeys(data, 'Database') );
 				}
 
 				stdOut('Query OK, 0 rows effected');
@@ -279,20 +277,16 @@ var _database = {
 					used = $this.data('_active_db'),
 					data = $this.data('_database')[used];
 
-				// TODO
-
 				if (used) {
-					for (var key in data) {
-						if (data[key]) {
-							stdTermOut(key, 'Tables');
+					if ( !$.isEmptyObject(data) ) {
+						stdTermOut(['Tables'], getObjKeys(data, 'Tables') );
 
-							stdOut('Query OK, 0 rows effected');
+						stdOut('Query OK, 0 rows effected');
 
-							runCallback(func);
-						}
-						else {
-							stdErr('No tables used');
-						}
+						runCallback(func);
+					}
+					else {
+						stdErr('No tables used');
 					}
 				}
 				else {
@@ -468,6 +462,19 @@ var _database = {
 	}
 
 	/*
+	 * Return key names (1st child) as array of objects
+	 */
+	function getObjKeys(data, name) {
+		var vals = [];
+		for (var key in data) {
+			var col = new Object;
+			col[name] = key;
+			vals.push(col);
+		}
+		return vals;
+	}
+
+	/*
 	 * Return SQL statement elements as array/object literal
 	 */
 	function parseQuery(str) {
@@ -497,7 +504,7 @@ var _database = {
 	}
 
 	/*
-	 * Return 'query_log' entry in JSON format
+	 * Return 'query_log' entry as an object
 	 */
 	function logFormat(str) {
 		return { query : str, time : new Date().getTime() };
@@ -534,66 +541,73 @@ var _database = {
 	/*
 	 * Print tablular format message to console
 	 */
-	function stdTermOut(data, title) {
-		var size  = title.length,
-			vals = [];
+	function stdTermOut(cols, data) {
+		var sizes = {},
+			count = 0;
 
-		for (var i = 0; i < data.length; i++) {
-			for (var key in data[i]) {
-				if ( /^_/.test(key) ) continue;
+		for (var i = 0; i < cols.length; i++) {
+			var name = cols[i];
 
-				var len = data[i][key].length;
-				if (size < len) {
-					size = len;
-				}
+			sizes[name] = name.length;
 
-				vals.push(data[i][key]);
-			}
-		}
+			for (var j = 0; j < data.length; j++) {
+				var rows = data[j],
+					len  = String(rows[name]).length;
 
-		if (vals.length > 0) {
-			genTermHeader(size, title);
-
-			for (var j = 0; j < vals.length; j++) {
-				if (typeof vals[j] == 'object') {
-					for (var key in vals[j]) {
-						genTermRow(size - vals[j][key].length, vals[j][key]);
-					}
-				}
-				else
-				if (typeof vals[j] == 'string') {
-					genTermRow(size - vals[j].length, vals[j]);
+				if (len > sizes[name]) {
+					sizes[name] = len;
 				}
 			}
 
-			genTermRow(size);
+			count = count + sizes[name] + 3;
 		}
+
+		cols = $.map(cols, function(val) {
+			return padStrRgt(String(val), sizes[val]);
+		});
+
+		genTermHeader(count, cols);
+
+		for (var k = 0; k < data.length; k++) {
+			var rows = data[k],
+				arr  = [];
+
+			for (var key in rows) {
+				arr.push( padStrRgt(String(rows[key]), sizes[key]) );
+			}
+
+			genTermRow(sizes[key], arr);
+		}
+
+		genTermRow(count);
 	}
 
 	/*
 	 * Print tablular format header to console
 	 */
-	function genTermHeader(size, title) {
-		genTermRow(size);
-		genTermRow(size - title.length, title);
-		genTermRow(size);
+	function genTermHeader(len, cols) {
+		genTermRow(len);
+		genTermRow(len, cols);
+		genTermRow(len);
 	}
 
 	/*
 	 * Print tablular format row to console
 	 */
-	function genTermRow(size, value) {
+	function genTermRow(len, cols) {
+		var temp = new Array(len);
+
 		stdOut(
-			(value)
-				? '+' + value + (new Array(size + 2).join(' ')) + '+'
-				: '+' +         (new Array(size + 3).join('-')) + '+'
+			(cols)
+				? '| ' + cols.join(' | ') + ' |'
+				: '+'  + temp.join('-')   + '+'
 		);
 	}
 
 	/*
 	 * Append white space to the right side of a string
 	 */
-	function padStr(str, len) {
+	function padStrRgt(str, len) {
 		return str + (new Array(len).join(' ')).slice(0, len - str.length);
 	}
 
