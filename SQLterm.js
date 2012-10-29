@@ -73,36 +73,58 @@ var _database = {
 			return this.each(function() {
 				var $this = $(this);
 
+				var screen
+					= $('<pre></pre>');
+
 				var input
-					= $('<textarea></textarea>')
-						.on('keypress', function(event) {
-							if (event.which != 13) return;
-
-							event.preventDefault();
-
-							var str = $(this).val();
-							$(this).val(null);
-
-							$this.SQLterm('executeQuery', str);
-							$this.focus();
-						});
-
-				var console
-					= $('<pre></pre>')
-						.on('click', function(event) {
-							input.focus();
-						});
+					= $('<textarea></textarea>');
 
 				var terminal
 					= $('<div></div>')
 						.attr('id','SQLterm')
-						.append(console, input);
+						.append(screen, input);
 
 				$this.append(terminal);
+
+				$this.SQLterm('bindEvents', ['screen','input']);
 
 				input.focus();
 
 				runCallback(func);
+			});
+		},
+
+		"bindEvents" : function(names) {
+			return this.each(function() {
+				var $this = $(this);
+
+				var terminal = $('#SQLterm'),
+					screen   = terminal.find('pre'),
+					input    = terminal.find('textarea');
+
+				for (var i = 0; i < names.length; i++) {
+					switch (names[i]) {
+						case 'screen':
+							terminal
+								.on('click', function(event) {
+									input.focus();
+								});
+						break;
+
+						case 'input':
+							input
+								.on('keypress', function(event) {
+									if (event.which != 13) return;
+
+									event.preventDefault();
+
+									$this.SQLterm('executeQuery', $(this).val() );
+
+									$(this).val(null).focus();
+								});
+						break;
+					}
+				}
 			});
 		},
 
@@ -526,28 +548,28 @@ var _database = {
 	}
 
 	/*
-	 * Clear all messages in console
+	 * Clear all messages in screen
 	 */
 	function clearTerminal() {
 		$('#SQLterm pre').empty();
 	}
 
 	/*
-	 * Print error message to console
+	 * Print error message to screen
 	 */
 	function stdErr(str) {
 		stdOut('Error: ' + str);
 	}
 
 	/*
-	 * Print message to console; add newline to output
+	 * Print message to screen; add newline to output
 	 */
 	function stdOut(str) {
 		$('#SQLterm pre').append( ((str) ? str : '') + '\n');
 	}
 
 	/*
-	 * Print tablular format message to console
+	 * Print tablular format message to screen
 	 */
 	function stdTermOut(cols, data) {
 		var sizes = {},
@@ -591,7 +613,7 @@ var _database = {
 	}
 
 	/*
-	 * Print tablular format header to console
+	 * Print tablular format header to screen
 	 */
 	function genTermHeader(len, cols) {
 		genTermRow(len);
@@ -600,7 +622,7 @@ var _database = {
 	}
 
 	/*
-	 * Print tablular format row to console
+	 * Print tablular format row to screen
 	 */
 	function genTermRow(len, cols) {
 		var temp = new Array(len);
