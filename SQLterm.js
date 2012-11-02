@@ -154,9 +154,18 @@
 			});
 		},
 
-		"importDatabase" : function(data) {
+		"importDatabase" : function(obj) {
 			return this.each(function() {
-				$(this).data('_database', data);
+				if (typeof obj === 'object') {
+					for (var key in obj) {
+						if ( obj.hasOwnProperty(key) ) {
+							$(this).data('_database', obj);
+						}
+						else {
+							stdErr("Can't create database '" + key);
+						}
+					}
+				}
 			});
 		},
 
