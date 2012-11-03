@@ -199,11 +199,15 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 					
-				if (validName(name) && !data[name]) {
+				if ( validName(name) && !data.hasOwnProperty(name) ) {
+					data[name] = defs;
 
-					// TODO
+					stdOut('Query OK, 0 rows effected');
 
 					runCallback(func);
+				}
+				else {
+					stdErr("Can't create table '" + name + "'");
 				}
 			});
 		},
@@ -214,7 +218,7 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
-				if (data[name]) {
+				if ( data.hasOwnProperty(name) ) {
 
 					// TODO
 
@@ -228,7 +232,7 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
-				if (data[name]) {
+				if ( data.hasOwnProperty(name) ) {
 					delete data[name];
 
 					stdOut('Query OK, 0 rows effected');
@@ -248,7 +252,7 @@
 					data  = $this.data('_database')[used];
 
 				if (used) {
-					if (data[name]) {
+					if ( data.hasOwnProperty(name) ) {
 						delete data[name];
 					}
 					else {
@@ -316,7 +320,7 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
-				if (data[name]) {
+				if ( data.hasOwnProperty(name) ) {
 					$this.data('_active_db', name);
 
 					stdOut('Database changed');
@@ -418,7 +422,6 @@
 				// TODO
 			});
 		},
-
 		"_Show" : function() {
 			return this.each(function() {
 				var $this = $(this),
@@ -483,6 +486,8 @@
 	function getObjKeys(data, name) {
 		var vals = [];
 		for (var key in data) {
+			if( !data.hasOwnProperty(key) ) continue;
+
 			var col = new Object;
 			col[name] = key;
 			vals.push(col);
