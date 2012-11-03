@@ -183,7 +183,7 @@
 						_data : []
 					};
 
-					stdOut('Query OK, 0 rows effected');
+					stdOut('Query OK, 0 rows affected');
 
 					runCallback(func);
 				}
@@ -202,7 +202,7 @@
 				if ( validName(name) && !data.hasOwnProperty(name) ) {
 					data[name] = defs;
 
-					stdOut('Query OK, 0 rows effected');
+					stdOut('Query OK, 0 rows affected');
 
 					runCallback(func);
 				}
@@ -235,7 +235,7 @@
 				if ( data.hasOwnProperty(name) ) {
 					delete data[name];
 
-					stdOut('Query OK, 0 rows effected');
+					stdOut('Query OK, 0 rows affected');
 
 					runCallback(func);
 				}
