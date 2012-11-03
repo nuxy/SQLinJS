@@ -174,7 +174,7 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
-				if (validName(name) && !data[name]) {
+				if ( validName(name) && !data.hasOwnProperty(name) ) {
 
 					// create an empty database
 					$this.data('_database')[name] = {
@@ -432,10 +432,6 @@
 				switch (true) {
 					case /DATABASES/i.test(name):
 						$this.SQLterm('showDatabases');
-					break;
-
-					case /LOGS/i.test(name):
-						$this.SQLterm('showLogs');
 					break;
 
 					case /TABLES/i.test(name):
