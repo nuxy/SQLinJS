@@ -174,7 +174,15 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
-				if ( validName(name) && !data.hasOwnProperty(name) ) {
+				if (!data) {
+					stdErr('No database selected');
+				}
+				else
+				if ( !validName(name) ) {
+					stdErr('You have an error in your SQL syntax');
+				}
+				else
+				if ( !data.hasOwnProperty(name) ) {
 
 					// create an empty database
 					$this.data('_database')[name] = {
@@ -210,7 +218,7 @@
 				if ( !data.hasOwnProperty(name) ) {
 					var cols = [];
 
-					// check data types
+					// check supported data types
 					for (var type in defs) {
 						if ( /^(CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
 							cols.push(type);
@@ -574,7 +582,7 @@
 	 * Print error message to screen
 	 */
 	function stdErr(str) {
-		stdOut('Error: ' + str);
+		stdOut('ERROR: ' + str);
 	}
 
 	/*
