@@ -89,6 +89,9 @@
 									$this.SQLterm('executeQuery', $(this).val() );
 
 									$(this).val(null).focus();
+
+									// force scroll positioning
+									screen.scrollTop( screen.prop('scrollHeight') );
 								});
 						break;
 					}
