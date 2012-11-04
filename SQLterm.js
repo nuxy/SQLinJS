@@ -198,16 +198,44 @@
 				var $this = $(this),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
-					
-				if ( validName(name) && !data.hasOwnProperty(name) ) {
-					data[name] = defs;
 
-					stdOut('Query OK, 0 rows affected');
+				if (!data) {
+					stdErr('No database selected');
+				}
+				else
+				if ( !validName(name) ) {
+					stdErr('You have an error in your SQL syntax');
+				}
+				else
+				if ( !data.hasOwnProperty(name) ) {
+					var cols = [];
 
-					runCallback(func);
+					// check data types
+					for (var type in defs) {
+						if ( /^(CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
+							cols.push(type);
+						}
+					}
+
+					if (cols.length > 0) {
+
+						// create table properties
+						$this.data('_database')[used][name] = {
+							_cols : cols,
+							_defs : defs,
+							_data : []
+						};
+
+						stdOut('Query OK, 0 rows affected');
+
+						runCallback(func);
+					}
+					else {
+						stdErr('You have an error in your SQL syntax');
+					}
 				}
 				else {
-					stdErr("Can't create table '" + name + "'");
+					stdErr("Table '" + name + "' already exists");
 				}
 			});
 		},
@@ -422,6 +450,7 @@
 				// TODO
 			});
 		},
+
 		"_Show" : function() {
 			return this.each(function() {
 				var $this = $(this),
@@ -641,7 +670,7 @@
 			throwError(err);
 		}
 	}
-	
+
 	/*
 	 * Output errors including caller object
 	 */
