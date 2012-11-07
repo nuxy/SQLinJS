@@ -80,18 +80,53 @@
 						break;
 
 						case 'input':
+							var buffer = $this.data('_query_log'),
+								index  = 0;
+
 							input
 								.on('keypress', function(event) {
 									if (event.which != 13) return;
 
 									event.preventDefault();
 
+									// execute the SQL query
 									$this.SQLterm('executeQuery', $(this).val() );
 
 									$(this).val(null).focus();
 
+									index = buffer.length
+
 									// force scroll positioning
 									screen.scrollTop( screen.prop('scrollHeight') );
+								})
+								.on('keyup', function(event) {
+									var count = buffer.length;
+
+									switch (event.which) {
+										case 38:
+
+											// view last command
+											index = (index > 0)
+												? index -= 1
+												: 0;
+										break;
+
+										case 40:
+
+											// view next command
+											index = ( (index + 1) < count)
+												? index += 1
+												: index;
+										break;
+
+										default:
+											return;
+										break;
+									}
+
+									if (count) {
+										$(this).val(buffer[index].query);
+									}
 								});
 						break;
 					}
@@ -616,7 +651,7 @@
 				}
 			}
 
-			count = count + sizes[name] + 3;
+			count += sizes[name] + 3;
 		}
 
 		cols = $.map(cols, function(val) {
