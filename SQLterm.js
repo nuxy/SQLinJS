@@ -32,7 +32,7 @@
 
 				stdOut('Welcome to SQLterm monitor. Command ends with ; or \\g.');
 				stdOut();
-				stdOut("Type 'help' for supported commands");
+				stdOut("Type 'help;' or '\\h' for help.");
 			});
 		},
 
@@ -195,7 +195,7 @@
 						$this.SQLterm('_Use');
 					break;
 
-					case /^help/i.test(str):
+					case /^(help|\\h)/i.test(str):
 						viewHelp();
 					break;
 
