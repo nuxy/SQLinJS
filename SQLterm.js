@@ -288,13 +288,29 @@
 
 		"describeTable" : function(name, func) {
 			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+				var $this  = $(this),
+					used   = $this.data('_active_db'),
+					data   = $this.data('_database')[used],
+					titles = ['Field','Type'];
 
-				if ( data.hasOwnProperty(name) ) {
+				if (!data) {
+					stdErr('Database not selected');
+				}
+				else
+				if ( !validName(name) ) {
+					stdErr('You have an error in your SQL syntax');
+				}
+				else
+				if ( !data.hasOwnProperty(name) ) {
+					stdErr("Unknown table '" + name + "'");
+				}
+				else {
+					var vals  = getObjAsCols(titles, data[name]['_defs']),
+						count = vals.length;
 
-					// TODO
+					stdTermOut(titles, vals);
+
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
 
 					runCallback(func);
 				}
@@ -306,6 +322,10 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
+				if ( !validName(name) ) {
+					stdErr('You have an error in your SQL syntax');
+				}
+				else
 				if ( data.hasOwnProperty(name) ) {
 					delete data[name];
 
@@ -326,6 +346,10 @@
 					data  = $this.data('_database')[used];
 
 				if (used) {
+					if ( !validName(name) ) {
+						stdErr('You have an error in your SQL syntax');
+					}
+					else
 					if ( data.hasOwnProperty(name) ) {
 						delete data[name];
 					}
@@ -343,13 +367,13 @@
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data('_database'),
-					name  = 'Database';
+					title = 'Database';
 
 				if (data) {
-					var vals  = getObjKeys(data, name),
+					var vals  = getObjKeys(data, title),
 						count = vals.length;
 
-					stdTermOut([name], vals);
+					stdTermOut([title], vals);
 
 					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
 
@@ -366,14 +390,14 @@
 				var $this = $(this),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used],
-					name  = 'Tables' + '_in_' + used;
+					title = 'Tables' + '_in_' + used;
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						var vals  = getObjKeys(data, name),
+						var vals  = getObjKeys(data, title),
 							count = vals.length;
 
-						stdTermOut([name], vals);
+						stdTermOut([title], vals);
 
 						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
 
@@ -394,6 +418,10 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
+				if ( !validName(name) ) {
+					stdErr('You have an error in your SQL syntax');
+				}
+				else
 				if ( data.hasOwnProperty(name) ) {
 					$this.data('_active_db', name);
 
@@ -557,11 +585,28 @@
 	function getObjKeys(data, name) {
 		var vals = [];
 		for (var key in data) {
-			if( !data.hasOwnProperty(key) ) continue;
+			if ( !data.hasOwnProperty(key) ) continue;
 
-			var col = new Object;
-			col[name] = key;
-			vals.push(col);
+			var new_obj = new Object;
+			new_obj[name] = key;
+			vals.push(new_obj);
+		}
+		return vals;
+	}
+
+	/*
+	 * Return key/values as array of object(s)
+	 */
+	function getObjAsCols(names, obj) {
+		var vals = [];
+		for (var key in obj) {
+			if ( !obj.hasOwnProperty(key) ) continue;
+
+			var new_obj = new Object;
+			for (var i = 0; i < names.length; i++) {
+				new_obj[names[i]] = (i == 0) ? key : obj[key];
+			}
+			vals.push(new_obj);
 		}
 		return vals;
 	}
@@ -632,6 +677,15 @@
 
 	/*
 	 * Print tablular format message to screen
+	 *
+	 * Example:
+	 *     stdTermOut(
+	 *         ['col1','col2','col3'],[
+	 *             { col1 : 'value1', col2 : 'value2', col3 : 'value3' },
+	 *             { col1 : 'value1', col2 : 'value2', col3 : 'value3' },
+	 *             { col1 : 'value1', col2 : 'value2', col3 : 'value3' }
+	 *         ]
+	 *     );
 	 */
 	function stdTermOut(cols, data) {
 		var sizes = {},
