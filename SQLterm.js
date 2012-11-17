@@ -92,10 +92,21 @@
 									event.preventDefault();
 
 									// execute every SQL query seperated by semicolon
-									var queries = $(this).val().split(/(;|\\g)/);
+									var str = $(this).val();
 
-									for (var i = 0; i < queries.length; i++) {
-										$this.SQLterm('executeQuery', queries[i]);
+									var queries =
+										$.grep(str.split(/(;|\\g)/), function(bucket) {
+											if (! /^(\s+|;|)$/.test(bucket) ) {
+												return bucket;
+											}
+										});
+
+									var count = queries.length;
+
+									if (count > 0) {
+										for (var i = 0; i < count; i++) {
+											$this.SQLterm('executeQuery', queries[i]);
+										}
 									}
 
 									$(this).val(null).focus();
