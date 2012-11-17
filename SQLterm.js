@@ -385,15 +385,19 @@
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data('_database'),
-					title = 'Database';
+					title = 'Database',
+					count = 0;
 
 				if (data) {
-					var vals  = getObjKeys(data, title),
+					var time = calcProcTime(function() {
+						var vals = getObjKeys(data, title);
+
+						stdTermOut([title], vals);
+
 						count = vals.length;
+					});
 
-					stdTermOut([title], vals);
-
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + time + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -655,6 +659,23 @@
 		}
 
 		return elms;
+	}
+
+	/*
+	 * Calculate execution time of a function (not precise, but simple)
+	 */
+	function calcProcTime(func) {
+		try {
+			if (typeof func === 'function') {
+				var start = new Date().getMilliseconds();
+				func();
+				var stop  = new Date().getMilliseconds();
+				return ((stop - start) / 100);
+			}
+		}
+		catch(err) {
+			throwError(err);
+		}
 	}
 
 	/*
