@@ -30,7 +30,9 @@
 
 				clearTerminal();
 
-				stdOut("Welcome to SQLterm monitor.  Type 'help' for supported commands");
+				stdOut('Welcome to SQLterm monitor. Command ends with ; or \\g.');
+				stdOut();
+				stdOut("Type 'help' for supported commands");
 			});
 		},
 
@@ -89,8 +91,12 @@
 
 									event.preventDefault();
 
-									// execute the SQL query
-									$this.SQLterm('executeQuery', $(this).val() );
+									// execute every SQL query seperated by semicolon
+									var queries = $(this).val().split(/(;|\\g)/);
+
+									for (var i = 0; i < queries.length; i++) {
+										$this.SQLterm('executeQuery', queries[i]);
+									}
 
 									$(this).val(null).focus();
 
@@ -624,7 +630,6 @@
 				elms.splice(3, elms.length - 3);
 
 				// return ['CREATE','TABLE','example', { id : 'int(10)', name : 'char(10)' }]
-
 				var arr = str.replace(/^[\w\s]+\((.*)\)$/m,'$1').split(/\s*,\s*/),
 					obj = {};
 
