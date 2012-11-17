@@ -282,7 +282,7 @@
 					}
 
 					if (cols.length > 0) {
-						var timer = calcProcTime(function() {
+						var timer = calcExecTime(function() {
 
 							// create table properties
 							$this.data('_database')[used][name] = {
@@ -310,8 +310,7 @@
 			return this.each(function() {
 				var $this  = $(this),
 					used   = $this.data('_active_db'),
-					data   = $this.data('_database')[used],
-					titles = ['Field','Type'];
+					data   = $this.data('_database')[used];
 
 				if (!data) {
 					stdErr('Database not selected');
@@ -325,14 +324,16 @@
 					stdErr("Unknown table '" + name + "'");
 				}
 				else {
-					var count = 0,
-						timer = calcProcTime(function() {
-							var vals  = getObjAsCols(titles, data[name]['_defs']);
+					var names = ['Field','Type'],
+						count = 0;
 
-							stdTermOut(titles, vals);
+					var timer = calcExecTime(function() {
+						var vals = getObjAsCols(names, data[name]['_defs']);
 
-							count = vals.length;
-						});
+						stdTermOut(names, vals);
+
+						count = vals.length;
+					});
 
 					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
@@ -351,7 +352,7 @@
 				}
 				else
 				if ( data.hasOwnProperty(name) ) {
-					var timer = calcProcTime(function() {
+					var timer = calcExecTime(function() {
 						delete data[name];
 					});
 
@@ -377,7 +378,7 @@
 					}
 					else
 					if ( data.hasOwnProperty(name) ) {
-						var timer = calcProcTime(function() {
+						var timer = calcExecTime(function() {
 							delete data[name];
 						});
 
@@ -398,18 +399,19 @@
 		"showDatabases" : function(func) {
 			return this.each(function() {
 				var $this = $(this),
-					data  = $this.data('_database'),
-					title = 'Database';
+					data  = $this.data('_database');
 
 				if (data) {
-					var count = 0,
-						timer = calcProcTime(function() {
-							var vals = getObjKeys(data, title);
+					var names = ['Database'];
+						count = 0;
 
-							stdTermOut([title], vals);
+					var timer = calcExecTime(function() {
+						var vals = getObjKeys(data, names);
 
-							count = vals.length;
-						});
+						stdTermOut(names, vals);
+
+						count = vals.length;
+					});
 
 					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
@@ -425,19 +427,20 @@
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					title = 'Tables' + '_in_' + used;
+					data  = $this.data('_database')[used];
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						var count = 0,
-							timer = calcProcTime(function() {
-								var vals  = getObjKeys(data, title);
+						var names = ['Tables' + '_in_' + used],
+							count = 0;
 
-								stdTermOut([title], vals);
+						var timer = calcExecTime(function() {
+							var vals = getObjKeys(data, names);
 
-								count = vals.length;
-							});
+							stdTermOut(names, vals);
+
+							count = vals.length;
+						});
 
 						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
@@ -552,7 +555,10 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				// TODO
+				var elms = parseQuery(str),
+					name = elms[2];
+
+				$this.SQLterm('insertInto', name);
 			});
 		},
 
@@ -682,7 +688,7 @@
 	/*
 	 * Calculate execution time of a function (not precise, but simple)
 	 */
-	function calcProcTime(func) {
+	function calcExecTime(func) {
 		try {
 			if (typeof func === 'function') {
 				var start = new Date().getMilliseconds();
