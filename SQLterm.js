@@ -96,7 +96,7 @@
 
 									var queries =
 										$.grep(str.split(/(;|\\g)/), function(bucket) {
-											if (! /^(\s+|;|)$/.test(bucket) ) {
+											if (! /^(\s+|\\g+|;|)$/.test(bucket) ) {
 												return bucket;
 											}
 										});
