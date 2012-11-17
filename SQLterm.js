@@ -282,15 +282,17 @@
 					}
 
 					if (cols.length > 0) {
+						var timer = calcProcTime(function() {
 
-						// create table properties
-						$this.data('_database')[used][name] = {
-							_cols : cols,
-							_defs : defs,
-							_data : []
-						};
+							// create table properties
+							$this.data('_database')[used][name] = {
+								_cols : cols,
+								_defs : defs,
+								_data : []
+							};
+						});
 
-						stdOut('Query OK, 0 rows affected');
+						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
 						runCallback(func);
 					}
@@ -323,12 +325,16 @@
 					stdErr("Unknown table '" + name + "'");
 				}
 				else {
-					var vals  = getObjAsCols(titles, data[name]['_defs']),
-						count = vals.length;
+					var count = 0,
+						timer = calcProcTime(function() {
+							var vals  = getObjAsCols(titles, data[name]['_defs']);
 
-					stdTermOut(titles, vals);
+							stdTermOut(titles, vals);
 
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
+							count = vals.length;
+						});
+
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -345,9 +351,11 @@
 				}
 				else
 				if ( data.hasOwnProperty(name) ) {
-					delete data[name];
+					var timer = calcProcTime(function() {
+						delete data[name];
+					});
 
-					stdOut('Query OK, 0 rows affected');
+					stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -369,7 +377,13 @@
 					}
 					else
 					if ( data.hasOwnProperty(name) ) {
-						delete data[name];
+						var timer = calcProcTime(function() {
+							delete data[name];
+						});
+
+						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+						runCallback(func);
 					}
 					else {
 						stdErr("Can't drop table '" + name + "'");
@@ -385,19 +399,19 @@
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data('_database'),
-					title = 'Database',
-					count = 0;
+					title = 'Database';
 
 				if (data) {
-					var time = calcProcTime(function() {
-						var vals = getObjKeys(data, title);
+					var count = 0,
+						timer = calcProcTime(function() {
+							var vals = getObjKeys(data, title);
 
-						stdTermOut([title], vals);
+							stdTermOut([title], vals);
 
-						count = vals.length;
-					});
+							count = vals.length;
+						});
 
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + time + ' sec&#41;');
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -416,12 +430,16 @@
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						var vals  = getObjKeys(data, title),
-							count = vals.length;
+						var count = 0,
+							timer = calcProcTime(function() {
+								var vals  = getObjKeys(data, title);
 
-						stdTermOut([title], vals);
+								stdTermOut([title], vals);
 
-						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set');
+								count = vals.length;
+							});
+
+						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 						runCallback(func);
 					}
@@ -670,7 +688,7 @@
 				var start = new Date().getMilliseconds();
 				func();
 				var stop  = new Date().getMilliseconds();
-				return ((stop - start) / 100);
+				return ((stop - start) / 100).toFixed(2);
 			}
 		}
 		catch(err) {
