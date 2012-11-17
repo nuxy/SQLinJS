@@ -119,10 +119,11 @@
 								.on('keyup', function(event) {
 									var count = buffer.length;
 
+									// scroll command buffer
 									switch (event.which) {
 										case 38:
 
-											// view last command
+											// .. view last command
 											index = (index > 0)
 												? index -= 1
 												: 0;
@@ -130,7 +131,7 @@
 
 										case 40:
 
-											// view next command
+											// .. view next command
 											index = ( (index + 1) < count)
 												? index += 1
 												: index;
