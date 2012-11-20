@@ -102,7 +102,6 @@
 										});
 
 									var count = queries.length;
-
 									if (count > 0) {
 										for (var i = 0; i < count; i++) {
 											$this.SQLterm('executeQuery', queries[i]);
@@ -276,7 +275,7 @@
 
 					// check supported data types
 					for (var type in defs) {
-						if ( /^(CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
+						if ( /^(?:CHAR|INT)\(?:\d+\)$/i.test(defs[type]) ) {
 							cols.push(type);
 						}
 					}
@@ -388,6 +387,67 @@
 					}
 					else {
 						stdErr("Can't drop table '" + name + "'");
+					}
+				}
+				else {
+					stdErr('No database selected ');
+				}
+			});
+		},
+
+		"insertInto" : function(name, vals, func) {
+			return this.each(function() {
+				var $this = $(this),
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
+
+				if (used) {
+					if ( !validName(name) ) {
+						stdErr('You have an error in your SQL syntax');
+					}
+					else
+					if ( data.hasOwnProperty(name) ) {
+						var timer = calcExecTime(function() {
+							var cols = data[name]['_cols'],
+								defs = data[name]['_defs'],
+								obj  = {};
+
+							for (var i = 0; i < cols.length; i++) {
+								var col = cols[i],
+									val = vals[i].replace(/\'/g,''),
+									def = defs[col],
+									len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
+
+								if (val.length <= len) {
+									switch (true) {
+										case /CHAR/i.test(def):
+											if (typeof val === 'string') {
+												obj[col] = val;
+											}
+										break;
+
+										case /INT/i.test(def):
+											if (parseInt(val) == val) {
+												obj[col] = parseInt(val);
+											}
+										break;
+									}
+								}
+							}
+
+							if (obj) {
+
+								// add the record
+								$this.data('_database')[used][name].push(obj);
+							}
+						});
+
+						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+						runCallback(func);
+					}
+					else {
+						stdErr("Unknown table '" + name + "'");
 					}
 				}
 				else {
@@ -556,9 +616,10 @@
 					str   = $this.data('_sql_query');
 
 				var elms = parseQuery(str),
-					name = elms[2];
+					name = elms[2],
+					vals = elms[3];
 
-				$this.SQLterm('insertInto', name);
+				$this.SQLterm('insertInto', name, vals);
 			});
 		},
 
@@ -650,7 +711,7 @@
 
 			var new_obj = new Object;
 			for (var i = 0; i < names.length; i++) {
-				new_obj[names[i]] = (i == 0) ? key : obj[key];
+				new_obj[ names[i] ] = (i == 0) ? key : obj[key];
 			}
 			vals.push(new_obj);
 		}
@@ -679,6 +740,13 @@
 				}
 
 				elms[3] = obj;
+			break;
+
+			case /^INSERT INTO/i.test(str):
+				elms.splice(3, elms.length - 3);
+
+				// return ['INSERT','INTO','example', ['value1','value2','value3']]
+				elms[3] = str.replace(/^[\w\s]+\((.*)\)$/m,'$1').split(/\s*,\s*/);
 			break;
 		}
 
