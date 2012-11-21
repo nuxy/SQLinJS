@@ -399,7 +399,8 @@
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.data('_database')[used],
+					err   = null;
 
 				if (used) {
 					if ( !validName(table) ) {
@@ -408,48 +409,58 @@
 					else
 					if ( data.hasOwnProperty(table) ) {
 						var timer = calcExecTime(function() {
-							var cols = data[table]['_cols'],
-								defs = data[table]['_defs'],
+							var defs = data[table]['_defs'],
 								obj  = {};
 
 							if (cols.length == vals.length) {
 								for (var i = 0; i < cols.length; i++) {
-									var col = cols[i],
-										val = vals[i],
-										def = defs[col],
-										len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
+									var col = cols[i].replace(/'(\w+)'/,'$1'),
+										val = vals[i];
 
-									if (val.length <= len) {
-										switch (true) {
-											case /CHAR/i.test(def):
-												if (typeof val === 'string') {
-													obj[col] = val.replace(/\'/g,'');
-												}
-											break;
+									if ( defs.hasOwnProperty(col) ) {
+										var def = defs[col],
+											len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
 
-											case /INT/i.test(def):
-												if (parseInt(val) == val) {
-													obj[col] = parseInt(val);
-												}
-											break;
+										if (len >= val.length) {
+											switch (true) {
+												case /CHAR/i.test(def):
+													if (typeof val === 'string') {
+														obj[col] = val;
+													}
+												break;
+
+												case /INT/i.test(def):
+													if (parseInt(val) == val) {
+														obj[col] = parseInt(val);
+													}
+												break;
+											}
 										}
 									}
-								}
+									else {
+										err = "Unknown column '" + col + "' in '" + table + "'";
+									}
 
-								if (obj) {
+									if (obj) {
 
-									// add the record
-									$this.data('_database')[used][table]['_data'].push(obj);
+										// insert data record
+										$this.data('_database')[used][table]['_data'].push(obj);
+									}
 								}
 							}
 							else {
-								stdErr("Column count doesn't match value count");
+								err = "Column count doesn't match value count";
 							}
 						});
 
-						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+						if (err) {
+							stdErr(err);
+						}
+						else {
+							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
-						runCallback(func);
+							runCallback(func);
+						}
 					}
 					else {
 						stdErr("Unknown table '" + table + "'");
@@ -753,12 +764,10 @@
 
 				// return ['INSERT','INTO','example', ['col1','col2','col3'], ['value1','value2','value3']]
 				var arr = str.match(/\(.+?\)/gm);
-				elms[3] = arr[0].replace(/^\((.+)\)$/m,'$1').split(/\s*,\s*/);
-				elms[4] = arr[1].replace(/^\((.+)\)$/m,'$1').split(/\s*,\s*/);
+				elms[3] = arr[0].replace(/^\((.+)\)$/,'$1').split(/\s*,\s*/);
+				elms[4] = arr[1].replace(/^\((.+)\)$/,'$1').split(/\s*,\s*/);
 			break;
 		}
-
-alert( JSON.stringify(elms) );
 
 		return elms;
 	}
