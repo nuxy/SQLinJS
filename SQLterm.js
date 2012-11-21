@@ -395,50 +395,55 @@
 			});
 		},
 
-		"insertInto" : function(name, vals, func) {
+		"insertInto" : function(table, cols, vals, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
 				if (used) {
-					if ( !validName(name) ) {
+					if ( !validName(table) ) {
 						stdErr('You have an error in your SQL syntax');
 					}
 					else
-					if ( data.hasOwnProperty(name) ) {
+					if ( data.hasOwnProperty(table) ) {
 						var timer = calcExecTime(function() {
-							var cols = data[name]['_cols'],
-								defs = data[name]['_defs'],
+							var cols = data[table]['_cols'],
+								defs = data[table]['_defs'],
 								obj  = {};
 
-							for (var i = 0; i < cols.length; i++) {
-								var col = cols[i],
-									val = vals[i].replace(/\'/g,''),
-									def = defs[col],
-									len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
+							if (cols.length == vals.length) {
+								for (var i = 0; i < cols.length; i++) {
+									var col = cols[i],
+										val = vals[i],
+										def = defs[col],
+										len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
 
-								if (val.length <= len) {
-									switch (true) {
-										case /CHAR/i.test(def):
-											if (typeof val === 'string') {
-												obj[col] = val;
-											}
-										break;
+									if (val.length <= len) {
+										switch (true) {
+											case /CHAR/i.test(def):
+												if (typeof val === 'string') {
+													obj[col] = val.replace(/\'/g,'');
+												}
+											break;
 
-										case /INT/i.test(def):
-											if (parseInt(val) == val) {
-												obj[col] = parseInt(val);
-											}
-										break;
+											case /INT/i.test(def):
+												if (parseInt(val) == val) {
+													obj[col] = parseInt(val);
+												}
+											break;
+										}
 									}
 								}
+
+								if (obj) {
+
+									// add the record
+									$this.data('_database')[used][table]['_data'].push(obj);
+								}
 							}
-
-							if (obj) {
-
-								// add the record
-								$this.data('_database')[used][name].push(obj);
+							else {
+								stdErr("Column count doesn't match value count");
 							}
 						});
 
@@ -447,7 +452,7 @@
 						runCallback(func);
 					}
 					else {
-						stdErr("Unknown table '" + name + "'");
+						stdErr("Unknown table '" + table + "'");
 					}
 				}
 				else {
@@ -617,9 +622,10 @@
 
 				var elms = parseQuery(str),
 					name = elms[2],
-					vals = elms[3];
+					cols = elms[3],
+					vals = elms[4];
 
-				$this.SQLterm('insertInto', name, vals);
+				$this.SQLterm('insertInto', name, cols, vals);
 			});
 		},
 
@@ -722,16 +728,16 @@
 	 * Return SQL statement elements as array/object literal
 	 */
 	function parseQuery(str) {
-		if (!str) return false;
+		if (typeof str !== 'string' || str.length == 0) return false;
 
 		var elms = str.split(/\s+/);
 
 		switch (true) {
 			case /^CREATE TABLE/i.test(str):
-				elms.splice(3, elms.length - 3);
+				elms.splice(3, elms.length);
 
 				// return ['CREATE','TABLE','example', { id : 'int(10)', name : 'char(10)' }]
-				var arr = str.replace(/^[\w\s]+\((.*)\)$/m,'$1').split(/\s*,\s*/),
+				var arr = str.replace(/^[\w\s]+\((.+)\)$/m,'$1').split(/\s*,\s*/),
 					obj = {};
 
 				for (var i = 0; i < arr.length; i++) {
@@ -743,12 +749,16 @@
 			break;
 
 			case /^INSERT INTO/i.test(str):
-				elms.splice(3, elms.length - 3);
+				elms.splice(3, elms.length);
 
-				// return ['INSERT','INTO','example', ['value1','value2','value3']]
-				elms[3] = str.replace(/^[\w\s]+\((.*)\)$/m,'$1').split(/\s*,\s*/);
+				// return ['INSERT','INTO','example', ['col1','col2','col3'], ['value1','value2','value3']]
+				var arr = str.match(/\(.+?\)/gm);
+				elms[3] = arr[0].replace(/^\((.+)\)$/m,'$1').split(/\s*,\s*/);
+				elms[4] = arr[1].replace(/^\((.+)\)$/m,'$1').split(/\s*,\s*/);
 			break;
 		}
+
+alert( JSON.stringify(elms) );
 
 		return elms;
 	}
