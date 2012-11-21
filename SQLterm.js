@@ -421,20 +421,20 @@
 										var def = defs[col],
 											len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
 
-										if (len >= val.length) {
-											switch (true) {
-												case /CHAR/i.test(def):
-													if (typeof val === 'string') {
-														obj[col] = val;
-													}
-												break;
+										if (len <= val.length) continue;
 
-												case /INT/i.test(def):
-													if (parseInt(val) == val) {
-														obj[col] = parseInt(val);
-													}
-												break;
-											}
+										switch (true) {
+											case /CHAR/i.test(def):
+												if (typeof val === 'string') {
+													obj[col] = val;
+												}
+											break;
+
+											case /INT/i.test(def):
+												if (parseInt(val) == val) {
+													obj[col] = parseInt(val);
+												}
+											break;
 										}
 									}
 									else {
