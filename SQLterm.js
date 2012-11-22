@@ -75,10 +75,7 @@
 				for (var i = 0; i < names.length; i++) {
 					switch (names[i]) {
 						case 'screen':
-							terminal
-								.on('click', function(event) {
-									input.focus();
-								});
+							terminal.on('click', input.focus() );
 						break;
 
 						case 'input':
@@ -91,7 +88,7 @@
 
 									event.preventDefault();
 
-									// execute every SQL query seperated by semicolon
+									// execute SQL queries seperated by semicolon
 									var str = $(this).val();
 
 									var queries =
@@ -412,52 +409,79 @@
 							var defs = data[table]['_defs'],
 								obj  = {};
 
+							// compare columns and values
 							if (cols.length == vals.length) {
 								for (var i = 0; i < cols.length; i++) {
-									var col = cols[i].replace(/'(\w+)'/,'$1'),
-										val = vals[i];
+									var name = cols[i];
 
-									if ( defs.hasOwnProperty(col) ) {
-										var def = defs[col],
-											len = def.replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
+									if ( defs.hasOwnProperty(name) ) {
+										var len = defs[name].replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
 
-										if (len <= val.length) continue;
-
-										switch (true) {
-											case /CHAR/i.test(def):
-												if (typeof val === 'string') {
-													obj[col] = val;
-												}
-											break;
-
-											case /INT/i.test(def):
-												if (parseInt(val) == val) {
-													obj[col] = parseInt(val);
-												}
-											break;
-										}
+										// truncate value to defined type length
+										obj[name] = vals[i].substring(0, len);
 									}
 									else {
-										err = "Unknown column '" + col + "' in '" + table + "'";
+										return stdErr("Unknown column '" + name + "' in '" + table + "'");
 									}
+								}
 
-									if (obj) {
+								if (obj) {
 
-										// insert data record
-										$this.data('_database')[used][table]['_data'].push(obj);
-									}
+									// insert new record
+									$this.data('_database')[used][table]['_data'].push(obj);
 								}
 							}
 							else {
-								err = "Column count doesn't match value count";
+								return stdErr("Column count doesn't match value count");
 							}
 						});
 
-						if (err) {
+						if (timer) {
+							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+							runCallback(func);
+						}
+					}
+					else {
+						stdErr("Unknown table '" + table + "'");
+					}
+				}
+				else {
+					stdErr('No database selected ');
+				}
+			});
+		},
+
+		"selectFrom" : function(table, cols, clause, func) {
+			return this.each(function() {
+				var $this = $(this),
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used],
+					err   = null;
+
+				if (used) {
+					if ( !validName(table) ) {
+						stdErr('You have an error in your SQL syntax');
+					}
+					else
+					if ( data.hasOwnProperty(table) ) {
+						var timer = calcExecTime(function() {
+							var defs = data[table]['_defs'],
+								obj  = {};
+
+							if ( defs.hasOwnProperty(name) ) {
+
+							}
+							else {
+								return stdErr("Unknown column '" + name + "' in '" + table + "'");
+							}
+						});
+
+						if (timer) {
 							stdErr(err);
 						}
 						else {
-							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+							return stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
 							runCallback(func);
 						}
@@ -645,7 +669,12 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				// TODO
+				var elms = parseQuery(str),
+					cols = elms[1],
+					name = elms[2],
+					vals = elms[4];
+
+				$this.SQLterm('selectFrom', name, cols, vals);
 			});
 		},
 
@@ -762,6 +791,8 @@
 			case /^INSERT INTO/i.test(str):
 				elms.splice(3, elms.length);
 
+				str = str.replace(/'(\w+)'/,'$1');
+
 				// return ['INSERT','INTO','example', ['col1','col2','col3'], ['value1','value2','value3']]
 				var arr = str.match(/\(.+?\)/gm);
 				elms[3] = arr[0].replace(/^\((.+)\)$/,'$1').split(/\s*,\s*/);
@@ -779,7 +810,8 @@
 		try {
 			if (typeof func === 'function') {
 				var start = new Date().getMilliseconds();
-				func();
+				var error = func();
+				if (error) return 0;
 				var stop  = new Date().getMilliseconds();
 				return ((stop - start) / 100).toFixed(2);
 			}
@@ -815,6 +847,7 @@
 	 */
 	function stdErr(str) {
 		stdOut('ERROR: ' + str);
+		return 1;
 	}
 
 	/*
