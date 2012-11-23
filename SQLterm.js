@@ -75,7 +75,8 @@
 				for (var i = 0; i < names.length; i++) {
 					switch (names[i]) {
 						case 'screen':
-							terminal.on('click', input.focus() );
+							terminal
+								.on('click', function() { input.focus() });
 						break;
 
 						case 'input':
@@ -237,11 +238,7 @@
 				if ( !data.hasOwnProperty(name) ) {
 
 					// create an empty database
-					$this.data('_database')[name] = {
-						_cols : [],
-						_defs : {},
-						_data : []
-					};
+					$this.data('_database')[name] = {};
 
 					stdOut('Query OK, 0 rows affected');
 
@@ -272,11 +269,10 @@
 
 					// check supported data types
 					for (var type in defs) {
-						if ( /^(?:CHAR|INT)\(?:\d+\)$/i.test(defs[type]) ) {
+						if ( /^(?:CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
 							cols.push(type);
 						}
 					}
-
 					if (cols.length > 0) {
 						var timer = calcExecTime(function() {
 
@@ -320,13 +316,13 @@
 					stdErr("Unknown table '" + name + "'");
 				}
 				else {
-					var names = ['Field','Type'],
+					var cols  = ['Field','Type'],
 						count = 0;
 
 					var timer = calcExecTime(function() {
-						var vals = getObjAsCols(names, data[name]['_defs']);
+						var vals = getObjAsCols(cols, data[name]['_defs']);
 
-						stdTermOut(names, vals);
+						stdTermOut(cols, vals);
 
 						count = vals.length;
 					});
@@ -396,8 +392,7 @@
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					err   = null;
+					data  = $this.data('_database')[used];
 
 				if (used) {
 					if ( !validName(table) ) {
@@ -456,8 +451,7 @@
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					err   = null;
+					data  = $this.data('_database')[used];
 
 				if (used) {
 					if ( !validName(table) ) {
@@ -469,7 +463,7 @@
 							var defs = data[table]['_defs'],
 								obj  = {};
 
-							if ( defs.hasOwnProperty(name) ) {
+							if ( defs.hasOwnProperty(table) ) {
 
 							}
 							else {
@@ -502,13 +496,13 @@
 					data  = $this.data('_database');
 
 				if (data) {
-					var names = ['Database'];
+					var cols  = ['Database'];
 						count = 0;
 
 					var timer = calcExecTime(function() {
-						var vals = getObjKeys(data, names);
+						var vals = getObjKeys(data, cols);
 
-						stdTermOut(names, vals);
+						stdTermOut(cols, vals);
 
 						count = vals.length;
 					});
@@ -531,13 +525,13 @@
 
 				if (used) {
 					if ( !$.isEmptyObject(data) ) {
-						var names = ['Tables' + '_in_' + used],
+						var cols  = ['Tables' + '_in_' + used],
 							count = 0;
 
 						var timer = calcExecTime(function() {
-							var vals = getObjKeys(data, names);
+							var vals = getObjKeys(data, cols);
 
-							stdTermOut(names, vals);
+							stdTermOut(cols, vals);
 
 							count = vals.length;
 						});
@@ -583,18 +577,29 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var elms = parseQuery(str),
-					type = elms[1],
-					name = elms[2],
-					defs = elms[3];
-
 				switch (true) {
-					case /DATABASE/i.test(type):
+					case /^CREATE\s+DATABASE/i.test(str):
+						var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
+							name  = str.replace(regex,'$1');
+
 						$this.SQLterm('createDatabase', name);
 					break;
 
-					case /TABLE/i.test(type):
-						$this.SQLterm('createTable', name, defs);
+					case /^CREATE\s+TABLE/i.test(str):
+						var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
+							parts = str.replace(regex,'$1|$2').split(/\|/),
+							name  = parts[0],
+							defs  = parts[1].split(/\s*,\s*/);
+
+						var obj  = {};
+
+						// fold column type key/values into an object
+						for (var i = 0; i < defs.length; i++) {
+							var val = defs[i].split(/\s+/);
+							obj[ val[0] ] = val[1];
+						}
+
+						$this.SQLterm('createTable', name, obj);
 					break;
 
 					default:
@@ -618,8 +623,8 @@
 				var $this = $(this)
 					str   = $this.data('_sql_query');
 
-				var elms = parseQuery(str),
-					name = elms[1];
+				var regex = /^DESCRIBE\s+(\w+)$/i,
+					name  = str.replace(regex,'$1');
 
 				$this.SQLterm('describeTable', name);
 			});
@@ -630,16 +635,18 @@
 				var $this = $(this)
 					str   = $this.data('_sql_query');
 
-				var elms = parseQuery(str),
-					type = elms[1],
-					name = elms[2];
-
 				switch (true) {
-					case /DATABASE/i.test(type):
+					case /^DROP\s+DATABASE/i.test(str):
+						var regex = /^DROP\s+DATABASE\s+(\w+)$/i,
+							name  = str.replace(regex,'$1');
+
 						$this.SQLterm('dropDatabase', name);
 					break;
 
-					case /TABLE/i.test(type):
+					case /^DROP\s+TABLE/i.test(str):
+						var regex = /^DROP\s+TABLE\s+(\w+)$/i,
+							name  = str.replace(regex,'$1');
+
 						$this.SQLterm('dropTable', name);
 					break;
 
@@ -655,10 +662,11 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var elms = parseQuery(str),
-					name = elms[2],
-					cols = elms[3],
-					vals = elms[4];
+				var regex = /^INSERT\s+INTO\s+(.+)\s+\((.+)\)\s+VALUES\s+\((.+)\)$/i,
+					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
+					name  = parts[0],
+					cols  = parts[1].split(/\s*,\s*/),
+					vals  = parts[2].split(/\s*,\s*/);
 
 				$this.SQLterm('insertInto', name, cols, vals);
 			});
@@ -669,10 +677,11 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var elms = parseQuery(str),
-					cols = elms[1],
-					name = elms[2],
-					vals = elms[4];
+				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*)|)$/i,
+					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
+					name  = parts[1],
+					cols  = parts[0].split(/\s*,\s*/),
+					vals  = parts[2];
 
 				$this.SQLterm('selectFrom', name, cols, vals);
 			});
@@ -683,14 +692,12 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var name = parseQuery(str)[1];
-
 				switch (true) {
-					case /DATABASES/i.test(name):
+					case /^SHOW\s+DATABASES/i.test(str):
 						$this.SQLterm('showDatabases');
 					break;
 
-					case /TABLES/i.test(name):
+					case /^SHOW\s+TABLES/i.test(str):
 						$this.SQLterm('showTables');
 					break;
 
@@ -706,7 +713,10 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				$this.SQLterm('useDatabase', parseQuery(str)[1]);
+				var regex = /^USE\s+(\w+)/i,
+					name  = str.replace(regex,'$1');
+
+				$this.SQLterm('useDatabase', name);
 			});
 		}
 	};
@@ -762,45 +772,6 @@
 			vals.push(new_obj);
 		}
 		return vals;
-	}
-
-	/*
-	 * Return SQL statement elements as array/object literal
-	 */
-	function parseQuery(str) {
-		if (typeof str !== 'string' || str.length == 0) return false;
-
-		var elms = str.split(/\s+/);
-
-		switch (true) {
-			case /^CREATE TABLE/i.test(str):
-				elms.splice(3, elms.length);
-
-				// return ['CREATE','TABLE','example', { id : 'int(10)', name : 'char(10)' }]
-				var arr = str.replace(/^[\w\s]+\((.+)\)$/m,'$1').split(/\s*,\s*/),
-					obj = {};
-
-				for (var i = 0; i < arr.length; i++) {
-					var val = arr[i].split(/\s+/);
-					obj[ val[0] ] = val[1];
-				}
-
-				elms[3] = obj;
-			break;
-
-			case /^INSERT INTO/i.test(str):
-				elms.splice(3, elms.length);
-
-				str = str.replace(/'(\w+)'/,'$1');
-
-				// return ['INSERT','INTO','example', ['col1','col2','col3'], ['value1','value2','value3']]
-				var arr = str.match(/\(.+?\)/gm);
-				elms[3] = arr[0].replace(/^\((.+)\)$/,'$1').split(/\s*,\s*/);
-				elms[4] = arr[1].replace(/^\((.+)\)$/,'$1').split(/\s*,\s*/);
-			break;
-		}
-
-		return elms;
 	}
 
 	/*
