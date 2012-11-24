@@ -413,7 +413,7 @@
 										var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
 
 										// truncate value to defined type length
-										obj[name] = vals[i].substring(0, len);
+										obj[name] = vals[i].replace(/'(.*)'/,'$1').substring(0, len);
 									}
 									else {
 										return stdErr("Unknown column '" + name + "' in '" + table + "'");
@@ -451,7 +451,8 @@
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.data('_database')[used],
+					vals  = [];
 
 				if (used) {
 					if ( !validName(table) ) {
@@ -461,21 +462,36 @@
 					if ( data && data.hasOwnProperty(table) ) {
 						var timer = calcExecTime(function() {
 							var defs = data[table]['_defs'],
-								obj  = {};
+								rows = data[table]['_data'];
 
-							for (var i = 0; i < cols.length; i++) {
-								var name = cols[i];
+							// return all columns, if wildcard
+							if (cols[0] == '*') {
+								cols = data[table]['_cols'];
+							}
 
-								if ( defs.hasOwnProperty(name) ) {
-									alert( JSON.stringify(clause) );
+							for (var i = 0; i < rows.length; i++) {
+								var row = rows[i],
+									obj = {};
+
+								// stash selected columns/values
+								for (var j = 0; j < cols.length; j++) {
+									var name = cols[j];
+
+									if ( defs.hasOwnProperty(name) ) {
+										obj[name] = row[name];
+									}
+									else {
+										return stdErr("Unknown column '" + name + "' in '" + table + "'");
+									}
 								}
-								else {
-									return stdErr("Unknown column '" + name + "' in '" + table + "'");
-								}
+
+								vals.push(obj);
 							}
 						});
 
 						if (timer) {
+							stdTermOut(cols, vals);
+
 							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
 							runCallback(func);
