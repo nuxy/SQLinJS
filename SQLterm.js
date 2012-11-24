@@ -93,8 +93,8 @@
 									var str = $(this).val();
 
 									var queries =
-										$.grep(str.split(/(;|\\g)/), function(bucket) {
-											if (! /^(\s+|\\g+|;|)$/.test(bucket) ) {
+										$.grep(str.split(/;|\\g/), function(bucket) {
+											if (! /^(?:\s+|\\g+|;|)$/.test(bucket) ) {
 												return bucket;
 											}
 										});
@@ -192,7 +192,7 @@
 						$this.SQLterm('_Use');
 					break;
 
-					case /^(help|\\h)/i.test(str):
+					case /^help|\\h/i.test(str):
 						viewHelp();
 					break;
 
@@ -343,7 +343,7 @@
 					stdErr('You have an error in your SQL syntax');
 				}
 				else
-				if ( data.hasOwnProperty(name) ) {
+				if ( data && data.hasOwnProperty(name) ) {
 					var timer = calcExecTime(function() {
 						delete data[name];
 					});
@@ -369,7 +369,7 @@
 						stdErr('You have an error in your SQL syntax');
 					}
 					else
-					if ( data.hasOwnProperty(name) ) {
+					if ( data && data.hasOwnProperty(name) ) {
 						var timer = calcExecTime(function() {
 							delete data[name];
 						});
@@ -399,7 +399,7 @@
 						stdErr('You have an error in your SQL syntax');
 					}
 					else
-					if ( data.hasOwnProperty(table) ) {
+					if ( data && data.hasOwnProperty(table) ) {
 						var timer = calcExecTime(function() {
 							var defs = data[table]['_defs'],
 								obj  = {};
@@ -410,7 +410,7 @@
 									var name = cols[i];
 
 									if ( defs.hasOwnProperty(name) ) {
-										var len = defs[name].replace(/^[a-zA-Z]+(?:\s+|\((\d+)\))/,'$1');
+										var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
 
 										// truncate value to defined type length
 										obj[name] = vals[i].substring(0, len);
@@ -458,24 +458,25 @@
 						stdErr('You have an error in your SQL syntax');
 					}
 					else
-					if ( data.hasOwnProperty(table) ) {
+					if ( data && data.hasOwnProperty(table) ) {
 						var timer = calcExecTime(function() {
 							var defs = data[table]['_defs'],
 								obj  = {};
 
-							if ( defs.hasOwnProperty(table) ) {
+							for (var i = 0; i < cols.length; i++) {
+								var name = cols[i];
 
-							}
-							else {
-								return stdErr("Unknown column '" + name + "' in '" + table + "'");
+								if ( defs.hasOwnProperty(name) ) {
+									alert( JSON.stringify(clause) );
+								}
+								else {
+									return stdErr("Unknown column '" + name + "' in '" + table + "'");
+								}
 							}
 						});
 
 						if (timer) {
-							stdErr(err);
-						}
-						else {
-							return stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
 
 							runCallback(func);
 						}
@@ -559,7 +560,7 @@
 					stdErr('You have an error in your SQL syntax');
 				}
 				else
-				if ( data.hasOwnProperty(name) ) {
+				if ( data && data.hasOwnProperty(name) ) {
 					$this.data('_active_db', name);
 
 					stdOut('Database changed');
@@ -681,7 +682,7 @@
 					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
-					vals  = parts[2];
+					vals  = parts[2].split(/AND|OR/i);
 
 				$this.SQLterm('selectFrom', name, cols, vals);
 			});
