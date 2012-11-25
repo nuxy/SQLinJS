@@ -9,27 +9,27 @@
 
 	<!-- CSS include start -->
 
-	<link rel="stylesheet" type="text/css" href="SQLterm.css">
+	<link rel="stylesheet" type="text/css" href="SQLinJS.css">
 
 	<!-- CSS include end -->
 
 
 	<!-- Javascript insert start -->
 
-	<script src="SQLterm.js"></script>
+	<script src="SQLinJS.js"></script>
 	<script>
 	$(document).ready(function() {
-		var terminal = $('body').SQLterm();
+		var terminal = $('body').SQLinJS();
 
 		$.getJSON('demo.json', function(data) {
-			terminal.SQLterm('importDatabase', data);
+			terminal.SQLinJS('importDatabase', data);
 		});
 	});
 	</script>
 
 	<!-- Javascript insert end -->
 
-	<title>SQLterm</title>
+	<title>SQLinJS</title>
 </head>
 <body></body>
 </html>

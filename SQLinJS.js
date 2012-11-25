@@ -1,6 +1,6 @@
 /*
- *  SQLterm
- *  SQL terminal simulator in Javascript (proof of concept)
+ *  SQLinJS
+ *  SQL database in Javascript (proof of concept)
  *
  *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
@@ -25,12 +25,12 @@
 						_query_log : []
 					});
 
-					$this.SQLterm('initTerminal');
+					$this.SQLinJS('initTerminal');
 				}
 
 				clearTerminal();
 
-				stdOut('Welcome to SQLterm monitor. Command ends with ; or \\g.');
+				stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
 				stdOut();
 				stdOut("Type 'help;' or '\\h' for help.");
 			});
@@ -51,12 +51,12 @@
 
 				var terminal
 					= $('<div></div>')
-						.attr('id','SQLterm')
+						.attr('id','SQLinJS')
 						.append(screen, input);
 
 				$this.append(terminal);
 
-				$this.SQLterm('bindEvents', ['screen','input']);
+				$this.SQLinJS('bindEvents', ['screen','input']);
 
 				input.focus();
 
@@ -68,7 +68,7 @@
 			return this.each(function() {
 				var $this = $(this);
 
-				var terminal = $('#SQLterm'),
+				var terminal = $('#SQLinJS'),
 					screen   = terminal.find('pre'),
 					input    = terminal.find('textarea');
 
@@ -102,7 +102,7 @@
 									var count = queries.length;
 									if (count > 0) {
 										for (var i = 0; i < count; i++) {
-											$this.SQLterm('executeQuery', queries[i]);
+											$this.SQLinJS('executeQuery', queries[i]);
 										}
 									}
 
@@ -155,41 +155,41 @@
 
 				str = $.trim(str);
 
-				stdOut('\nsqlterm> ' + str);
+				stdOut('\nsql> ' + str);
 
 				$this.data('_sql_query', str);
 
 				switch (true) {
 					case /^CREATE/i.test(str):
-						$this.SQLterm('_Create');
+						$this.SQLinJS('_Create');
 					break;
 
 					case /^DELETE/i.test(str):
-						$this.SQLterm('_Delete');
+						$this.SQLinJS('_Delete');
 					break;
 
 					case /^DESCRIBE/i.test(str):
-						$this.SQLterm('_Describe');
+						$this.SQLinJS('_Describe');
 					break;
 
 					case /^DROP/i.test(str):
-						$this.SQLterm('_Drop');
+						$this.SQLinJS('_Drop');
 					break;
 
 					case /^INSERT/i.test(str):
-						$this.SQLterm('_Insert');
+						$this.SQLinJS('_Insert');
 					break;
 
 					case /^SELECT/i.test(str):
-						$this.SQLterm('_Select');
+						$this.SQLinJS('_Select');
 					break;
 
 					case /^SHOW/i.test(str):
-						$this.SQLterm('_Show');
+						$this.SQLinJS('_Show');
 					break;
 
 					case /^USE/i.test(str):
-						$this.SQLterm('_Use');
+						$this.SQLinJS('_Use');
 					break;
 
 					case /^help|\\h/i.test(str):
@@ -584,7 +584,7 @@
 						var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
 							name  = str.replace(regex,'$1');
 
-						$this.SQLterm('createDatabase', name);
+						$this.SQLinJS('createDatabase', name);
 					break;
 
 					case /^CREATE\s+TABLE/i.test(str):
@@ -601,7 +601,7 @@
 							obj[ val[0] ] = val[1];
 						}
 
-						$this.SQLterm('createTable', name, obj);
+						$this.SQLinJS('createTable', name, obj);
 					break;
 
 					default:
@@ -628,7 +628,7 @@
 				var regex = /^DESCRIBE\s+(\w+)$/i,
 					name  = str.replace(regex,'$1');
 
-				$this.SQLterm('describeTable', name);
+				$this.SQLinJS('describeTable', name);
 			});
 		},
 
@@ -642,14 +642,14 @@
 						var regex = /^DROP\s+DATABASE\s+(\w+)$/i,
 							name  = str.replace(regex,'$1');
 
-						$this.SQLterm('dropDatabase', name);
+						$this.SQLinJS('dropDatabase', name);
 					break;
 
 					case /^DROP\s+TABLE/i.test(str):
 						var regex = /^DROP\s+TABLE\s+(\w+)$/i,
 							name  = str.replace(regex,'$1');
 
-						$this.SQLterm('dropTable', name);
+						$this.SQLinJS('dropTable', name);
 					break;
 
 					default:
@@ -670,7 +670,7 @@
 					cols  = parts[1].split(/\s*,\s*/),
 					vals  = parts[2].split(/\s*,\s*/);
 
-				$this.SQLterm('insertInto', name, cols, vals);
+				$this.SQLinJS('insertInto', name, cols, vals);
 			});
 		},
 
@@ -685,7 +685,7 @@
 					cols  = parts[0].split(/\s*,\s*/),
 					vals  = parts[2].split(/AND|OR/i);
 
-				$this.SQLterm('selectFrom', name, cols, vals);
+				$this.SQLinJS('selectFrom', name, cols, vals);
 			});
 		},
 
@@ -696,11 +696,11 @@
 
 				switch (true) {
 					case /^SHOW\s+DATABASES/i.test(str):
-						$this.SQLterm('showDatabases');
+						$this.SQLinJS('showDatabases');
 					break;
 
 					case /^SHOW\s+TABLES/i.test(str):
-						$this.SQLterm('showTables');
+						$this.SQLinJS('showTables');
 					break;
 
 					default:
@@ -718,12 +718,12 @@
 				var regex = /^USE\s+(\w+)/i,
 					name  = str.replace(regex,'$1');
 
-				$this.SQLterm('useDatabase', name);
+				$this.SQLinJS('useDatabase', name);
 			});
 		}
 	};
 
-	$.fn.SQLterm = function(method) {
+	$.fn.SQLinJS = function(method) {
 		if (methods[method]) {
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 		}
@@ -732,7 +732,7 @@
 			return methods.init.apply(this, arguments);
 		}
 		else {
-			$.error('Method ' +  method + ' does not exist in SQLterm');
+			$.error('Method ' +  method + ' does not exist in SQLinJS');
 		}
 	};
 
@@ -812,7 +812,7 @@
 	 * Clear all messages in screen
 	 */
 	function clearTerminal() {
-		$('#SQLterm pre').empty();
+		$('#SQLinJS pre').empty();
 	}
 
 	/*
@@ -827,7 +827,7 @@
 	 * Print message to screen; add newline to output
 	 */
 	function stdOut(str) {
-		$('#SQLterm pre').append( ((str) ? str : '') + '\n');
+		$('#SQLinJS pre').append( ((str) ? str : '') + '\n');
 	}
 
 	/*

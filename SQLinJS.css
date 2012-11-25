@@ -1,6 +1,6 @@
 /*
- *  SQLterm
- *  SQL terminal simulator in Javascript (proof of concept)
+ *  SQLinJS
+ *  SQL database in Javascript (proof of concept)
  *
  *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
@@ -21,13 +21,13 @@ html, body {
 	width: 100%;
 }
 
-#SQLterm {
+#SQLinJS {
 	background-color: #101010;
 	height: 100%;
 	width: 100%;
 }
 
-#SQLterm pre {
+#SQLinJS pre {
 	color: #00CC00;
 	font-family: Courier;
 	font-size: 16px;
@@ -38,7 +38,7 @@ html, body {
 	width: auto;
 }
 
-#SQLterm textarea {
+#SQLinJS textarea {
 	background-color: #151515;
 	border: 0px;
 	border-top: 1px solid #1C1C1C;

@@ -1,4 +1,4 @@
-= SQLterm
+= SQLinJS
 
 This project is currently in development with no set time of release.
 
