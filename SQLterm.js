@@ -415,7 +415,7 @@
 										len = (typeof len === 'number') ? len : val.length;
 
 										// truncate value to defined type length
-										obj[name] = val.substring(0, len);
+										obj[name] = val.substring(0, len) || undefined;
 									}
 									else {
 										return stdErr("Unknown column '" + name + "' in '" + table + "'");
@@ -480,7 +480,8 @@
 									var name = cols[j];
 
 									if ( defs.hasOwnProperty(name) ) {
-										obj[name] = row[name];
+										var val = row[name];
+										obj[name] = (val !== undefined) ? val : 'NULL';
 									}
 									else {
 										return stdErr("Unknown column '" + name + "' in '" + table + "'");
