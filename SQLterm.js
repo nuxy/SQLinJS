@@ -405,31 +405,30 @@
 								obj  = {};
 
 							// compare columns and values
-							if (cols.length == vals.length) {
-								for (var i = 0; i < cols.length; i++) {
-									var name = cols[i],
-										val  = vals[i].replace(/'(.*)'/,'$1');
+							if (cols.length != vals.length) {
+								return stdErr("Column count doesn't match value count");
+							}
 
-									if ( defs.hasOwnProperty(name) ) {
-										var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
-										len = (typeof len === 'number') ? len : val.length;
+							for (var i = 0; i < cols.length; i++) {
+								var name = cols[i],
+									val  = vals[i].replace(/'(.*)'/,'$1');
 
-										// truncate value to defined type length
-										obj[name] = val.substring(0, len) || undefined;
-									}
-									else {
-										return stdErr("Unknown column '" + name + "' in '" + table + "'");
-									}
+								if ( defs.hasOwnProperty(name) ) {
+									var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
+									len = (typeof len === 'number') ? len : val.length;
+
+									// truncate value to defined type length
+									obj[name] = val.substring(0, len) || undefined;
 								}
-
-								if (obj) {
-
-									// insert new record
-									$this.data('_database')[used][table]['_data'].push(obj);
+								else {
+									return stdErr("Unknown column '" + name + "' in '" + table + "'");
 								}
 							}
-							else {
-								return stdErr("Column count doesn't match value count");
+
+							if (obj) {
+
+								// insert new record
+								$this.data('_database')[used][table]['_data'].push(obj);
 							}
 						});
 
