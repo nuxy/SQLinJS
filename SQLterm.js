@@ -211,12 +211,11 @@
 			return this.each(function() {
 				if (typeof obj === 'object') {
 					for (var key in obj) {
-						if ( obj.hasOwnProperty(key) ) {
-							$(this).data('_database', obj);
+						if ( !obj.hasOwnProperty(key) ) {
+							return stdErr("Can't create database '" + key);
 						}
-						else {
-							stdErr("Can't create database '" + key);
-						}
+
+						$(this).data('_database', obj);
 					}
 				}
 			});
@@ -228,25 +227,23 @@
 					data  = $this.data('_database');
 
 				if (!data) {
-					stdErr('No database selected');
+					return stdErr('No database selected');
 				}
-				else
+
 				if ( !validName(name) ) {
-					stdErr('You have an error in your SQL syntax');
+					return stdErr('You have an error in your SQL syntax');
 				}
-				else
-				if ( !data.hasOwnProperty(name) ) {
 
-					// create an empty database
-					$this.data('_database')[name] = {};
+				if ( data.hasOwnProperty(name) ) {
+                    return stdErr("Can't create database '" + name + "'");
+                }
 
-					stdOut('Query OK, 0 rows affected');
+				// create an empty database
+				$this.data('_database')[name] = {};
 
-					runCallback(func);
-				}
-				else {
-					stdErr("Can't create database '" + name + "'");
-				}
+                stdOut('Query OK, 0 rows affected');
+
+                runCallback(func);
 			});
 		},
 
@@ -257,44 +254,43 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					stdErr('No database selected');
+					return stdErr('No database selected');
 				}
-				else
+
 				if ( !validName(name) ) {
-					stdErr('You have an error in your SQL syntax');
+					return stdErr('You have an error in your SQL syntax');
 				}
-				else
-				if ( !data.hasOwnProperty(name) ) {
-					var cols = [];
 
-					// check supported data types
-					for (var type in defs) {
-						if ( /^(?:CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
-							cols.push(type);
-						}
-					}
-					if (cols.length > 0) {
-						var timer = calcExecTime(function() {
+				if ( data.hasOwnProperty(name) ) {
+					return stdErr("Table '" + name + "' already exists");
+                }
 
-							// create table properties
-							$this.data('_database')[used][name] = {
-								_cols : cols,
-								_defs : defs,
-								_data : []
-							};
-						});
+                var cols = [];
 
-						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+                // check supported data types
+                for (var type in defs) {
+                    if ( /^(?:CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
+                        cols.push(type);
+                    }
+                }
 
-						runCallback(func);
-					}
-					else {
-						stdErr('You have an error in your SQL syntax');
-					}
-				}
-				else {
-					stdErr("Table '" + name + "' already exists");
-				}
+                if (cols.length == 0) {
+                    return stdErr('You have an error in your SQL syntax');
+                }
+
+                var timer = calcExecTime(function() {
+
+                    // create table properties
+                    $this.data('_database')[used][name] = {
+                        _cols : cols,
+                        _defs : defs,
+                        _data : []
+                    };
+                });
+
+                stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -305,32 +301,31 @@
 					data   = $this.data('_database')[used];
 
 				if (!data) {
-					stdErr('Database not selected');
+					return stdErr('Database not selected');
 				}
-				else
+
 				if ( !validName(name) ) {
-					stdErr('You have an error in your SQL syntax');
+					return stdErr('You have an error in your SQL syntax');
 				}
-				else
+
 				if ( !data.hasOwnProperty(name) ) {
-					stdErr("Unknown table '" + name + "'");
+					return stdErr("Unknown table '" + name + "'");
 				}
-				else {
-					var cols  = ['Field','Type'],
-						count = 0;
 
-					var timer = calcExecTime(function() {
-						var vals = getObjAsCols(cols, data[name]['_defs']);
+                var cols  = ['Field','Type'],
+                    count = 0;
 
-						stdTermOut(cols, vals);
+                var timer = calcExecTime(function() {
+                    var vals = getObjAsCols(cols, data[name]['_defs']);
 
-						count = vals.length;
-					});
+                    stdTermOut(cols, vals);
 
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+                    count = vals.length;
+                });
 
-					runCallback(func);
-				}
+                stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -340,21 +335,20 @@
 					data  = $this.data('_database');
 
 				if ( !validName(name) ) {
-					stdErr('You have an error in your SQL syntax');
+					return stdErr('You have an error in your SQL syntax');
 				}
-				else
-				if ( data && data.hasOwnProperty(name) ) {
-					var timer = calcExecTime(function() {
-						delete data[name];
-					});
 
-					stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+				if ( !data && !data.hasOwnProperty(name) ) {
+					return stdErr("Can't drop database '" + name + "'");
+                }
 
-					runCallback(func);
-				}
-				else {
-					stdErr("Can't drop database '" + name + "'");
-				}
+                var timer = calcExecTime(function() {
+                    delete data[name];
+                });
+
+                stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -364,27 +358,25 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
-				if (used) {
-					if ( !validName(name) ) {
-						stdErr('You have an error in your SQL syntax');
-					}
-					else
-					if ( data && data.hasOwnProperty(name) ) {
-						var timer = calcExecTime(function() {
-							delete data[name];
-						});
+				if (!used) {
+                    return stdErr('No database selected');
+                }
 
-						stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+                if ( !validName(name) ) {
+                    return stdErr('You have an error in your SQL syntax');
+                }
 
-						runCallback(func);
-					}
-					else {
-						stdErr("Can't drop table '" + name + "'");
-					}
-				}
-				else {
-					stdErr('No database selected ');
-				}
+                if ( !data || !data.hasOwnProperty(name) ) {
+                    return stdErr("Can't drop table '" + name + "'");
+                }
+
+                var timer = calcExecTime(function() {
+                    delete data[name];
+                });
+
+                stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -394,57 +386,55 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
-				if (used) {
-					if ( !validName(table) ) {
-						stdErr('You have an error in your SQL syntax');
-					}
-					else
-					if ( data && data.hasOwnProperty(table) ) {
-						var timer = calcExecTime(function() {
-							var defs = data[table]['_defs'],
-								obj  = {};
+				if (!used) {
+                    return stdErr('No database selected');
+                }
 
-							// compare columns and values
-							if (cols.length != vals.length) {
-								return stdErr("Column count doesn't match value count");
-							}
+                if ( !validName(table) ) {
+                    return stdErr('You have an error in your SQL syntax');
+                }
 
-							for (var i = 0; i < cols.length; i++) {
-								var name = cols[i],
-									val  = vals[i].replace(/'(.*)'/,'$1');
+                if ( !data || !data.hasOwnProperty(table) ) {
+                    return stdErr("Unknown table '" + table + "'");
+                }
 
-								if ( defs.hasOwnProperty(name) ) {
-									var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
-									len = (typeof len === 'number') ? len : val.length;
+                var timer = calcExecTime(function() {
+                    var defs = data[table]['_defs'],
+                        obj  = {};
 
-									// truncate value to defined type length
-									obj[name] = val.substring(0, len) || undefined;
-								}
-								else {
-									return stdErr("Unknown column '" + name + "' in '" + table + "'");
-								}
-							}
+                    // compare columns and values
+                    if (cols.length != vals.length) {
+                        return stdErr("Column count doesn't match value count");
+                    }
 
-							if (obj) {
+                    for (var i = 0; i < cols.length; i++) {
+                        var name = cols[i],
+                            val  = vals[i].replace(/'(.*)'/,'$1');
 
-								// insert new record
-								$this.data('_database')[used][table]['_data'].push(obj);
-							}
-						});
+                        if ( !defs.hasOwnProperty(name) ) {
+                            return stdErr("Unknown column '" + name + "' in '" + table + "'");
+                        }
 
-						if (timer) {
-							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+						// get character count
+                        var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
+                        len = (typeof len === 'number') ? len : val.length;
 
-							runCallback(func);
-						}
-					}
-					else {
-						stdErr("Unknown table '" + table + "'");
-					}
-				}
-				else {
-					stdErr('No database selected ');
-				}
+                        // truncate value to defined type length
+                        obj[name] = val.substring(0, len) || undefined;
+                    }
+
+                    if (obj) {
+
+                        // insert new record
+                        $this.data('_database')[used][table]['_data'].push(obj);
+                    }
+                });
+
+                if (timer) {
+                    stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+                    runCallback(func);
+                }
 			});
 		},
 
@@ -455,57 +445,54 @@
 					data  = $this.data('_database')[used],
 					vals  = [];
 
-				if (used) {
-					if ( !validName(table) ) {
-						stdErr('You have an error in your SQL syntax');
-					}
-					else
-					if ( data && data.hasOwnProperty(table) ) {
-						var timer = calcExecTime(function() {
-							var defs = data[table]['_defs'],
-								rows = data[table]['_data'];
+				if (!used) {
+					return stdErr('No database selected');
+                }
 
-							// return all columns, if wildcard
-							if (cols[0] == '*') {
-								cols = data[table]['_cols'];
-							}
+                if ( !validName(table) ) {
+                    return stdErr('You have an error in your SQL syntax');
+                }
 
-							for (var i = 0; i < rows.length; i++) {
-								var row = rows[i],
-									obj = {};
+                if ( !data || !data.hasOwnProperty(table) ) {
+                    return stdErr("Unknown table '" + table + "'");
+                }
 
-								// stash selected columns/values
-								for (var j = 0; j < cols.length; j++) {
-									var name = cols[j];
+                var timer = calcExecTime(function() {
+                    var defs = data[table]['_defs'],
+                        rows = data[table]['_data'];
 
-									if ( defs.hasOwnProperty(name) ) {
-										var val = row[name];
-										obj[name] = (val !== undefined) ? val : 'NULL';
-									}
-									else {
-										return stdErr("Unknown column '" + name + "' in '" + table + "'");
-									}
-								}
+                    // return all columns, if wildcard
+                    if (cols[0] == '*') {
+                        cols = data[table]['_cols'];
+                    }
 
-								vals.push(obj);
-							}
-						});
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i],
+                            obj = {};
 
-						if (timer) {
-							stdTermOut(cols, vals);
+                        // stash selected columns/values
+                        for (var j = 0; j < cols.length; j++) {
+                            var name = cols[j];
 
-							stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+                            if ( !defs.hasOwnProperty(name) ) {
+                                return stdErr("Unknown column '" + name + "' in '" + table + "'");
+                            }
 
-							runCallback(func);
-						}
-					}
-					else {
-						stdErr("Unknown table '" + table + "'");
-					}
-				}
-				else {
-					stdErr('No database selected ');
-				}
+                            var val = row[name];
+                            obj[name] = (val !== undefined) ? val : 'NULL';
+                        }
+
+                        vals.push(obj);
+                    }
+                });
+
+                if (timer) {
+                    stdTermOut(cols, vals);
+
+                    stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+
+                    runCallback(func);
+                }
 			});
 		},
 
@@ -514,25 +501,24 @@
 				var $this = $(this),
 					data  = $this.data('_database');
 
-				if (data) {
-					var cols  = ['Database'];
-						count = 0;
+				if (!data) {
+					return stdErr('No databases exist');
+                }
 
-					var timer = calcExecTime(function() {
-						var vals = getObjKeys(data, cols);
+                var cols  = ['Database'];
+                    count = 0;
 
-						stdTermOut(cols, vals);
+                var timer = calcExecTime(function() {
+                    var vals = getObjKeys(data, cols);
 
-						count = vals.length;
-					});
+                    stdTermOut(cols, vals);
 
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+                    count = vals.length;
+                });
 
-					runCallback(func);
-				}
-				else {
-					stdOut('No databases exist');
-				}
+                stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -542,30 +528,28 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
-				if (used) {
-					if ( !$.isEmptyObject(data) ) {
-						var cols  = ['Tables' + '_in_' + used],
-							count = 0;
+				if (!used) {
+					return stdErr('No database selected');
+                }
 
-						var timer = calcExecTime(function() {
-							var vals = getObjKeys(data, cols);
+                if ( $.isEmptyObject(data) ) {
+                    return stdErr('No tables used');
+                }
 
-							stdTermOut(cols, vals);
+                var cols  = ['Tables' + '_in_' + used],
+                    count = 0;
 
-							count = vals.length;
-						});
+                var timer = calcExecTime(function() {
+                    var vals = getObjKeys(data, cols);
 
-						stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+                    stdTermOut(cols, vals);
 
-						runCallback(func);
-					}
-					else {
-						stdErr('No tables used');
-					}
-				}
-				else {
-					stdErr('No database selected ');
-				}
+                    count = vals.length;
+                });
+
+                stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+
+                runCallback(func);
 			});
 		},
 
@@ -575,19 +559,18 @@
 					data  = $this.data('_database');
 
 				if ( !validName(name) ) {
-					stdErr('You have an error in your SQL syntax');
+					return stdErr('You have an error in your SQL syntax');
 				}
-				else
-				if ( data && data.hasOwnProperty(name) ) {
-					$this.data('_active_db', name);
 
-					stdOut('Database changed');
+				if ( !data || !data.hasOwnProperty(name) ) {
+					return stdErr("Unknown database '" + name + "'");
+                }
 
-					runCallback(func);
-				}
-				else {
-					stdErr("Unknown database '" + name + "'");
-				}
+                $this.data('_active_db', name);
+
+                stdOut('Database changed');
+
+                runCallback(func);
 			});
 		},
 
