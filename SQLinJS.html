@@ -19,17 +19,22 @@
 	<script src="SQLinJS.js"></script>
 	<script>
 	$(document).ready(function() {
-		var terminal = $('body').SQLinJS();
+		var dbh = $('body').SQLinJS();
 
-		$.getJSON('demo.json', function(data) {
-			terminal.SQLinJS('importDatabase', data);
+		// load terminal application
+		dbh.SQLinJS('initTerminal', function() {
+
+			// import remote database
+			$.getJSON('demo.json', function(data) {
+				dbh.SQLinJS('importDatabase', data);
+			});
 		});
 	});
 	</script>
 
 	<!-- Javascript insert end -->
 
-	<title>SQLinJS</title>
+	<title>SQLinJS - Terminal</title>
 </head>
 <body></body>
 </html>

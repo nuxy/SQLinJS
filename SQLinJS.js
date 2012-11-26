@@ -24,15 +24,7 @@
 						_database  : null,
 						_query_log : []
 					});
-
-					$this.SQLinJS('initTerminal');
 				}
-
-				clearTerminal();
-
-				stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
-				stdOut();
-				stdOut("Type 'help;' or '\\h' for help.");
 			});
 		},
 
@@ -59,6 +51,10 @@
 				$this.SQLinJS('bindEvents', ['screen','input']);
 
 				input.focus();
+
+				stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
+				stdOut();
+				stdOut("Type 'help;' or '\\h' for help.");
 
 				runCallback(func);
 			});
