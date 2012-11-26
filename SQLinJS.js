@@ -457,8 +457,8 @@
 					var defs = data[table]['_defs'],
 						rows = data[table]['_data'];
 
-					// return all columns, if wildcard
-					if (cols[0] == '*') {
+					// return all columns, if boolean or wildcard
+					if (cols[0] == '1' || cols[0] == '*') {
 						cols = data[table]['_cols'];
 					}
 
@@ -748,7 +748,7 @@
 		for (var key in data) {
 			if ( !data.hasOwnProperty(key) ) continue;
 
-			var new_obj = new Object;
+			var new_obj = {};
 			new_obj[name] = key;
 			vals.push(new_obj);
 		}
@@ -763,7 +763,7 @@
 		for (var key in obj) {
 			if ( !obj.hasOwnProperty(key) ) continue;
 
-			var new_obj = new Object;
+			var new_obj = {};
 			for (var i = 0; i < names.length; i++) {
 				new_obj[ names[i] ] = (i == 0) ? key : obj[key];
 			}
