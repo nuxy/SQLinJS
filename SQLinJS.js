@@ -667,7 +667,7 @@
 					str   = $this.data('_sql_query');
 
 				var regex = /^INSERT\s+INTO\s+(.+)\s+\((.+)\)\s+VALUES\s+\((.+)\)$/i,
-					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
+					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 					name  = parts[0],
 					cols  = parts[1].split(/\s*,\s*/),
 					vals  = parts[2].split(/\s*,\s*/);
@@ -682,7 +682,7 @@
 					str   = $this.data('_sql_query');
 
 				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*)|)$/i,
-					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
+					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
 					cond  = parts[2].split(/AND|OR/i);
