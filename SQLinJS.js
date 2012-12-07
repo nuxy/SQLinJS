@@ -749,8 +749,8 @@
 	/*
 	 * Return true if an integer
 	 */
-	function validInt(val) {
-		if (parseInt(val) == val) return true;
+	function validNum(val) {
+		if (typeof val === 'number' && parseInt(val) == val) return true;
 	}
 
 	/*
@@ -824,37 +824,41 @@
 			if (col1 != col2) return true;
 
 			// test expression by type
-			if (! /[!=]+/.test(op) && validInt(val1) && validInt(val2) ) {
+			if (! /[!=]+/.test(op) && validNum(val1) && validNum(val2) ) {
+				var num1 = val1,
+					num2 = val2;
 
 				// .. numeric operations
 				switch (op) {
 					case '<':
-						if (val1 < val2) return true;
+						if (num1 < num2) return true;
 					break;
 
 					case '>':
-						if (val1 > val2) return true;
+						if (num1 > num2) return true;
 					break;
 
 					case '<=':
-						if (val1 <= val2) return true;
+						if (num1 <= num2) return true;
 					break;
 
 					case '>=':
-						if (val1 >= val2) return true;
+						if (num1 >= num2) return true;
 					break;
 				}
 			}
 			else {
+				var str1 = val1,
+					str2 = val2.replace(/'(.*)'/,'$1');
 
 				// .. string comparison
 				switch (op) {
 					case '=':
-						if (val1 == val2) return true;
+						if (str1 == str2) return true;
 					break;
 
 					case '!=':
-						if (val1 != val2) return true;
+						if (str1 != str2) return true;
 					break;
 				}
 			}
