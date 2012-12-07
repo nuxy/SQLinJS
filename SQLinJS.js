@@ -434,12 +434,13 @@
 			});
 		},
 
-		"selectFrom" : function(table, cols, clause, func) {
+		"selectFrom" : function(table, cols, cond, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used],
-					vals  = [];
+					vals  = [],
+					count = 0;
 
 				if (!used) {
 					return stdErr('No database selected');
@@ -454,10 +455,10 @@
 				}
 
 				var timer = calcExecTime(function() {
-					var defs = data[table]['_defs'],
-						rows = data[table]['_data'];
+					var defs  = data[table]['_defs'],
+						rows  = data[table]['_data'];
 
-					// return all columns, if boolean or wildcard
+					// return all columns; boolean or wildcard
 					if (cols[0] == '1' || cols[0] == '*') {
 						cols = data[table]['_cols'];
 					}
@@ -468,24 +469,29 @@
 
 						// stash selected columns/values
 						for (var j = 0; j < cols.length; j++) {
-							var name = cols[j];
+								var col = cols[j],
+									val = (row[col] !== undefined) ? row[col] : 'NULL';
 
-							if ( !defs.hasOwnProperty(name) ) {
-								return stdErr("Unknown column '" + name + "' in '" + table + "'");
+							if ( !defs.hasOwnProperty(col) ) {
+								return stdErr("Unknown column '" + col + "' in '" + table + "'");
 							}
 
-							var val = row[name];
-							obj[name] = (val !== undefined) ? val : 'NULL';
+							// test WHERE clause conditional expressions
+							if (condExprTest(cond, col, val) === false) break;
+
+							obj[col] = val;
 						}
 
-						vals.push(obj);
+						if (getObjSize(obj) == cols.length) {
+							vals.push(obj);
+						}
 					}
 				});
 
 				if (timer) {
 					stdTermOut(cols, vals);
 
-					stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -679,9 +685,9 @@
 					parts = str.replace(regex,'$1|$2|$3').split(/\|/),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
-					vals  = parts[2].split(/AND|OR/i);
+					cond  = parts[2].split(/AND|OR/i);
 
-				$this.SQLinJS('selectFrom', name, cols, vals);
+				$this.SQLinJS('selectFrom', name, cols, cond);
 			});
 		},
 
@@ -741,18 +747,10 @@
 	}
 
 	/*
-	 * Return key names (1st child) as array of objects
+	 * Return true if an integer
 	 */
-	function getObjKeys(data, name) {
-		var vals = [];
-		for (var key in data) {
-			if ( !data.hasOwnProperty(key) ) continue;
-
-			var new_obj = {};
-			new_obj[name] = key;
-			vals.push(new_obj);
-		}
-		return vals;
+	function validInt(val) {
+		if (parseInt(val) == val) return true;
 	}
 
 	/*
@@ -773,6 +771,28 @@
 	}
 
 	/*
+	 * Return key names (1st child) as array of objects
+	 */
+	function getObjKeys(data, name) {
+		var vals = [];
+		for (var key in data) {
+			if ( !data.hasOwnProperty(key) ) continue;
+
+			var new_obj = {};
+			new_obj[name] = key;
+			vals.push(new_obj);
+		}
+		return vals;
+	}
+
+	/*
+	 * Returns object key total count
+	 */
+	function getObjSize(obj) {
+		return $.map(obj, function(val, idx) { return idx; }).length;
+	}
+
+	/*
 	 * Calculate execution time of a function (not precise, but simple)
 	 */
 	function calcExecTime(func) {
@@ -788,6 +808,59 @@
 		catch(err) {
 			throwError(err);
 		}
+	}
+
+	/*
+	 * Return if expression is true
+	 */
+	function condExprTest(cond, col1, val1) {
+		for (var i = 0; i < cond.length; i++) {
+			var regex = /^(\w+)\s+([!=<>]+)\s+(.*)$/i,
+				parts = cond[i].replace(regex,'$1\0$2\0$3').split('\0'),
+				col2  = parts[0],
+				op    = parts[1],
+				val2  = parts[2];
+
+			if (col1 != col2) return true;
+
+			// test expression by type
+			if (! /[!=]+/.test(op) && validInt(val1) && validInt(val2) ) {
+
+				// .. numeric operations
+				switch (op) {
+					case '<':
+						if (val1 < val2) return true;
+					break;
+
+					case '>':
+						if (val1 > val2) return true;
+					break;
+
+					case '<=':
+						if (val1 <= val2) return true;
+					break;
+
+					case '>=':
+						if (val1 >= val2) return true;
+					break;
+				}
+			}
+			else {
+
+				// .. string comparison
+				switch (op) {
+					case '=':
+						if (val1 == val2) return true;
+					break;
+
+					case '!=':
+						if (val1 != val2) return true;
+					break;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/*
