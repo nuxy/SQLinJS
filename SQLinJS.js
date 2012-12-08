@@ -464,8 +464,9 @@
 					}
 
 					for (var i = 0; i < rows.length; i++) {
-						var row = rows[i],
-							obj = {};
+						var row  = rows[i],
+							obj  = {},
+							skip = null;
 
 						// stash selected columns/values
 						for (var j = 0; j < cols.length; j++) {
@@ -476,13 +477,20 @@
 								return stdErr("Unknown column '" + col + "' in '" + table + "'");
 							}
 
-							// test WHERE clause conditional expressions
-							if (condExprTest(cond, col, val) === false) break;
+							if (skip) continue;
 
-							obj[col] = val;
+							// test WHERE clause conditional expressions
+							for (var k = 0; k < cond.length; k++) {
+								if (condExprTest(cond[k], col, val) === false) {
+									skip = true;
+									break;
+								}
+
+								obj[col] = val;
+							}
 						}
 
-						if (getObjSize(obj) == cols.length) {
+						if (!skip) {
 							vals.push(obj);
 						}
 					}
@@ -685,7 +693,7 @@
 					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
-					cond  = parts[2].split(/AND|OR/i);
+					cond  = parts[2].split(/AND/i);
 
 				$this.SQLinJS('selectFrom', name, cols, cond);
 			});
@@ -813,54 +821,52 @@
 	/*
 	 * Return if expression is true
 	 */
-	function condExprTest(cond, col1, val1) {
-		for (var i = 0; i < cond.length; i++) {
-			var regex = /^(\w+)\s+([!=<>]+)\s+(.*)$/i,
-				parts = cond[i].replace(regex,'$1\0$2\0$3').split('\0'),
-				col2  = parts[0],
-				op    = parts[1],
-				val2  = parts[2];
+	function condExprTest(exp, col1, val1) {
+		var regex = /^(?:\s+|)(\w+)\s+([!=<>]+)\s+(.*)(?:\s+|)$/i,
+			parts = exp.replace(regex,'$1\0$2\0$3').split('\0'),
+			col2  = parts[0],
+			op    = parts[1],
+			val2  = parts[2];
 
-			if (col1 != col2) return true;
+		if (col1 != col2) return true;
 
-			// test expression by type
-			if (! /[!=]+/.test(op) && validNum(val1) && validNum(val2) ) {
-				var num1 = val1,
-					num2 = val2;
+		// test expression by type
+		if (! /[!=]+/.test(op) && validNum(val1) && validNum(val2) ) {
+			var num1 = val1,
+				num2 = val2;
 
-				// .. numeric operations
-				switch (op) {
-					case '<':
-						if (num1 < num2) return true;
-					break;
+			// .. numeric operations
+			switch (op) {
+				case '<':
+					if (num1 < num2) return true;
+				break;
 
-					case '>':
-						if (num1 > num2) return true;
-					break;
+				case '>':
+					if (num1 > num2) return true;
+				break;
 
-					case '<=':
-						if (num1 <= num2) return true;
-					break;
+				case '<=':
+					if (num1 <= num2) return true;
+				break;
 
-					case '>=':
-						if (num1 >= num2) return true;
-					break;
-				}
+				case '>=':
+					if (num1 >= num2) return true;
+				break;
 			}
-			else {
-				var str1 = val1,
-					str2 = val2.replace(/'(.*)'/,'$1');
+		}
+		else {
+			var str1 = val1,
+				str2 = val2.replace(/'(.*)'/,'$1');
 
-				// .. string comparison
-				switch (op) {
-					case '=':
-						if (str1 == str2) return true;
-					break;
+			// .. string comparison
+			switch (op) {
+				case '=':
+					if (str1 == str2) return true;
+				break;
 
-					case '!=':
-						if (str1 != str2) return true;
-					break;
-				}
+				case '!=':
+					if (str1 != str2) return true;
+				break;
 			}
 		}
 
