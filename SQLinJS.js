@@ -434,7 +434,7 @@
 			});
 		},
 
-		"selectFrom" : function(table, cols, cond, func) {
+		"selectFrom" : function(table, cols, conds, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
@@ -477,16 +477,29 @@
 								return stdErr("Unknown column '" + col + "' in '" + table + "'");
 							}
 
-							if (skip) continue;
+							if (!conds || skip) {
+								obj[col] = val;
+								continue;
+							}
 
 							// test WHERE clause conditional expressions
-							for (var k = 0; k < cond.length; k++) {
-								if (condExprTest(cond[k], col, val) === false) {
-									skip = true;
+							for (var k = 0; k < conds.length; k++) {
+								var res = testExpr(conds[k], col, val);
+
+								switch (res) {
+									case 0:
+										skip = true;
+										break;
+									break;
+
+									case 1:
+										obj[col] = val;
+									break;
+
+									case 2:
+										return stdErr('You have an error in your SQL syntax');
 									break;
 								}
-
-								obj[col] = val;
 							}
 						}
 
@@ -693,9 +706,9 @@
 					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
-					cond  = parts[2].split(/AND/i);
+					conds = parts[2].split(/AND/i);
 
-				$this.SQLinJS('selectFrom', name, cols, cond);
+				$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null));
 			});
 		},
 
@@ -758,7 +771,7 @@
 	 * Return true if an integer
 	 */
 	function validNum(val) {
-		if (typeof val === 'number' && parseInt(val) == val) return true;
+		if (parseInt(val) == val) return true;
 	}
 
 	/*
@@ -819,16 +832,23 @@
 	}
 
 	/*
-	 * Return if expression is true
+	 * Return values based on expression result
+	 *  0 - Expression result is false
+	 *  1 - Expression result is true
+	 *  2 - Invalid condition/expression
 	 */
-	function condExprTest(exp, col1, val1) {
+	function testExpr(str, col1, val1) {
 		var regex = /^(?:\s+|)(\w+)\s+([!=<>]+)\s+(.*)(?:\s+|)$/i,
-			parts = exp.replace(regex,'$1\0$2\0$3').split('\0'),
+			parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 			col2  = parts[0],
 			op    = parts[1],
 			val2  = parts[2];
 
-		if (col1 != col2) return true;
+		if (parts.length != 3) {
+			return 2
+		}
+
+		if (col1 != col2) return 1;
 
 		// test expression by type
 		if (! /[!=]+/.test(op) && validNum(val1) && validNum(val2) ) {
@@ -838,19 +858,19 @@
 			// .. numeric operations
 			switch (op) {
 				case '<':
-					if (num1 < num2) return true;
+					if (num1 < num2) return 1;
 				break;
 
 				case '>':
-					if (num1 > num2) return true;
+					if (num1 > num2) return 1;
 				break;
 
 				case '<=':
-					if (num1 <= num2) return true;
+					if (num1 <= num2) return 1;
 				break;
 
 				case '>=':
-					if (num1 >= num2) return true;
+					if (num1 >= num2) return 1;
 				break;
 			}
 		}
@@ -861,16 +881,16 @@
 			// .. string comparison
 			switch (op) {
 				case '=':
-					if (str1 == str2) return true;
+					if (str1 == str2) return 1;
 				break;
 
 				case '!=':
-					if (str1 != str2) return true;
+					if (str1 != str2) return 1;
 				break;
 			}
 		}
 
-		return false;
+		return 0;
 	}
 
 	/*
