@@ -90,7 +90,7 @@
 
 									var queries =
 										$.grep(str.split(/;|\\g/), function(bucket) {
-											if (! /^(?:\s+|\\g+|;|)$/.test(bucket) ) {
+											if (! /^(\s+|\\g+|;)*$/.test(bucket) ) {
 												return bucket;
 											}
 										});
@@ -265,7 +265,7 @@
 
 				// check supported data types
 				for (var type in defs) {
-					if ( /^(?:CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
+					if ( /^(CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
 						cols.push(type);
 					}
 				}
@@ -702,8 +702,8 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*)|)$/i,
-					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
+					parts = str.replace(regex,'$1\0$2\0$3\0$4').split('\0'),
 					name  = parts[1],
 					cols  = parts[0].split(/\s*,\s*/),
 					conds = parts[2].split(/AND/i);
@@ -833,25 +833,25 @@
 
 	/*
 	 * Return values based on expression result
+	 *
 	 *  0 - Expression result is false
 	 *  1 - Expression result is true
 	 *  2 - Invalid condition/expression
 	 */
 	function testExpr(str, col1, val1) {
-		var regex = /^(?:\s+|)(\w+)\s+([!=<>]+)\s+(.*)(?:\s+|)$/i,
-			parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
-			col2  = parts[0],
-			op    = parts[1],
-			val2  = parts[2];
+		var regex = /^(?:\s+)*(\w+)\s+([!=<>]+)\s+(.*)(?:\s+)*$/i,
+			parts = str.replace(regex,'$1\0$2\0$3').split('\0');
 
-		if (parts.length != 3) {
-			return 2
-		}
+		if (parts.length != 3) return 2;
+
+		var col2 = parts[0],
+			op   = parts[1],
+			val2 = parts[2];
 
 		if (col1 != col2) return 1;
 
 		// test expression by type
-		if (! /[!=]+/.test(op) && validNum(val1) && validNum(val2) ) {
+		if (! /([!=]+|<>)/.test(op) && validNum(val1) && validNum(val2) ) {
 			var num1 = val1,
 				num2 = val2;
 
@@ -885,6 +885,10 @@
 				break;
 
 				case '!=':
+					if (str1 != str2) return 1;
+				break;
+
+				case '<>':
 					if (str1 != str2) return 1;
 				break;
 			}
