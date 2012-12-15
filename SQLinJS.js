@@ -505,6 +505,7 @@
 
 						if (!skip) {
 							vals.push(obj);
+							count += 1;
 						}
 					}
 				});
