@@ -235,7 +235,7 @@
 				}
 
 				// create an empty database
-				$this.data('_database')[name] = {};
+				data[name] = {};
 
 				stdOut('Query OK, 0 rows affected');
 
@@ -277,7 +277,7 @@
 				var timer = calcExecTime(function() {
 
 					// create table properties
-					$this.data('_database')[used][name] = {
+					data[name] = {
 						_cols : cols,
 						_defs : defs,
 						_data : []
@@ -422,7 +422,7 @@
 					if (obj) {
 
 						// insert new record
-						$this.data('_database')[used][table]['_data'].push(obj);
+						data[table]['_data'].push(obj);
 					}
 				});
 
@@ -611,20 +611,25 @@
 					break;
 
 					case /^CREATE\s+TABLE/i.test(str):
-						var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
-							parts = str.replace(regex,'$1|$2').split(/\|/),
-							name  = parts[0],
-							defs  = parts[1].split(/\s*,\s*/);
+						try {
+							var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
+								parts = str.replace(regex,'$1|$2').split(/\|/),
+								name  = parts[0],
+								defs  = parts[1].split(/\s*,\s*/);
 
-						var obj  = {};
+							var obj  = {};
 
-						// fold column type key/values into an object
-						for (var i = 0; i < defs.length; i++) {
-							var val = defs[i].split(/\s+/);
-							obj[ val[0] ] = val[1];
+							// fold column type key/values into an object
+							for (var i = 0; i < defs.length; i++) {
+								var val = defs[i].split(/\s+/);
+								obj[ val[0] ] = val[1];
+							}
+
+							$this.SQLinJS('createTable', name, obj);
 						}
-
-						$this.SQLinJS('createTable', name, obj);
+						catch(err) {
+							stdErr('You have an error in your SQL syntax');
+						}
 					break;
 
 					default:
@@ -636,10 +641,20 @@
 
 		"_Delete" : function() {
 			return this.each(function() {
-				var $this = $(this)
+				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				// TODO
+				try {
+					var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
+						parts = str.replace(regex,'$1\0$2').split('\0'),
+						name  = parts[0],
+						conds = parts[1].split(/AND/i);
+
+					$this.SQLinJS('deleteFrom', name, ((conds[0]) ? conds: null));
+				}
+				catch(err) {
+					stdErr('You have an error in your SQL syntax');
+				}
 			});
 		},
 
@@ -687,13 +702,18 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var regex = /^INSERT\s+INTO\s+(.+)\s+\((.+)\)\s+VALUES\s+\((.+)\)$/i,
-					parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
-					name  = parts[0],
-					cols  = parts[1].split(/\s*,\s*/),
-					vals  = parts[2].split(/\s*,\s*/);
+				try {
+					var regex = /^INSERT\s+INTO\s+(.+)\s+\((.+)\)\s+VALUES\s+\((.+)\)$/i,
+						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+						name  = parts[0],
+						cols  = parts[1].split(/\s*,\s*/),
+						vals  = parts[2].split(/\s*,\s*/);
 
-				$this.SQLinJS('insertInto', name, cols, vals);
+					$this.SQLinJS('insertInto', name, cols, vals);
+				}
+				catch(err) {
+					stdErr('You have an error in your SQL syntax');
+				}
 			});
 		},
 
@@ -702,13 +722,18 @@
 				var $this = $(this),
 					str   = $this.data('_sql_query');
 
-				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
-					parts = str.replace(regex,'$1\0$2\0$3\0$4').split('\0'),
-					name  = parts[1],
-					cols  = parts[0].split(/\s*,\s*/),
-					conds = parts[2].split(/AND/i);
+				try {
+					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
+						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+						name  = parts[1],
+						cols  = parts[0].split(/\s*,\s*/),
+						conds = parts[2].split(/AND/i);
 
-				$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null));
+					$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null));
+				}
+				catch(err) {
+					stdErr('You have an error in your SQL syntax');
+				}
 			});
 		},
 
@@ -729,6 +754,26 @@
 					default:
 						stdErr('Unknown command');
 					break;
+				}
+			});
+		},
+
+		"_Update" : function() {
+			return this.each(function() {
+				var $this = $(this),
+					str   = $this.data('_sql_query');
+
+				try {
+					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+)\s+(?:\s+WHERE\s+(.*))*$/i,
+						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+						name  = parts[1],
+						cols  = parts[0].split(/\s*,\s*/),
+						conds = parts[2].split(/AND/i);
+
+					$this.SQLinJS('updateTable', name, cols, ((conds[0]) ? conds: null));
+				}
+				catch(err) {
+					stdErr('You have an error in your SQL syntax');
 				}
 			});
 		},
