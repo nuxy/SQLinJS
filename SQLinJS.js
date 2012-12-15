@@ -664,7 +664,7 @@
 				var $this = $(this)
 					str   = $this.data('_sql_query');
 
-				var regex = /^DESCRIBE\s+(\w+)$/i,
+				var regex = /^DESCRIBE\s*(\w+)*$/i,
 					name  = str.replace(regex,'$1');
 
 				$this.SQLinJS('describeTable', name);
@@ -678,14 +678,14 @@
 
 				switch (true) {
 					case /^DROP\s+DATABASE/i.test(str):
-						var regex = /^DROP\s+DATABASE\s+(\w+)$/i,
+						var regex = /^DROP\s*DATABASE\s*(\w+)*$/i,
 							name  = str.replace(regex,'$1');
 
 						$this.SQLinJS('dropDatabase', name);
 					break;
 
 					case /^DROP\s+TABLE/i.test(str):
-						var regex = /^DROP\s+TABLE\s+(\w+)$/i,
+						var regex = /^DROP\s*TABLE\s*(\w+)*$/i,
 							name  = str.replace(regex,'$1');
 
 						$this.SQLinJS('dropTable', name);
