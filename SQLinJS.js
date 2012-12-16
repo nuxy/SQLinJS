@@ -290,6 +290,94 @@
 			});
 		},
 
+		"deleteFrom" : function(table, conds, func) {
+			return this.each(function() {
+				var $this = $(this),
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used],
+					count = 0;
+
+				if (!used) {
+					return stdErr('No database selected');
+				}
+
+				if ( !validName(table) ) {
+					return stdErr('You have an error in your SQL syntax');
+				}
+
+				if ( !data || !data.hasOwnProperty(table) ) {
+					return stdErr("Unknown table '" + table + "'");
+				}
+
+				var timer = calcExecTime(function() {
+					var cols = data[table]['_cols'],
+						defs = data[table]['_defs'],
+						rows = data[table]['_data'];
+
+					if (!conds) {
+
+						// delete all records
+						data = [];
+						count = rows.length;
+						return;
+					}
+
+					// iterate table rows
+					for (var i = 0; i < rows.length; i++) {
+						var row  = rows[i],
+							skip = null,
+							del  = null;
+
+						if (row === undefined) continue;
+
+						// .. columns/values
+						for (var j = 0; j < cols.length; j++) {
+							var col = cols[j],
+								val = (row[col] !== undefined) ? row[col] : 'NULL';
+
+							if ( !defs.hasOwnProperty(col) ) {
+								return stdErr("Unknown column '" + col + "' in '" + table + "'");
+							}
+
+							if (skip) continue;
+
+							// delete record based on conditional expressions
+							for (var k = 0; k < conds.length; k++) {
+								var res = testExpr(conds[k], col, val);
+
+								switch (res) {
+									case 0:
+										skip = true;
+										break;
+									break;
+
+									case 1:
+										del = true;
+									break;
+
+									case 2:
+										return stdErr('You have an error in your SQL syntax');
+									break;
+								}
+							}
+						}
+
+						if (del && !skip) {
+							rows.splice(i, 1);
+							count += 1;
+						}
+					}
+
+					// remove 'undefined' buckets from array
+					data[table]['_data'] = reindexArray(rows);
+				});
+
+				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+
+				runCallback(func);
+			});
+		},
+
 		"describeTable" : function(name, func) {
 			return this.each(function() {
 				var $this  = $(this),
@@ -463,15 +551,16 @@
 						cols = data[table]['_cols'];
 					}
 
+					// iterate table rows
 					for (var i = 0; i < rows.length; i++) {
 						var row  = rows[i],
 							obj  = {},
 							skip = null;
 
-						// stash selected columns/values
+						// .. columns/values
 						for (var j = 0; j < cols.length; j++) {
-								var col = cols[j],
-									val = (row[col] !== undefined) ? row[col] : 'NULL';
+							var col = cols[j],
+								val = (row[col] !== undefined) ? row[col] : 'NULL';
 
 							if ( !defs.hasOwnProperty(col) ) {
 								return stdErr("Unknown column '" + col + "' in '" + table + "'");
@@ -857,6 +946,19 @@
 	 */
 	function getObjSize(obj) {
 		return $.map(obj, function(val, idx) { return idx; }).length;
+	}
+
+	/*
+	 * Remove 'undefined' buckets from an array
+	 */
+	function reindexArray(arr) {
+		var new_arr = [];
+		for (var index in arr) {
+			if (arr[index] === undefined) continue;
+
+			new_arr.push(arr[index]);
+		}
+		return new_arr;
 	}
 
 	/*
