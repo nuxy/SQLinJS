@@ -544,13 +544,9 @@
 				}
 
 				var timer = calcExecTime(function() {
-					var defs  = data[table]['_defs'],
+					var names = data[table]['_cols'],
+						defs  = data[table]['_defs'],
 						rows  = data[table]['_data'];
-
-					// return all columns; boolean or wildcard
-					if (cols[0] == '1' || cols[0] == '*') {
-						cols = data[table]['_cols'];
-					}
 
 					// iterate table rows
 					for (var i = 0; i < rows.length; i++) {
@@ -558,37 +554,48 @@
 							obj  = {},
 							skip = null;
 
-						// .. columns/values
-						for (var j = 0; j < cols.length; j++) {
-							var col = cols[j],
-								val = (row[col] !== undefined) ? row[col] : 'NULL';
+						// .. columns
+						for (var j = 0; j < names.length; j++) {
+							var name = names[j];
 
-							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr("Unknown column '" + col + "' in '" + table + "'");
+							// return all columns; boolean or wildcard
+							if (cols[0] == '1' || cols[0] == '*') {
+								cols = data[table]['_cols'];
 							}
 
-							if (!conds || skip) {
-								obj[col] = val;
-								continue;
-							}
+							for (var k = 0; k < cols.length; k++) {
+								var col = cols[k],
+									val = (row[col] !== undefined) ? row[col] : 'NULL';
 
-							// test WHERE clause conditional expressions
-							for (var k = 0; k < conds.length; k++) {
-								var res = testExpr(conds[k], col, val);
+								if ( !defs.hasOwnProperty(col) ) {
+									return stdErr("Unknown column '" + col + "' in '" + table + "'");
+								}
 
-								switch (res) {
-									case 0:
-										skip = true;
+								if (name != col) continue;
+
+								if (!conds || skip) {
+									obj[col] = val;
+									continue;
+								}
+
+								// test WHERE clause conditional expressions
+								for (var m = 0; m < conds.length; m++) {
+									var res = testExpr(conds[m], col, val);
+
+									switch (res) {
+										case 0:
+											skip = true;
+											break;
 										break;
-									break;
 
-									case 1:
-										obj[col] = val;
-									break;
+										case 1:
+											obj[col] = val;
+										break;
 
-									case 2:
-										return stdErr('You have an error in your SQL syntax');
-									break;
+										case 2:
+											return stdErr('You have an error in your SQL syntax');
+										break;
+									}
 								}
 							}
 						}
@@ -602,7 +609,6 @@
 
 				if (timer) {
 					stdTermOut(cols, vals);
-
 					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
@@ -754,7 +760,7 @@
 				var $this = $(this)
 					str   = $this.data('_sql_query');
 
-				var regex = /^DESCRIBE\s*(\w+)*$/i,
+				var regex = /^DESCRIBE\s+(\w+)*$/i,
 					name  = str.replace(regex,'$1');
 
 				$this.SQLinJS('describeTable', name);
@@ -768,14 +774,14 @@
 
 				switch (true) {
 					case /^DROP\s+DATABASE/i.test(str):
-						var regex = /^DROP\s*DATABASE\s*(\w+)*$/i,
+						var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
 							name  = str.replace(regex,'$1');
 
 						$this.SQLinJS('dropDatabase', name);
 					break;
 
 					case /^DROP\s+TABLE/i.test(str):
-						var regex = /^DROP\s*TABLE\s*(\w+)*$/i,
+						var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
 							name  = str.replace(regex,'$1');
 
 						$this.SQLinJS('dropTable', name);
