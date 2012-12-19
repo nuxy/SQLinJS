@@ -185,6 +185,10 @@
 						$this.SQLinJS('_Show');
 					break;
 
+					case /^UPDATE/i.test(str):
+						$this.SQLinJS('_Update');
+					break;
+
 					case /^USE/i.test(str):
 						$this.SQLinJS('_Use');
 					break;
@@ -493,19 +497,19 @@
 					}
 
 					for (var i = 0; i < cols.length; i++) {
-						var name = cols[i],
-							val  = vals[i].replace(/'(.*)'/,'$1');
+						var col = cols[i],
+							val = vals[i].replace(/'(.*)'/,'$1');
 
-						if ( !defs.hasOwnProperty(name) ) {
-							return stdErr("Unknown column '" + name + "' in '" + table + "'");
+						if ( !defs.hasOwnProperty(col) ) {
+							return stdErr("Unknown column '" + col + "' in '" + table + "'");
 						}
 
 						// get character count
-						var len = defs[name].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
+						var len = defs[col].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
 						len = (typeof len === 'number') ? len : val.length;
 
 						// truncate value to defined type length
-						obj[name] = val.substring(0, len) || undefined;
+						obj[col] = val.substring(0, len) || undefined;
 					}
 
 					if (obj) {
@@ -554,7 +558,7 @@
 							obj  = {},
 							skip = null;
 
-						// .. columns
+						// .. columns/values
 						for (var j = 0; j < names.length; j++) {
 							var name = names[j];
 
@@ -670,6 +674,91 @@
 				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 				runCallback(func);
+			});
+		},
+
+		"updateSet" : function(table, cols, conds, func) {
+			return this.each(function() {
+				var $this = $(this),
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used],
+					count = 0;
+
+				if (!used) {
+					return stdErr('No database selected');
+				}
+
+				if ( !validName(table) ) {
+					return stdErr('You have an error in your SQL syntax');
+				}
+
+				if ( !data || !data.hasOwnProperty(table) ) {
+					return stdErr("Unknown table '" + table + "'");
+				}
+
+				var timer = calcExecTime(function() {
+					var names = data[table]['_cols'],
+						defs  = data[table]['_defs'],
+						rows  = data[table]['_data'];
+
+					// iterate table rows
+					for (var i = 0; i < rows.length; i++) {
+						var row  = rows[i],
+							skip = null;
+
+						// .. columns/values
+						for (var j = 0; j < names.length; j++) {
+							var name = names[j];
+
+							for (var k = 0; k < cols.length; k++) {
+								var parts = cols[k].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
+									col   = parts[0],
+									val   = parts[1];
+
+								if ( !defs.hasOwnProperty(col) ) {
+									return stdErr("Unknown column '" + col + "' in '" + table + "'");
+								}
+
+								if (name != col) continue;
+
+								if (!conds || skip) {
+									row[col] = val;
+									continue;
+								}
+
+								// test WHERE clause conditional expressions
+								/*for (var m = 0; m < conds.length; m++) {
+									var res = testExpr(conds[m], col, val);
+
+									switch (res) {
+										case 0:
+											skip = true;
+											break;
+										break;
+
+										case 1:
+											row[col] = val;
+										break;
+
+										case 2:
+											return stdErr('You have an error in your SQL syntax');
+										break;
+									}
+								}*/
+
+								if (!skip) {
+									count += 1;
+								}
+							}
+						}
+					}
+				});
+
+				if (timer) {
+					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+
+					runCallback(func);
+				}
 			});
 		},
 
@@ -861,13 +950,13 @@
 					str   = $this.data('_sql_query');
 
 				try {
-					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+)\s+(?:\s+WHERE\s+(.*))*$/i,
+					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
 						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
-						name  = parts[1],
-						cols  = parts[0].split(/\s*,\s*/),
+						name  = parts[0],
+						cols  = parts[1].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('updateTable', name, cols, ((conds[0]) ? conds: null));
+					$this.SQLinJS('updateSet', name, cols, ((conds[0]) ? conds: null));
 				}
 				catch(err) {
 					stdErr('You have an error in your SQL syntax');
