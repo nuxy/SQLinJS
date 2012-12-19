@@ -147,13 +147,14 @@
 
 		"executeQuery" : function(str, func) {
 			return this.each(function() {
-				var $this = $(this);
+				var $this = $(this),
+					data  = $this.data();
 
 				str = $.trim(str);
 
 				stdOut('\nsql> ' + str);
 
-				$this.data('_sql_query', str);
+				data['_sql_query'] = str;
 
 				switch (true) {
 					case /^CREATE/i.test(str):
@@ -197,7 +198,7 @@
 					break;
 				}
 
-				$this.data('_query_log').push( logFormat(str) );
+				data['_query_log'].push( logFormat(str) );
 
 				runCallback(func);
 			});
