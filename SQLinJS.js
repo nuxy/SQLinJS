@@ -377,7 +377,7 @@
 					data[table]['_data'] = reindexArray(rows);
 				});
 
-				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 				runCallback(func);
 			});
@@ -412,7 +412,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 				runCallback(func);
 			});
@@ -558,33 +558,32 @@
 							obj  = {},
 							skip = null;
 
-						// .. columns/values
-						for (var j = 0; j < names.length; j++) {
-							var name = names[j];
+						// return all columns; boolean or wildcard
+						if (cols[0] == '1' || cols[0] == '*') {
+							cols = data[table]['_cols'];
+						}
 
-							// return all columns; boolean or wildcard
-							if (cols[0] == '1' || cols[0] == '*') {
-								cols = data[table]['_cols'];
+						// .. columns/values
+						for (var j = 0; j < cols.length; j++) {
+							var col = cols[j];
+
+							if ( !defs.hasOwnProperty(col) ) {
+								return stdErr("Unknown column '" + col + "' in '" + table + "'");
 							}
 
-							for (var k = 0; k < cols.length; k++) {
-								var col = cols[k],
-									val = (row[col] !== undefined) ? row[col] : 'NULL';
-
-								if ( !defs.hasOwnProperty(col) ) {
-									return stdErr("Unknown column '" + col + "' in '" + table + "'");
-								}
-
-								if (name != col) continue;
+							for (var k = 0; k < names.length; k++) {
+								var name = names[k],
+									val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
 								if (!conds || skip) {
-									obj[col] = val;
+									if (name != col) continue;
+									obj[name] = val;
 									continue;
 								}
 
 								// test WHERE clause conditional expressions
 								for (var m = 0; m < conds.length; m++) {
-									var res = testExpr(conds[m], col, val);
+									var res = testExpr(conds[m], name, val);
 
 									switch (res) {
 										case 0:
@@ -593,7 +592,8 @@
 										break;
 
 										case 1:
-											obj[col] = val;
+											if (name != col) continue;
+											obj[name] = val;
 										break;
 
 										case 2:
@@ -612,8 +612,11 @@
 				});
 
 				if (timer) {
-					stdTermOut(cols, vals);
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+					if (vals[0]) {
+						stdTermOut(cols, vals);
+					}
+
+					stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -640,7 +643,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 				runCallback(func);
 			});
@@ -671,7 +674,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 				runCallback(func);
 			});
@@ -755,7 +758,7 @@
 				});
 
 				if (timer) {
-					stdOut(count + ' row' + ((count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+					stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 
 					runCallback(func);
 				}
@@ -1083,7 +1086,7 @@
 	 *  2 - Invalid condition/expression
 	 */
 	function testExpr(str, col1, val1) {
-		var regex = /^(?:\s+)*(\w+)\s+([!=<>]+)\s+(.*)(?:\s+)*$/i,
+		var regex = /^\s*(\w+)\s*([!=<>]+)\s*(.*)\s*$/i,
 			parts = str.replace(regex,'$1\0$2\0$3').split('\0');
 
 		if (parts.length != 3) return 2;
