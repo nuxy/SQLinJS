@@ -573,7 +573,7 @@
 									val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
 								if (!conds || skip) {
-									if (name != col) continue;
+									if (name == col) continue;
 									obj[name] = val;
 									continue;
 								}
@@ -705,15 +705,11 @@
 						var row  = rows[i],
 							skip = null;
 
-						//stdOut('row');
-
 						// .. columns/values
 						for (var j = 0; j < cols.length; j++) {
 							var parts = cols[j].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
 								col   = parts[0],
 								val   = parts[1];
-
-							//stdOut('columns');
 
 							if ( !defs.hasOwnProperty(col) ) {
 								return stdErr("Unknown column '" + col + "' in '" + table + "'");
