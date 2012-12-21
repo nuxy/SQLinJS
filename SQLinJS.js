@@ -1,6 +1,6 @@
 /*
  *  SQLinJS
- *  SQL database in Javascript (proof of concept)
+ *  SQL database in Javascript (pre-alpha)
  *
  *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
