@@ -573,7 +573,7 @@
 									val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
 								if (!conds || skip) {
-									if (name == col) continue;
+									if (name != col) continue;
 									obj[name] = val;
 									continue;
 								}
