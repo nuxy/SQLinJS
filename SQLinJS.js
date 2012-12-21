@@ -130,9 +130,7 @@
 												: index;
 										break;
 
-										default:
-											return;
-										break;
+										default: return;
 									}
 
 									if (count) {
@@ -199,7 +197,6 @@
 
 					default:
 						stdErr('Unknown command');
-					break;
 				}
 
 				data['_query_log'].push( logFormat(str) );
@@ -591,14 +588,13 @@
 											break;
 										break;
 
-										case 1:
-											if (name != col) continue;
-											obj[name] = val;
-										break;
-
 										case 2:
 											return stdErr('You have an error in your SQL syntax');
 										break;
+
+										default:
+											if (name != col) continue;
+											obj[name] = val;
 									}
 								}
 							}
@@ -709,29 +705,26 @@
 						var row  = rows[i],
 							skip = null;
 
+						//stdOut('row');
+
 						// .. columns/values
-						for (var j = 0; j < names.length; j++) {
-							var name = names[j];
+						for (var j = 0; j < cols.length; j++) {
+							var parts = cols[j].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
+								col   = parts[0],
+								val   = parts[1];
 
-							for (var k = 0; k < cols.length; k++) {
-								var parts = cols[k].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
-									col   = parts[0],
-									val   = parts[1];
+							//stdOut('columns');
 
-								if ( !defs.hasOwnProperty(col) ) {
-									return stdErr("Unknown column '" + col + "' in '" + table + "'");
-								}
+							if ( !defs.hasOwnProperty(col) ) {
+								return stdErr("Unknown column '" + col + "' in '" + table + "'");
+							}
 
-								if (name != col) continue;
-
-								if (!conds || skip) {
-									row[col] = val;
-									continue;
-								}
+							for (var k = 0; k < names.length; k++) {
+								var name = names[k];
 
 								// test WHERE clause conditional expressions
-								/*for (var m = 0; m < conds.length; m++) {
-									var res = testExpr(conds[m], col, val);
+								for (var m = 0; m < conds.length; m++) {
+									var res = testExpr(conds[m], name, row[name]);
 
 									switch (res) {
 										case 0:
@@ -740,17 +733,14 @@
 										break;
 
 										case 1:
-											row[col] = val;
+											row[name] = val;
+											count += 1;
 										break;
 
 										case 2:
 											return stdErr('You have an error in your SQL syntax');
 										break;
 									}
-								}*/
-
-								if (!skip) {
-									count += 1;
 								}
 							}
 						}
@@ -823,7 +813,6 @@
 
 					default:
 						stdErr('Unknown command');
-					break;
 				}
 			});
 		},
@@ -881,7 +870,6 @@
 
 					default:
 						stdErr('Unknown command');
-					break;
 				}
 			});
 		},
@@ -942,7 +930,6 @@
 
 					default:
 						stdErr('Unknown command');
-					break;
 				}
 			});
 		},
@@ -1095,7 +1082,7 @@
 			op   = parts[1],
 			val2 = parts[2];
 
-		if (col1 != col2) return 1;
+		if (col1 != col2) return;
 
 		// test expression by type
 		if (! /([!=]+|<>)/.test(op) && validNum(val1) && validNum(val2) ) {
