@@ -120,7 +120,7 @@
 
 									$(this).val(null).focus();
 
-									index = buffer.length
+									index = buffer.length;
 
 									// force scroll positioning
 									screen.scrollTop( screen.prop('scrollHeight') );
@@ -850,7 +850,7 @@
 
 		"_Describe" : function() {
 			return this.each(function() {
-				var $this = $(this)
+				var $this = $(this),
 					str   = $this.data('_sql_query');
 
 				var regex = /^DESCRIBE\s+(\w+)*$/i,
@@ -862,7 +862,7 @@
 
 		"_Drop" : function() {
 			return this.each(function() {
-				var $this = $(this)
+				var $this = $(this),
 					str   = $this.data('_sql_query');
 
 				switch (true) {
