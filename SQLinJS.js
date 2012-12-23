@@ -255,7 +255,7 @@
 				// create an empty database
 				data[name] = {};
 
-				stdOut('Query OK, 0 rows affected');
+				stdStatOut();
 
 				runCallback(func);
 			});
@@ -302,7 +302,7 @@
 					};
 				});
 
-				stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+				stdStatOut(0, timer);
 
 				runCallback(func);
 			});
@@ -390,7 +390,7 @@
 					data[table]['_data'] = reindexArray(rows);
 				});
 
-				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdStatOut(count, timer);
 
 				runCallback(func);
 			});
@@ -425,7 +425,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdStatOut(count, timer);
 
 				runCallback(func);
 			});
@@ -448,7 +448,7 @@
 					delete data[name];
 				});
 
-				stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+				stdStatOut(0, timer);
 
 				runCallback(func);
 			});
@@ -476,7 +476,7 @@
 					delete data[name];
 				});
 
-				stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+				stdStatOut(0, timer);
 
 				runCallback(func);
 			});
@@ -533,7 +533,7 @@
 				});
 
 				if (timer) {
-					stdOut('Query OK, 0 rows affected &#40;' + timer + ' sec&#41;');
+					stdStatOut(0, timer);
 
 					runCallback(func);
 				}
@@ -628,7 +628,7 @@
 						stdTermOut(cols, vals);
 					}
 
-					stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+					stdStatOut(count, timer);
 
 					runCallback(func);
 				}
@@ -655,7 +655,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdStatOut(count, timer);
 
 				runCallback(func);
 			});
@@ -686,7 +686,7 @@
 					count = vals.length;
 				});
 
-				stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+				stdStatOut(count, timer);
 
 				runCallback(func);
 			});
@@ -760,7 +760,7 @@
 				});
 
 				if (timer) {
-					stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+					stdStatOut(count, timer);
 
 					runCallback(func);
 				}
@@ -1177,6 +1177,18 @@
 	 */
 	function stdOut(str) {
 		$('#SQLinJS pre').append( ((str) ? str : '') + '\n');
+	}
+
+	/*
+	 * Print query response message to screen
+	 */
+	function stdStatOut(count, timer) {
+		if (arguments.length > 2) {
+			stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+		}
+		else {
+			stdOut('Query OK, 0 rows affected' + ((timer) ? ' &#40;' + timer + ' sec&#41;' : ''));
+		}
 	}
 
 	/*
