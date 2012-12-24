@@ -505,8 +505,13 @@
 				}
 
 				var timer = calcExecTime(function() {
-					var defs = data[table]['_defs'],
-						obj  = {};
+					var names = data[table]['_cols'],
+						defs  = data[table]['_defs'],
+						obj   = {};
+
+					if (!cols[0]) {
+						cols = names;
+					}
 
 					// compare columns and values
 					if (cols.length != vals.length) {
@@ -522,7 +527,7 @@
 						}
 
 						// process values based on data type definition
-						var type = defs[col].replace(/^([a-zA-Z])+\((\d+)\)*/,'$1\0$2').split('\0'),
+						var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
 							name = type[0],
 							size = (typeof type[1] === 'number') ? type[1] : val.length;
 
@@ -534,7 +539,7 @@
 							break;
 
 							case /INT/i.test(name):
-								obj[col] = parseInt(obj[col]);
+								obj[col] = parseInt(val);
 							break;
 						}
 					}
@@ -906,7 +911,7 @@
 					str   = $this.data('_sql_query');
 
 				try {
-					var regex = /^INSERT\s+INTO\s+(.+)\s+\((.+)\)\s+VALUES\s+\((.+)\)$/i,
+					var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
 						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
 						name  = parts[0],
 						cols  = parts[1].split(/\s*,\s*/),
