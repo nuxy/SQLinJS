@@ -1,6 +1,6 @@
 /*
  *  SQLinJS
- *  SQL database in Javascript (pre-alpha)
+ *  SQL'ish database manager in Javascript
  *
  *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
@@ -11,7 +11,7 @@
  */
 
 (function($) {
-	var debug = false;
+	var debug = false;     // SQL terminal
 
 	var errors = {
 		SYNTAX_ERROR      : 'You have an error in your SQL syntax',
@@ -287,7 +287,7 @@
 
 				// check supported data types
 				for (var type in defs) {
-					if ( /^(CHAR|INT)\(\d+\)$/i.test(defs[type]) ) {
+					if ( /^((VAR)*CHAR|INT)\(\d+\)*$/i.test(defs[type]) ) {
 						cols.push(type);
 					}
 				}
@@ -521,12 +521,22 @@
 							return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
 						}
 
-						// get character count
-						var len = defs[col].replace(/^[a-zA-Z]+\((\d+)\)/,'$1');
-						len = (typeof len === 'number') ? len : val.length;
+						// process values based on data type definition
+						var type = defs[col].replace(/^([a-zA-Z])+\((\d+)\)*/,'$1\0$2').split('\0'),
+							name = type[0],
+							size = (typeof type[1] === 'number') ? type[1] : val.length;
 
-						// truncate value to defined type length
-						obj[col] = val.substring(0, len) || undefined;
+						switch (true) {
+							case /((VAR)*CHAR)/i.test(name):
+
+								// truncate value to defined type length
+								obj[col] = val.substring(0, size) || undefined;
+							break;
+
+							case /INT/i.test(name):
+								obj[col] = parseInt(obj[col]);
+							break;
+						}
 					}
 
 					if (obj) {

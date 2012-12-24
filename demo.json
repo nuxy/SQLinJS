@@ -3,7 +3,7 @@
 		"profile" : {
 			"_cols" : ["id","user_id","active","created"],
 			"_defs" : {
-				"id" : "int(10)", "user_id" : "int(10)", "active" : "int(10)", "created" : "datetime"
+				"id" : "int(10)", "user_id" : "int(10)", "active" : "int(10)", "created" : "char(20)"
 			},
 			"_data" : [
 				{ "id" : 1, "user_id" : 1, "active" : 1, "created" : "0000-00-00 00:00:00" },
@@ -15,7 +15,7 @@
 		"user" : {
 			"_cols" : ["id","name"],
 			"_defs" : {
-				"id" : "int(10)", "name" : "char(10)"
+				"id" : "int(10)", "name" : "varchar(10)"
 			},
 			"_data" : [
 				{ "id" : 1, "name" : "Jack" },
