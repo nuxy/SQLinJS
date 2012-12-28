@@ -559,7 +559,7 @@
 			});
 		},
 
-		"selectFrom" : function(table, cols, conds, func) {
+		"selectFrom" : function(table, cols, conds, sort, order, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
@@ -638,6 +638,15 @@
 						if (!skip) {
 							vals.push(obj);
 							count += 1;
+						}
+					}
+
+					// sort results array of objects, by ke
+					if (sort) {
+						if (order == 'desc') {
+							vals.sort(function(a, b) {
+								return (a[sort] < b[sort]) ? 1 : ((b[sort] < a[sort]) ? -1 : 0);
+							});
 						}
 					}
 				});
@@ -931,13 +940,15 @@
 					str   = $this.data('_sql_query');
 
 				try {
-					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
-						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*)*$/i,
+						parts = str.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
 						name  = parts[1],
 						cols  = parts[0].split(/\s*,\s*/),
-						conds = parts[2].split(/AND/i);
+						conds = parts[2].split(/AND/i),
+						sort  = parts[3],
+						order = parts[4];
 
-					$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null));
+					$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null), sort, order);
 				}
 				catch(err) {
 					stdErr('SYNTAX_ERROR');
