@@ -163,7 +163,7 @@
 			});
 		},
 
-		"executeQuery" : function(str, func) {
+		"executeQuery" : function(str) {
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data();
@@ -220,8 +220,6 @@
 				}
 
 				data['_query_log'].push( logFormat(str) );
-
-				runCallback(func);
 			});
 		},
 
@@ -261,7 +259,7 @@
 
 				stdStatOut();
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -308,7 +306,7 @@
 
 				stdStatOut(0, timer);
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -396,7 +394,7 @@
 
 				stdStatOut(count, timer);
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -454,7 +452,7 @@
 
 				stdStatOut(0, timer);
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -482,7 +480,7 @@
 
 				stdStatOut(0, timer);
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -554,7 +552,7 @@
 				if (timer) {
 					stdStatOut(0, timer);
 
-					runCallback(func);
+					runCallback(func, true);
 				}
 			});
 		},
@@ -658,7 +656,7 @@
 
 					stdStatOut(count, timer);
 
-					runCallback(func);
+					runCallback(func, vals);
 				}
 			});
 		},
@@ -673,10 +671,11 @@
 				}
 
 				var cols  = ['Database'];
-					count = 0;
+					count = 0,
+					vals  = null;
 
 				var timer = calcExecTime(function() {
-					var vals = getObjKeys(data, cols);
+					vals = getObjKeys(data, cols);
 
 					stdTermOut(cols, vals);
 
@@ -685,7 +684,7 @@
 
 				stdStatOut(count, timer);
 
-				runCallback(func);
+				runCallback(func, vals);
 			});
 		},
 
@@ -704,10 +703,11 @@
 				}
 
 				var cols  = ['Tables' + '_in_' + used],
-					count = 0;
+					count = 0,
+					vals  = null;
 
 				var timer = calcExecTime(function() {
-					var vals = getObjKeys(data, cols);
+					vals = getObjKeys(data, cols);
 
 					stdTermOut(cols, vals);
 
@@ -716,7 +716,7 @@
 
 				stdStatOut(count, timer);
 
-				runCallback(func);
+				runCallback(func, vals);
 			});
 		},
 
@@ -790,7 +790,7 @@
 				if (timer) {
 					stdStatOut(count, timer);
 
-					runCallback(func);
+					runCallback(func, true);
 				}
 			});
 		},
@@ -812,7 +812,7 @@
 
 				stdOut('Database changed');
 
-				runCallback(func);
+				runCallback(func, true);
 			});
 		},
 
@@ -1245,7 +1245,7 @@
 	 *     );
 	 */
 	function stdTermOut(cols, data) {
-		if (!debug) return data;
+		if (!debug) return;
 
 		var sizes = {},
 			count = 0;
@@ -1330,10 +1330,10 @@
 	/*
 	 * Run callback function; die on errors
 	 */
-	function runCallback(func) {
+	function runCallback(func, data) {
 		try {
 			if (typeof func === 'function') {
-				func(true);
+				func(data);
 			}
 		}
 		catch(err) {
