@@ -1,8 +1,8 @@
 /*
  *  SQLinJS
- *  SQL'ish database manager in Javascript
+ *  Manage Javascript objects using the SQL syntax
  *
- *  Copyright 2012, Marc S. Brooks (http://mbrooks.info)
+ *  Copyright 2012-2013, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
  *  http://www.opensource.org/licenses/mit-license.php
  *
@@ -641,7 +641,7 @@
 						}
 					}
 
-					// sort results array of objects, by ke
+					// sort results array of objects, by key (column name)
 					if (sort) {
 						if (order == 'desc') {
 							vals.sort(function(a, b) {
