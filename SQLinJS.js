@@ -1120,7 +1120,7 @@
 		var regex = /^\s*(\w+)\s*([!=<>]+)\s*(.*)\s*$/i,
 			parts = str.replace(regex,'$1\0$2\0$3').split('\0');
 
-		if (parts.length != 3) return 2;
+		if (parts.length != 3 || !parts[2]) return 2;
 
 		var col2 = parts[0],
 			op   = parts[1],
