@@ -557,7 +557,7 @@
 			});
 		},
 
-		"selectFrom" : function(table, cols, conds, sort, order, func) {
+		"selectFrom" : function(table, cols, clause, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
@@ -605,15 +605,15 @@
 								var name = names[k],
 									val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
-								if (!conds || skip) {
+								if (!clause.conds || skip) {
 									if (name != col) continue;
 									obj[name] = val;
 									continue;
 								}
 
 								// test WHERE clause conditional expressions
-								for (var m = 0; m < conds.length; m++) {
-									var res = testExpr(conds[m], name, val);
+								for (var m = 0; m < clause.conds.length; m++) {
+									var res = testExpr(clause.conds[m], name, val);
 
 									switch (res) {
 										case 0:
@@ -640,10 +640,10 @@
 					}
 
 					// sort results array of objects, by key (column name)
-					if (sort) {
-						if (order == 'desc') {
+					if (clause.sort_by) {
+						if (clause.order == 'desc') {
 							vals.sort(function(a, b) {
-								return (a[sort] < b[sort]) ? 1 : ((b[sort] < a[sort]) ? -1 : 0);
+								return (a[clause.sort_by] < b[clause.sort_by]) ? 1 : ((b[clause.sort_by] < a[clause.sort_by]) ? -1 : 0);
 							});
 						}
 					}
@@ -944,11 +944,13 @@
 						parts = str.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
 						name  = parts[1],
 						cols  = parts[0].split(/\s*,\s*/),
-						conds = parts[2].split(/AND/i),
-						sort  = parts[3],
-						order = parts[4];
+						conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('selectFrom', name, cols, ((conds[0]) ? conds: null), sort, order);
+					$this.SQLinJS('selectFrom', name, cols, {
+						conds   : (conds[0]) ? conds : undefined,
+						sort_by : parts[3],
+						order   : parts[4]
+					});
 				}
 				catch(err) {
 					stdErr('SYNTAX_ERROR');
