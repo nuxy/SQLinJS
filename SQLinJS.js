@@ -484,7 +484,7 @@
 			});
 		},
 
-		"insertInto" : function(table, cols, vals, func) {
+		"insertInto" : function(table, vals, func) {
 			return this.each(function() {
 				var $this = $(this),
 					used  = $this.data('_active_db'),
@@ -503,22 +503,11 @@
 				}
 
 				var timer = calcExecTime(function() {
-					var names = data[table]['_cols'],
-						defs  = data[table]['_defs'],
-						obj   = {};
+					var defs = data[table]['_defs'],
+						obj  = {};
 
-					if (!cols[0]) {
-						cols = names;
-					}
-
-					// compare columns and values
-					if (cols.length != vals.length) {
-						return stdErr('WRONG_VALUE_COUNT');
-					}
-
-					for (var i = 0; i < cols.length; i++) {
-						var col = cols[i],
-							val = vals[i].replace(/'(.*)'/,'$1');
+					for (var col in vals) {
+						var val = vals[col].replace(/'(.*)'/,'$1');
 
 						if ( !defs.hasOwnProperty(col) ) {
 							return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
@@ -865,10 +854,10 @@
 				try {
 					var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
 						parts = str.replace(regex,'$1\0$2').split('\0'),
-						name  = parts[0],
+						table = parts[0],
 						conds = parts[1].split(/AND/i);
 
-					$this.SQLinJS('deleteFrom', name, ((conds[0]) ? conds: null));
+					$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null));
 				}
 				catch(err) {
 					stdErr('SYNTAX_ERROR');
@@ -882,9 +871,9 @@
 					str   = $this.data('_sql_query');
 
 				var regex = /^DESCRIBE\s+(\w+)*$/i,
-					name  = str.replace(regex,'$1');
+					table = str.replace(regex,'$1');
 
-				$this.SQLinJS('describeTable', name);
+				$this.SQLinJS('describeTable', table);
 			});
 		},
 
@@ -917,16 +906,26 @@
 		"_Insert" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					str   = $this.data('_sql_query'),
+					used  = $this.data('_active_db'),
+					data  = $this.data('_database')[used];
 
 				try {
 					var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
 						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
-						name  = parts[0],
+						table = parts[0],
 						cols  = parts[1].split(/\s*,\s*/),
 						vals  = parts[2].split(/\s*,\s*/);
 
-					$this.SQLinJS('insertInto', name, cols, vals);
+					if (!cols[0]) {
+						cols = data[table]['_cols'];
+					}
+
+					if (cols.length != vals.length) {
+						return stdErr('WRONG_VALUE_COUNT');
+					}
+
+					$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals) );
 				}
 				catch(err) {
 					stdErr('SYNTAX_ERROR');
@@ -942,11 +941,11 @@
 				try {
 					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*)*$/i,
 						parts = str.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
-						name  = parts[1],
+						table = parts[1],
 						cols  = parts[0].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('selectFrom', name, cols, {
+					$this.SQLinJS('selectFrom', table, cols, {
 						conds   : (conds[0]) ? conds : undefined,
 						sort_by : parts[3],
 						order   : parts[4]
@@ -986,11 +985,11 @@
 				try {
 					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
 						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
-						name  = parts[0],
+						table = parts[0],
 						cols  = parts[1].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('updateSet', name, cols, ((conds[0]) ? conds: null));
+					$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null));
 				}
 				catch(err) {
 					stdErr('SYNTAX_ERROR');
@@ -1037,6 +1036,17 @@
 	 */
 	function validNum(val) {
 		if (parseInt(val) == val) return true;
+	}
+
+	/*
+	 * Return array values (folded) as an object
+	 */
+	function getValsAsObj(names, vals) {
+		var obj = {};
+		for (var i = 0; i < names.length; i++) {
+			obj[ names[i] ] = vals[i];
+		}
+		return obj;
 	}
 
 	/*

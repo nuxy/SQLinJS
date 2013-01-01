@@ -72,10 +72,17 @@ $(document).ready(function() {
 <pre>
 var dbh = $(document).SQLinJS();    // initialize database handler</pre>
 
+<h4>General</h4>
+
 <ul>
 	<li><a href="#initTerminal">initTerminal</a></li>
 	<li><a href="#executeQuery">executeQuery</a></li>
 	<li><a href="#importDatabase">importDatabase</a></li>
+</ul>
+
+<h4>SQL common</h4>
+
+<ul>
 	<li><a href="#createDatabase">createDatabase</a></li>
 	<li><a href="#createTable">createTable</a></li>
 	<li><a href="#deleteFrom">deleteFrom</a></li>
@@ -92,7 +99,7 @@ var dbh = $(document).SQLinJS();    // initialize database handler</pre>
 
 <h3><a name="initTerminal">initTerminal</a></h3>
 
-<p>Launch debug terminal to execute SQL commands using command-line interface.  Requires <a href="#install">SQLinJS.min.css</a></p>
+<p>Launch debug terminal to execute SQL statements using command-line interface.  Requires <a href="SQLinJS.min.css">SQLinJS.min.css</a></p>
 
 <pre>
 dbh.SQLinJS('initTerminal');</pre>
@@ -263,14 +270,19 @@ dbh.SQLinJS('dropTable','user',
 <p>Insert a new record into the selected table.</p>
 
 <pre>
-dbh.SQLinJS('insertInto', <em>table</em>, <em>[ cols ]</em>, <em>[ vals ]</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em>, <em>callback</em>);</pre>
 
 <h4>Use Example:</h4>
 
 <samp>sql&gt; INSERT INTO user (id, name) VALUES ('1','Jerry')</samp>
 
 <pre>
-dbh.SQLinJS('insertInto','user', ['id','name'], [1,'Jerry'],
+dbh.SQLinJS('insertInto',
+	'user',
+	{
+		id   : 1,
+		name : 'Jerry'
+	},
 	function() {
 
 		// do something
@@ -291,7 +303,8 @@ dbh.SQLinJS('selectFrom', <em>table</em>, <em>[ cols ]</em>, <em>clause</em>, <e
 <samp>sql&gt; SELECT id, name FROM user WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC</samp>
 
 <pre>
-dbh.SQLinJS('selectFrom','user', ['id','name'],
+dbh.SQLinJS('selectFrom',
+	'user', ['id','name'],
 	{
 		conds   : ['id &gt; 2',"name != 'John'"],
 		sort_by : 'id',
@@ -390,7 +403,7 @@ dbh.SQLinJS('useDatabase');</pre>
 
 <h2>Releases</h2>
 
-<p>I have included with this package a <a href="http://dean.edwards.name/packer">packed</a> version (28 kB) and developers version (unpacked 11 kB)</p>
+<p>I have included with this package a <a href="http://dean.edwards.name/packer">packed</a> version (11 kB) and developers version (unpacked 28 kB)</p>
 
 <p>You can always find the latest updates within this projects repository.</p>
 
