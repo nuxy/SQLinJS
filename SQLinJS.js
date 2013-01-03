@@ -228,7 +228,7 @@
 				if (typeof obj === 'object') {
 					for (var key in obj) {
 						if ( !obj.hasOwnProperty(key) ) {
-							return stdErr( strFormat('CANT_CREATE_DB', key) );
+							return stdErr('CANT_CREATE_DB', key);
 						}
 
 						$(this).data('_database', obj);
@@ -251,7 +251,7 @@
 				}
 
 				if ( data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('CANT_CREATE_DB', name) );
+					return stdErr('CANT_CREATE_DB', name);
 				}
 
 				// create an empty database
@@ -277,7 +277,7 @@
 				}
 
 				if ( data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('TABLE_EXISTS', name) );
+					return stdErr('TABLE_EXISTS', name);
 				}
 
 				var cols = [];
@@ -354,7 +354,7 @@
 								val = (row[col] !== undefined) ? row[col] : 'NULL';
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
+								return stdErr('UNKNOWN_FIELD', table, col);
 							}
 
 							if (skip) continue;
@@ -402,7 +402,7 @@
 					data  = $this.SQLinJS('_ActiveDB');
 
 				if (!data) {
-					return stdErr('Database not selected');
+					return stdErr('NO_DB_SELECTED');
 				}
 
 				if ( !validName(name) ) {
@@ -410,7 +410,7 @@
 				}
 
 				if ( !data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('UNKNOWN_TABLE', name) );
+					return stdErr('UNKNOWN_TABLE', name);
 				}
 
 				var cols  = ['Field','Type'],
@@ -440,7 +440,7 @@
 				}
 
 				if ( !data && !data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('CANT_DROP_DB', name) );
+					return stdErr('CANT_DROP_DB', name);
 				}
 
 				var timer = calcExecTime(function() {
@@ -467,7 +467,7 @@
 				}
 
 				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('CANT_DROP_TABLE', name) );
+					return stdErr('CANT_DROP_TABLE', name);
 				}
 
 				var timer = calcExecTime(function() {
@@ -494,7 +494,7 @@
 				}
 
 				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr( strFormat('UNKNOWN_TABLE', table) );
+					return stdErr('UNKNOWN_TABLE', table);
 				}
 
 				var timer = calcExecTime(function() {
@@ -505,7 +505,7 @@
 						var val = vals[col].replace(/'(.*)'/,'$1');
 
 						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
+							return stdErr('UNKNOWN_FIELD', table, col);
 						}
 
 						// process values based on data type definition
@@ -581,7 +581,7 @@
 							var col = cols[j];
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
+								return stdErr('UNKNOWN_FIELD', table, col);
 							}
 
 							for (var k = 0; k < names.length; k++) {
@@ -737,7 +737,7 @@
 								val   = parts[1];
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr( strFormat('UNKNOWN_FIELD', table, col) );
+								return stdErr('UNKNOWN_FIELD', table, col);
 							}
 
 							for (var k = 0; k < names.length; k++) {
@@ -786,7 +786,7 @@
 				}
 
 				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr( strFormat('UNKNOWN_DB', name) );
+					return stdErr('UNKNOWN_DB', name);
 				}
 
 				$this.data('_active_db', name);
@@ -937,7 +937,7 @@
 						conds = parts[2].split(/AND/i);
 
 					$this.SQLinJS('selectFrom', table, cols, {
-						conds   : (conds[0]) ? conds : undefined,
+						conds   : ((conds[0]) ? conds : undefined),
 						sort_by : parts[3],
 						order   : parts[4]
 					});
@@ -1208,11 +1208,19 @@
 	/*
 	 * Print error message to screen
 	 */
-	function stdErr(code) {
+	function stdErr() {
+		var code = arguments[0];
+
 		if ( !errors.hasOwnProperty(code) ) return;
 
 		if (debug) {
-			stdOut('ERROR: ' + errors[code]);
+			var str = errors[code];
+
+			for (var i = 1; i < arguments.length; i++) {
+				str = str.replace(/\%s/i, arguments[i]);
+			}
+
+			stdOut('ERROR: ' + str);
 			return 1;
 		}
 		else {
@@ -1325,17 +1333,6 @@
 	 */
 	function padStrRgt(str, len) {
 		return str + (new Array(len).join(' ')).slice(0, len - str.length);
-	}
-
-	/*
-	 * Return a formatted string
-	 */
-	function strFormat() {
-		var str  = arguments[0];
-		for (var i = 1; i < arguments.length; i++) {
-			str = str.replace(/\%s/i, arguments[i]);
-		}
-		return str;
 	}
 
 	/*
