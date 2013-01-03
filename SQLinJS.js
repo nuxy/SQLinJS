@@ -285,7 +285,7 @@
 
 				// check supported data types
 				for (var type in defs) {
-					if ( /^((VAR)*CHAR|INT)\(\d+\)*$/i.test(defs[type]) ) {
+					if ( /^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type]) ) {
 						cols.push(type);
 					}
 				}
