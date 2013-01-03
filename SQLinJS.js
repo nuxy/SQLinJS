@@ -240,7 +240,7 @@
 		"createDatabase" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					data  = $this.data('_database');
+					data  = $this.SQLinJS('_ActiveDB');
 
 				if (!data) {
 					return stdErr('NO_DB_SELECTED');
@@ -266,8 +266,7 @@
 		"createTable" : function(name, defs, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.SQLinJS('exportDatabase');
 
 				if (!data) {
 					return stdErr('NO_DB_SELECTED');
@@ -313,11 +312,10 @@
 		"deleteFrom" : function(table, conds, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
+					data  = $this.SQLinJS('_ActiveDB'),
 					count = 0;
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -400,9 +398,8 @@
 
 		"describeTable" : function(name, func) {
 			return this.each(function() {
-				var $this  = $(this),
-					used   = $this.data('_active_db'),
-					data   = $this.data('_database')[used];
+				var $this = $(this),
+					data  = $this.SQLinJS('_ActiveDB');
 
 				if (!data) {
 					return stdErr('Database not selected');
@@ -459,10 +456,9 @@
 		"dropTable" : function(name, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.SQLinJS('_ActiveDB');
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -487,10 +483,9 @@
 		"insertInto" : function(table, vals, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.SQLinJS('_ActiveDB');
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -549,12 +544,11 @@
 		"selectFrom" : function(table, cols, clause, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
+					data  = $this.SQLinJS('_ActiveDB'),
 					vals  = [],
 					count = 0;
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -680,10 +674,9 @@
 		"showTables" : function(func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.SQLinJS('_ActiveDB');
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -691,7 +684,7 @@
 					return stdErr('NO_TABLES_USED');
 				}
 
-				var cols  = ['Tables' + '_in_' + used],
+				var cols  = ['Tables' + '_in_' + $this.data('_active_db') ],
 					count = 0,
 					vals  = null;
 
@@ -712,11 +705,10 @@
 		"updateSet" : function(table, cols, conds, func) {
 			return this.each(function() {
 				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
+					data  = $this.SQLinJS('_ActiveDB'),
 					count = 0;
 
-				if (!used) {
+				if (!data) {
 					return stdErr('NO_DB_SELECTED');
 				}
 
@@ -907,8 +899,7 @@
 			return this.each(function() {
 				var $this = $(this),
 					str   = $this.data('_sql_query'),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+					data  = $this.SQLinJS('_ActiveDB');
 
 				try {
 					var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
@@ -1007,6 +998,14 @@
 
 				$this.SQLinJS('useDatabase', name);
 			});
+		},
+
+		"_ActiveDB" : function() {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
+
+			return data;
 		}
 	};
 
