@@ -125,7 +125,7 @@ var result = dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND 
 <p>Import an existing database in supported <a href="#import">database format</a>.</p>
 
 <pre>
-dbh.SQLinJS('importDatabase', <em>data</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('importDatabase', <em>data</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -144,7 +144,7 @@ dbh.SQLinJS('importDatabase', data,
 <p>Create a new database.</p>
 
 <pre>
-dbh.SQLinJS('createDatabase', <em>name</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('createDatabase', <em>name</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -165,7 +165,7 @@ dbh.SQLinJS('createDatabase','accounts',
 <p>Create a new table in an <a href="#useDatabase">existing</a> database.</p>
 
 <pre>
-dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -186,7 +186,7 @@ dbh.SQLinJS('createTable','user', { "id" : "int(10)", "name" : "varchar(10)" },
 <p>Delete record(s) from the selected table.</p>
 
 <pre>
-dbh.SQLinJS('deleteFrom', <em>table</em>, <em>[ conds ]</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>conds</em>] [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -207,7 +207,7 @@ dbh.SQLinJS('deleteFrom','user', ['id &gt; 2','id != 4'],
 <p>Returns basic information about the columns of the table.</p>
 
 <pre>
-dbh.SQLinJS('describeTable', <em>name</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('describeTable', <em>name</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -228,7 +228,7 @@ dbh.SQLinJS('describeTable','user',
 <p>Delete a database, by name.</p>
 
 <pre>
-dbh.SQLinJS('dropDatabase', <em>name</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -249,7 +249,7 @@ dbh.SQLinJS('dropDatabase','accounts',
 <p>Delete a table, by name, from an <a href="#useDatabase">existing</a> database.</p>
 
 <pre>
-dbh.SQLinJS('dropTable', <em>name</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('dropTable', <em>name</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -270,7 +270,7 @@ dbh.SQLinJS('dropTable','user',
 <p>Insert a new record into the selected table.</p>
 
 <pre>
-dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -296,15 +296,14 @@ dbh.SQLinJS('insertInto',
 <p>Select column(s) data from the selected table.</p>
 
 <pre>
-dbh.SQLinJS('selectFrom', <em>table</em>, <em>[ cols ]</em>, <em>clause</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
 <samp>sql&gt; SELECT id, name FROM user WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC</samp>
 
 <pre>
-dbh.SQLinJS('selectFrom',
-	'user', ['id','name'],
+dbh.SQLinJS('selectFrom','user', ['id','name'],
 	{
 		conds   : ['id &gt; 2',"name != 'John'"],
 		sort_by : 'id',
@@ -323,7 +322,7 @@ dbh.SQLinJS('selectFrom',
 <p>Return an array of database names.</p>
 
 <pre>
-dbh.SQLinJS('showDatabases', <em>callback</em>);</pre>
+dbh.SQLinJS('showDatabases' [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -344,7 +343,7 @@ dbh.SQLinJS('showDatabases',
 <p>Return an array of table names in the active database.</p>
 
 <pre>
-dbh.SQLinJS('showTables', <em>callback</em>);</pre>
+dbh.SQLinJS('showTables' [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -386,7 +385,7 @@ dbh.SQLinJS('updateSet','user', ["name='Fred'"], ['id &gt; 2',"name != 'John'"],
 <p>Return an array of table names in the active database.</p>
 
 <pre>
-dbh.SQLinJS('useDatabase');</pre>
+dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <h4>Use Example:</h4>
 
