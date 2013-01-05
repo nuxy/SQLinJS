@@ -629,10 +629,10 @@
 					}
 
 					// sort results array of objects, by key (column name)
-					if (clause.sort_by) {
-						if (clause.order == 'desc') {
+					if (clause.order_by) {
+						if (clause.sort == 'desc') {
 							vals.sort(function(a, b) {
-								return (a[clause.sort_by] < b[clause.sort_by]) ? 1 : ((b[clause.sort_by] < a[clause.sort_by]) ? -1 : 0);
+								return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
 							});
 						}
 					}
@@ -946,9 +946,9 @@
 						conds = parts[2].split(/AND/i);
 
 					$this.SQLinJS('selectFrom', table, cols, {
-						conds   : ((conds[0]) ? conds : undefined),
-						sort_by : parts[3],
-						order   : parts[4]
+						conds    : ((conds[0]) ? conds : undefined),
+						order_by : parts[3],
+						sort     : parts[4]
 					});
 				}
 				catch(err) {

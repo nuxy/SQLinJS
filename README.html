@@ -305,9 +305,9 @@ dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em
 <pre>
 dbh.SQLinJS('selectFrom','user', ['id','name'],
 	{
-		conds   : ['id &gt; 2',"name != 'John'"],
-		sort_by : 'id',
-		order   : 'desc'
+		conds    : ['id &gt; 2',"name != 'John'"],
+		order_by : 'id',
+		sort     : 'desc'
 	},
 	function(response) {
 
