@@ -562,6 +562,10 @@
 					vals  = [],
 					count = 0;
 
+				if (typeof clause === 'function') {
+					func = clause;
+				}
+
 				if (!data) {
 					return stdErr('NO_DB_SELECTED', func);
 				}
@@ -723,6 +727,10 @@
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used],
 					count = 0;
+
+				if (typeof conds === 'function') {
+					func = conds;
+				}
 
 				if (!data) {
 					return stdErr('NO_DB_SELECTED', func);
