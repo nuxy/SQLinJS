@@ -38,9 +38,10 @@
 				if ( $.isEmptyObject(data) ) {
 					$this.data({
 						_active_db : null,
-						_sql_query : null,
 						_database  : null,
-						_query_log : []
+						_sql_query : null,
+						_callback  : null,
+						_query_log : [],
 					});
 				}
 			});
@@ -163,7 +164,7 @@
 			});
 		},
 
-		"executeQuery" : function(str) {
+		"executeQuery" : function(str, func) {
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data();
@@ -172,7 +173,10 @@
 
 				stdOut('\nsql> ' + str);
 
+				// .. save request state
+				data['_query_log'].push( logFormat(str) );
 				data['_sql_query'] = str;
+				data['_callback']  = func;
 
 				switch (true) {
 					case /^CREATE/i.test(str):
@@ -216,22 +220,22 @@
 					break;
 
 					default:
-						stdErr('UNKNOWN_COM');
+						stdErr('UNKNOWN_COM', func);
 				}
-
-				data['_query_log'].push( logFormat(str) );
 			});
 		},
 
-		"importDatabase" : function(obj) {
+		"importDatabase" : function(obj, func) {
 			return this.each(function() {
 				if (typeof obj === 'object') {
 					for (var key in obj) {
 						if ( !obj.hasOwnProperty(key) ) {
-							return stdErr('CANT_CREATE_DB', key);
+							return stdErr('CANT_CREATE_DB', key, func);
 						}
 
 						$(this).data('_database', obj);
+
+						runCallback(func, true);
 					}
 				}
 			});
@@ -243,15 +247,15 @@
 					data  = $this.data('_database');
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( data.hasOwnProperty(name) ) {
-					return stdErr('CANT_CREATE_DB', name);
+					return stdErr('CANT_CREATE_DB', name, func);
 				}
 
 				// create an empty database
@@ -270,15 +274,15 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( data.hasOwnProperty(name) ) {
-					return stdErr('TABLE_EXISTS', name);
+					return stdErr('TABLE_EXISTS', name, func);
 				}
 
 				var cols = [];
@@ -291,7 +295,7 @@
 				}
 
 				if (cols.length == 0) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -318,15 +322,15 @@
 					count = 0;
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table);
+					return stdErr('UNKNOWN_TABLE', table, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -356,7 +360,7 @@
 								val = (row[col] !== undefined) ? row[col] : 'NULL';
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col);
+								return stdErr('UNKNOWN_FIELD', table, col, func);
 							}
 
 							if (skip) continue;
@@ -376,7 +380,7 @@
 									break;
 
 									case 2:
-										return stdErr('SYNTAX_ERROR');
+										return stdErr('SYNTAX_ERROR', func);
 									break;
 								}
 							}
@@ -405,15 +409,15 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data.hasOwnProperty(name) ) {
-					return stdErr('UNKNOWN_TABLE', name);
+					return stdErr('UNKNOWN_TABLE', name, func);
 				}
 
 				var cols  = ['Field','Type'],
@@ -439,11 +443,11 @@
 					data  = $this.data('_database');
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data && !data.hasOwnProperty(name) ) {
-					return stdErr('CANT_DROP_DB', name);
+					return stdErr('CANT_DROP_DB', name, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -463,15 +467,15 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr('CANT_DROP_TABLE', name);
+					return stdErr('CANT_DROP_TABLE', name, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -491,15 +495,15 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table);
+					return stdErr('UNKNOWN_TABLE', table, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -510,7 +514,7 @@
 						var val = vals[col].replace(/'(.*)'/,'$1');
 
 						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr('UNKNOWN_FIELD', table, col);
+							return stdErr('UNKNOWN_FIELD', table, col, func);
 						}
 
 						// process values based on data type definition
@@ -555,15 +559,15 @@
 					count = 0;
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table);
+					return stdErr('UNKNOWN_TABLE', table, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -587,7 +591,7 @@
 							var col = cols[j];
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col);
+								return stdErr('UNKNOWN_FIELD', table, col, func);
 							}
 
 							for (var k = 0; k < names.length; k++) {
@@ -611,7 +615,7 @@
 										break;
 
 										case 2:
-											return stdErr('SYNTAX_ERROR');
+											return stdErr('SYNTAX_ERROR', func);
 										break;
 
 										default:
@@ -656,7 +660,7 @@
 					data  = $this.data('_database');
 
 				if (!data) {
-					return stdErr('NO_DB_EXISTS');
+					return stdErr('NO_DB_EXISTS', func);
 				}
 
 				var cols  = ['Database'];
@@ -684,11 +688,11 @@
 					data  = $this.data('_database')[used];
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( $.isEmptyObject(data) ) {
-					return stdErr('NO_TABLES_USED');
+					return stdErr('NO_TABLES_USED', func);
 				}
 
 				var cols  = ['Tables' + '_in_' + used],
@@ -717,15 +721,15 @@
 					count = 0;
 
 				if (!data) {
-					return stdErr('NO_DB_SELECTED');
+					return stdErr('NO_DB_SELECTED', func);
 				}
 
 				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table);
+					return stdErr('UNKNOWN_TABLE', table, func);
 				}
 
 				var timer = calcExecTime(function() {
@@ -745,7 +749,7 @@
 								val   = parts[1];
 
 							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col);
+								return stdErr('UNKNOWN_FIELD', table, col, func);
 							}
 
 							for (var k = 0; k < names.length; k++) {
@@ -767,7 +771,7 @@
 										break;
 
 										case 2:
-											return stdErr('SYNTAX_ERROR');
+											return stdErr('SYNTAX_ERROR', func);
 										break;
 									}
 								}
@@ -790,11 +794,11 @@
 					data  = $this.data('_database');
 
 				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR');
+					return stdErr('SYNTAX_ERROR', func);
 				}
 
 				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr('UNKNOWN_DB', name);
+					return stdErr('UNKNOWN_DB', name, func);
 				}
 
 				$this.data('_active_db', name);
@@ -808,20 +812,26 @@
 		"_Create" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				switch (true) {
-					case /^CREATE\s+DATABASE/i.test(str):
-						var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
-							name  = str.replace(regex,'$1');
+					case /^CREATE\s+DATABASE/i.test(query):
+						try {
+							var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
+								name  = query.replace(regex,'$1');
 
-						$this.SQLinJS('createDatabase', name);
+							$this.SQLinJS('createDatabase', name, func);
+						}
+						catch(err) {
+							stdErr('SYNTAX_ERROR', func);
+						}
 					break;
 
-					case /^CREATE\s+TABLE/i.test(str):
+					case /^CREATE\s+TABLE/i.test(query):
 						try {
 							var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
-								parts = str.replace(regex,'$1|$2').split(/\|/),
+								parts = query.replace(regex,'$1|$2').split(/\|/),
 								name  = parts[0],
 								defs  = parts[1].split(/\s*,\s*/);
 
@@ -833,15 +843,15 @@
 								obj[ val[0] ] = val[1];
 							}
 
-							$this.SQLinJS('createTable', name, obj);
+							$this.SQLinJS('createTable', name, obj, func);
 						}
 						catch(err) {
-							stdErr('SYNTAX_ERROR');
+							stdErr('SYNTAX_ERROR', func);
 						}
 					break;
 
 					default:
-						stdErr('UNKNOWN_COM');
+						stdErr('UNKNOWN_COM', func);
 				}
 			});
 		},
@@ -849,18 +859,19 @@
 		"_Delete" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				try {
 					var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
-						parts = str.replace(regex,'$1\0$2').split('\0'),
+						parts = query.replace(regex,'$1\0$2').split('\0'),
 						table = parts[0],
 						conds = parts[1].split(/AND/i);
 
-					$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null));
+					$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null), func);
 				}
 				catch(err) {
-					stdErr('SYNTAX_ERROR');
+					stdErr('SYNTAX_ERROR', func);
 				}
 			});
 		},
@@ -868,37 +879,39 @@
 		"_Describe" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				var regex = /^DESCRIBE\s+(\w+)*$/i,
-					table = str.replace(regex,'$1');
+					table = query.replace(regex,'$1');
 
-				$this.SQLinJS('describeTable', table);
+				$this.SQLinJS('describeTable', table, func);
 			});
 		},
 
 		"_Drop" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				switch (true) {
-					case /^DROP\s+DATABASE/i.test(str):
+					case /^DROP\s+DATABASE/i.test(query):
 						var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
-							name  = str.replace(regex,'$1');
+							name  = query.replace(regex,'$1');
 
-						$this.SQLinJS('dropDatabase', name);
+						$this.SQLinJS('dropDatabase', name, func);
 					break;
 
-					case /^DROP\s+TABLE/i.test(str):
+					case /^DROP\s+TABLE/i.test(query):
 						var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
-							name  = str.replace(regex,'$1');
+							name  = query.replace(regex,'$1');
 
-						$this.SQLinJS('dropTable', name);
+						$this.SQLinJS('dropTable', name, func);
 					break;
 
 					default:
-						stdErr('UNKNOWN_COM');
+						stdErr('UNKNOWN_COM', func);
 				}
 			});
 		},
@@ -906,13 +919,14 @@
 		"_Insert" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query'),
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback'),
 					used  = $this.data('_active_db'),
 					data  = $this.data('_database')[used];
 
 				try {
 					var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
-						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+						parts = query.replace(regex,'$1\0$2\0$3').split('\0'),
 						table = parts[0],
 						cols  = parts[1].split(/\s*,\s*/),
 						vals  = parts[2].split(/\s*,\s*/);
@@ -922,13 +936,13 @@
 					}
 
 					if (cols.length != vals.length) {
-						return stdErr('WRONG_VALUE_COUNT');
+						return stdErr('WRONG_VALUE_COUNT', func);
 					}
 
-					$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals) );
+					$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals), func);
 				}
 				catch(err) {
-					stdErr('SYNTAX_ERROR');
+					stdErr('SYNTAX_ERROR', func);
 				}
 			});
 		},
@@ -936,11 +950,12 @@
 		"_Select" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				try {
 					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*)*$/i,
-						parts = str.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
+						parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
 						table = parts[1],
 						cols  = parts[0].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
@@ -949,10 +964,10 @@
 						conds    : ((conds[0]) ? conds : undefined),
 						order_by : parts[3],
 						sort     : parts[4]
-					});
+					}, func);
 				}
 				catch(err) {
-					stdErr('SYNTAX_ERROR');
+					stdErr('SYNTAX_ERROR', func);
 				}
 			});
 		},
@@ -960,19 +975,20 @@
 		"_Show" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				switch (true) {
-					case /^SHOW\s+DATABASES/i.test(str):
-						$this.SQLinJS('showDatabases');
+					case /^SHOW\s+DATABASES/i.test(query):
+						$this.SQLinJS('showDatabases', func);
 					break;
 
-					case /^SHOW\s+TABLES/i.test(str):
-						$this.SQLinJS('showTables');
+					case /^SHOW\s+TABLES/i.test(query):
+						$this.SQLinJS('showTables', func);
 					break;
 
 					default:
-						stdErr('UNKNOWN_COM');
+						stdErr('UNKNOWN_COM', func);
 				}
 			});
 		},
@@ -980,19 +996,20 @@
 		"_Update" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				try {
 					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
-						parts = str.replace(regex,'$1\0$2\0$3').split('\0'),
+						parts = query.replace(regex,'$1\0$2\0$3').split('\0'),
 						table = parts[0],
 						cols  = parts[1].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null));
+					$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null), func);
 				}
 				catch(err) {
-					stdErr('SYNTAX_ERROR');
+					stdErr('SYNTAX_ERROR', func);
 				}
 			});
 		},
@@ -1000,12 +1017,13 @@
 		"_Use" : function() {
 			return this.each(function() {
 				var $this = $(this),
-					str   = $this.data('_sql_query');
+					query = $this.data('_sql_query'),
+					func  = $this.data('_callback');
 
 				var regex = /^USE\s+(\w+)/i,
-					name  = str.replace(regex,'$1');
+					name  = query.replace(regex,'$1');
 
-				$this.SQLinJS('useDatabase', name);
+				$this.SQLinJS('useDatabase', name, func);
 			});
 		}
 	};
@@ -1210,22 +1228,25 @@
 	 * Print error message to screen
 	 */
 	function stdErr() {
-		var code = arguments[0];
+		var args = arguments;
+			code = args[0],
+			func = args[args.length -1];
 
 		if ( !errors.hasOwnProperty(code) ) return;
 
 		if (debug) {
 			var str = errors[code];
 
-			for (var i = 1; i < arguments.length; i++) {
-				str = str.replace(/\%s/i, arguments[i]);
+			for (var i = 1; i < args.length; i++) {
+				str = str.replace(/\%s/i, args[i]);
 			}
 
 			stdOut('ERROR: ' + str);
 			return 1;
 		}
-		else {
-			return code;
+
+		if (typeof func === 'function') {
+			runCallback(func, code);
 		}
 	}
 
