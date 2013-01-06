@@ -102,7 +102,7 @@ var dbh = $(document).SQLinJS();    // initialize database handler</pre>
 <p>Launch debug terminal to execute SQL statements using command-line interface.  Requires <a href="SQLinJS.min.css">SQLinJS.min.css</a></p>
 
 <pre>
-dbh.SQLinJS('initTerminal');</pre>
+dbh.SQLinJS('initTerminal' [,<em>handler</em>]);</pre>
 
 <a class="back" href="#methods">Back to Top</a>
 
@@ -111,12 +111,17 @@ dbh.SQLinJS('initTerminal');</pre>
 <p>Execute SQL statement using the plug-in supported <a href="#syntax">syntax</a>.</p>
 
 <pre>
-dbh.SQLinJS('executeQuery', <em>string</em>);</pre>
+dbh.SQLinJS('executeQuery', <em>string</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
 <pre>
-var result = dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND name != 'John'");</pre>
+dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND name != 'John'"
+	function(response) {
+
+		// do something
+	}
+);</pre>
 
 <a class="back" href="#methods">Back to Top</a>
 
@@ -125,13 +130,13 @@ var result = dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND 
 <p>Import an existing database in supported <a href="#import">database format</a>.</p>
 
 <pre>
-dbh.SQLinJS('importDatabase', <em>data</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('importDatabase', <em>data</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
 <pre>
 dbh.SQLinJS('importDatabase', data,
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -144,7 +149,7 @@ dbh.SQLinJS('importDatabase', data,
 <p>Create a new database.</p>
 
 <pre>
-dbh.SQLinJS('createDatabase', <em>name</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('createDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -152,7 +157,7 @@ dbh.SQLinJS('createDatabase', <em>name</em> [,<em>callback</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('createDatabase','accounts',
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -165,7 +170,7 @@ dbh.SQLinJS('createDatabase','accounts',
 <p>Create a new table in an <a href="#useDatabase">existing</a> database.</p>
 
 <pre>
-dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -186,7 +191,7 @@ dbh.SQLinJS('createTable','user', { "id" : "int(10)", "name" : "varchar(10)" },
 <p>Delete record(s) from the selected table.</p>
 
 <pre>
-dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>conds</em>] [,<em>callback</em>]);</pre>
+dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>conds</em>] [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -207,7 +212,7 @@ dbh.SQLinJS('deleteFrom','user', ['id &gt; 2','id != 4'],
 <p>Returns basic information about the columns of the table.</p>
 
 <pre>
-dbh.SQLinJS('describeTable', <em>name</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('describeTable', <em>name</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -215,7 +220,7 @@ dbh.SQLinJS('describeTable', <em>name</em> [,<em>callback</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('describeTable','user',
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -228,7 +233,7 @@ dbh.SQLinJS('describeTable','user',
 <p>Delete a database, by name.</p>
 
 <pre>
-dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -236,7 +241,7 @@ dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>callback</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('dropDatabase','accounts',
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -249,7 +254,7 @@ dbh.SQLinJS('dropDatabase','accounts',
 <p>Delete a table, by name, from an <a href="#useDatabase">existing</a> database.</p>
 
 <pre>
-dbh.SQLinJS('dropTable', <em>name</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('dropTable', <em>name</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -257,7 +262,7 @@ dbh.SQLinJS('dropTable', <em>name</em> [,<em>callback</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('dropTable','user',
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -270,7 +275,7 @@ dbh.SQLinJS('dropTable','user',
 <p>Insert a new record into the selected table.</p>
 
 <pre>
-dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>callback</em>]);</pre>
+dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -283,7 +288,7 @@ dbh.SQLinJS('insertInto',
 		id   : 1,
 		name : 'Jerry'
 	},
-	function() {
+	function(response) {
 
 		// do something
 	}
@@ -296,18 +301,19 @@ dbh.SQLinJS('insertInto',
 <p>Select column(s) data from the selected table.</p>
 
 <pre>
-dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>callback</em>]);</pre>
+dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; SELECT id, name FROM user WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC</samp>
+<samp>sql&gt; SELECT id, name FROM user WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC LIMIT 3</samp>
 
 <pre>
 dbh.SQLinJS('selectFrom','user', ['id','name'],
 	{
 		conds    : ['id &gt; 2',"name != 'John'"],
 		order_by : 'id',
-		sort     : 'desc'
+		sort     : 'desc',
+		limit    : 1
 	},
 	function(response) {
 
@@ -322,7 +328,7 @@ dbh.SQLinJS('selectFrom','user', ['id','name'],
 <p>Return an array of database names.</p>
 
 <pre>
-dbh.SQLinJS('showDatabases' [,<em>callback</em>]);</pre>
+dbh.SQLinJS('showDatabases' [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -343,7 +349,7 @@ dbh.SQLinJS('showDatabases',
 <p>Return an array of table names in the active database.</p>
 
 <pre>
-dbh.SQLinJS('showTables' [,<em>callback</em>]);</pre>
+dbh.SQLinJS('showTables' [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
@@ -364,7 +370,7 @@ dbh.SQLinJS('showTables',
 <p>Select column data from the selected table based on conditional arguments..</p>
 
 <pre>
-dbh.SQLinJS('updateSet', <em>table</em>, <em>[ cols ]</em>, <em>[ conds ]</em>, <em>callback</em>);</pre>
+dbh.SQLinJS('updateSet', <em>table</em>, <em>[ cols ]</em>, <em>[ conds ]</em>, <em>handler</em>);</pre>
 
 <h4>Use Example:</h4>
 
@@ -392,7 +398,7 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 <samp>sql&gt; USE DATABASE accounts</samp>
 
 <pre>dbh.SQLinJS('useDatabase','accounts',
-	function() {
+	function(response) {
 
 		// do something
 	}
