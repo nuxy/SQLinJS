@@ -631,18 +631,18 @@
 						}
 
 						if (!skip) {
+							if (parseInt(clause.limit) <= count) continue;
+
 							vals.push(obj);
 							count += 1;
 						}
 					}
 
 					// sort results array of objects, by key (column name)
-					if (clause.order_by) {
-						if (clause.sort == 'desc') {
-							vals.sort(function(a, b) {
-								return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
-							});
-						}
+					if (clause.order_by && clause.sort == 'desc') {
+						vals.sort(function(a, b) {
+							return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
+						});
 					}
 				});
 
@@ -958,8 +958,8 @@
 					func  = $this.data('_callback');
 
 				try {
-					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*)*$/i,
-						parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
+					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
+						parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5\0$6').split('\0'),
 						table = parts[1],
 						cols  = parts[0].split(/\s*,\s*/),
 						conds = parts[2].split(/AND/i);
@@ -967,7 +967,8 @@
 					$this.SQLinJS('selectFrom', table, cols, {
 						conds    : ((conds[0]) ? conds : undefined),
 						order_by : parts[3],
-						sort     : parts[4]
+						sort     : parts[4],
+						limit    : parts[5]
 					}, func);
 				}
 				catch(err) {
