@@ -63,6 +63,104 @@ $(document).ready(function() {
 });
 &lt;/script&gt;</pre>
 
+<a name="syntax"></a>
+
+<h2>Syntax</h2>
+
+<p>In order to avoid creating a complex SQL parser I have provide limited support the following functions.</p>
+
+<ul>
+	<li><a href="#CREATE_DATABASE">CREATE DATABASE</a></li>
+	<li><a href="#CREATE_TABLE">CREATE TABLE</a></li>
+	<li><a href="#DELETE">DELETE</a></li>
+	<li><a href="#DESCRIBE">DESCRIBE</a></li>
+	<li><a href="#DROP_DATABASE">DROP DATABASE</a></li>
+	<li><a href="#DROP_DATABASE">DROP TABLE</a></li>
+	<li><a href="#INSERT">INSERT</a></li>
+	<li><a href="#SELECT">SELECT</a></li>
+	<li><a href="#SHOW_DATABASES">SHOW DATABASES</a></li>
+	<li><a href="#SHOW_TABLES">SHOW TABLES</a></li>
+	<li><a href="#UPDATE">UPDATE</a></li>
+	<li><a href="#USE">USE</a></li>
+</ul>
+
+<h3><a name="CREATE_DATABASE">CREATE DATABASE</a></h3>
+
+<pre>CREATE DATABASE <em>db_name</em></pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="CREATE_TABLE"></a>CREATE TABLE</a></h3>
+
+<pre>CREATE TABLE <em>tbl_name</em> [<em>create_specification</em>]</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="DELETE">DELETE</a></h3>
+
+<pre>DELETE FROM <em>tbl_name</em> [<em>create_specification</em>]</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="DESCRIBE">DESCRIBE</a></h3>
+
+<pre>DESCRIBE <em>tbl_name</em></pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="DROP_DATABASE">DROP DATABASE</a></h3>
+
+<pre>DROP DATABASE <em>db_name</em></pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="DROP_TABLE">DROP TABLE</a></h3>
+
+<pre>DROP TABLE <em>tbl_name</em></pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="INSERT">INSERT</a></h3>
+
+<pre>INSERT INTO [(<em>col_name</em>, ...)] VALUES (<em>col_value</em>, ...)</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="SELECT">SELECT</a></h3>
+
+<pre>SELECT <em>col_name</em>, ...
+   [FROM  <em>tbl_name</em>
+   [WHERE <em>where_condition</em>]
+   [ORDER BY <em>col_name</em> [ASC | DESC]]]</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="SHOW_DATABASES">SHOW DATABASES</a></h3>
+
+<pre>SHOW DATABASES</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="SHOW_TABLES">SHOW TABLES</a></h3>
+
+<pre>SHOW TABLES</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="UPDATE">UPDATE</a></h3>
+
+<pre>UPDATE <em>tbl_name</em>
+   SET <em>col_name1</em>=<em>expr1</em> [,<em>col_name2</em>=<em>expr2</em>] ...
+  [WHERE <em>where_condition</em>]</pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
+<h3><a name="USE">USE</a></h3>
+
+<pre>USE <em>db_name</em></pre>
+
+<a class="back" href="#syntax">Back to Top</a>
+
 <a name="methods"></a>
 
 <h2>API</h2>
@@ -370,14 +468,17 @@ dbh.SQLinJS('showTables',
 <p>Select column data from the selected table based on conditional arguments..</p>
 
 <pre>
-dbh.SQLinJS('updateSet', <em>table</em>, <em>[ cols ]</em>, <em>[ conds ]</em>, <em>handler</em>);</pre>
+dbh.SQLinJS('updateSet', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>callback</em>]);</pre>
 
 <h4>Use Example:</h4>
 
 <samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John'</samp>
 
 <pre>
-dbh.SQLinJS('updateSet','user', ["name='Fred'"], ['id &gt; 2',"name != 'John'"],
+dbh.SQLinJS('updateSet','user', ["name = 'Fred'"],
+	{
+		conds : ['id &gt; 2',"name != 'John'"]
+	},
 	function(response) {
 
 		// do something
