@@ -30,7 +30,7 @@
 	};
 
 	var methods = {
-		"init" : function() {
+		"init" : function(obj, func) {
 			return this.each(function() {
 				var $this = $(this),
 					data  = $this.data();
@@ -43,6 +43,10 @@
 						_callback  : null,
 						_query_log : [],
 					});
+
+					if (typeof obj === 'object') {
+						$this.SQLinJS('importDatabase', obj, func);
+					}
 				}
 			});
 		},

@@ -19,14 +19,13 @@
 	<script src="SQLinJS.js"></script>
 	<script>
 	$(document).ready(function() {
-		var dbh = $('body').SQLinJS();
 
-		// load terminal application
-		dbh.SQLinJS('initTerminal', function() {
+		// import remote database
+		$.getJSON('demo.json', function(data) {
+			$('body').SQLinJS(data, function() {
 
-			// import remote database
-			$.getJSON('demo.json', function(data) {
-				dbh.SQLinJS('importDatabase', data);
+				// launch debug terminal
+				$('body').SQLinJS('initTerminal');
 			});
 		});
 	});
