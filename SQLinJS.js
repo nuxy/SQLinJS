@@ -1278,7 +1278,7 @@
 	function stdStatOut(count, timer) {
 		if (!debug) return;
 
-		if (arguments.length > 2) {
+		if (arguments.length > 1) {
 			stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
 		}
 		else {
