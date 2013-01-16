@@ -532,8 +532,7 @@
 			var $this = $(this),
 				used  = $this.data('_active_db'),
 				data  = $this.data('_database')[used],
-				vals  = [],
-				count = 0;
+				res   = [];
 
 			if (typeof clause === 'function') {
 				callback = clause;
@@ -552,85 +551,17 @@
 			}
 
 			var timer = calcExecTime(function() {
-				var names = data[table]['_cols'],
-					defs  = data[table]['_defs'],
-					rows  = data[table]['_data'];
-
-				// iterate table rows
-				for (var i = 0; i < rows.length; i++) {
-					var row  = rows[i],
-						obj  = {},
-						skip = null;
-
-					// return all columns; boolean or wildcard
-					if (cols[0] == '1' || cols[0] == '*') {
-						cols = data[table]['_cols'];
-					}
-
-					// .. columns/values
-					for (var j = 0; j < cols.length; j++) {
-						var col = cols[j];
-
-						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr('UNKNOWN_FIELD', table, col, callback);
-						}
-
-						for (var k = 0; k < names.length; k++) {
-							var name = names[k],
-								val  = (row[name] !== undefined) ? row[name] : 'NULL';
-
-							if (!clause.conds || skip) {
-								if (name != col) continue;
-								obj[name] = val;
-								continue;
-							}
-
-							// test WHERE clause conditional expressions
-							for (var m = 0; m < clause.conds.length; m++) {
-								var res = testExpr(clause.conds[m], name, val);
-
-								switch (res) {
-									case 0:
-										skip = true;
-										break;
-									break;
-
-									case 2:
-										return stdErr('SYNTAX_ERROR', callback);
-									break;
-
-									default:
-										if (name != col) continue;
-										obj[name] = val;
-								}
-							}
-						}
-					}
-
-					if (!skip) {
-						if (parseInt(clause.limit) <= count) continue;
-
-						vals.push(obj);
-						count += 1;
-					}
-				}
-
-				// sort results array of objects, by key (column name)
-				if (clause.order_by && clause.sort == 'desc') {
-					vals.sort(function(a, b) {
-						return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
-					});
-				}
+				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
 			});
 
 			if (timer) {
-				if (vals[0]) {
-					stdTermOut(cols, vals);
+				if (res[0]) {
+					stdTermOut(res[0], res[1]);
 				}
 
-				stdStatOut(count, timer);
+				stdStatOut(res[1].length, timer);
 
-				runCallback(callback, vals);
+				runCallback(callback, res[1]);
 			}
 		},
 
@@ -984,6 +915,83 @@
 				name  = sql_query.replace(regex,'$1');
 
 			$this.SQLinJS('useDatabase', name, callback);
+		},
+
+		"_QueryDB" : function(data, table, cols, clause, callback) {
+			var $this = $(this),
+				names = data[table]['_cols'],
+				defs  = data[table]['_defs'],
+				rows  = data[table]['_data'],
+				vals  = [];
+
+			// iterate table rows
+			for (var i = 0; i < rows.length; i++) {
+				var count = 1,
+					row   = rows[i],
+					obj   = {},
+					skip  = null
+
+				// return all columns; boolean or wildcard
+				if (cols[0] == '1' || cols[0] == '*') {
+					cols = data[table]['_cols'];
+				}
+
+				// .. columns/values
+				for (var j = 0; j < cols.length; j++) {
+					var col = cols[j];
+
+					if ( !defs.hasOwnProperty(col) ) {
+						return stdErr('UNKNOWN_FIELD', table, col, callback);
+					}
+
+					for (var k = 0; k < names.length; k++) {
+						var name = names[k],
+							val  = (row[name] !== undefined) ? row[name] : 'NULL';
+
+						if (!clause.conds || skip) {
+							if (name != col) continue;
+							obj[name] = val;
+							continue;
+						}
+
+						// test WHERE clause conditional expressions
+						for (var m = 0; m < clause.conds.length; m++) {
+							var res = testExpr(clause.conds[m], name, val);
+
+							switch (res) {
+								case 0:
+									skip = true;
+									break;
+								break;
+
+								case 2:
+									return stdErr('SYNTAX_ERROR', callback);
+								break;
+
+								default:
+									if (name != col) continue;
+									obj[name] = val;
+							}
+						}
+					}
+				}
+
+				if (!skip) {
+					if (parseInt(clause.limit) <= count) continue;
+
+					vals.push(obj);
+					count += 1;
+				}
+			}
+
+			// sort results array of objects, by key (column name)
+			if (clause.order_by && clause.sort == 'desc') {
+				vals.sort(function(a, b) {
+					return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
+				});
+			}
+
+			return [cols, vals];
 		}
 	};
 
