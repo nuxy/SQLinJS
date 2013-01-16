@@ -31,347 +31,712 @@
 
 	var methods = {
 		"init" : function(obj, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data();
+			var $this = $(this),
+				data  = $this.data();
 
-				if ( $.isEmptyObject(data) ) {
-					$this.data({
-						_active_db : null,
-						_database  : null,
-						_sql_query : null,
-						_callback  : null,
-						_query_log : [],
-					});
+			if ( $.isEmptyObject(data) ) {
+				$this.data({
+					_active_db : null,
+					_database  : null,
+					_sql_query : null,
+					_callback  : null,
+					_query_log : [],
+				});
 
-					if (typeof obj === 'object') {
-						$this.SQLinJS('importDatabase', obj, callback);
-					}
+				if (typeof obj === 'object') {
+					$this.SQLinJS('importDatabase', obj, callback);
 				}
-			});
+			}
 		},
 
 		"destroy" : function() {
-			return this.each(function() {
-				$(this).removeData();
-			});
+			$(this).removeData();
 		},
 
 		"initTerminal" : function(callback) {
-			return this.each(function() {
-				var $this = $(this);
+			var $this = $(this);
 
-				debug = true;
+			debug = true;
 
-				var screen = $('<pre></pre>');
-				var input  = $('<textarea></textarea>');
+			var screen = $('<pre></pre>');
+			var input  = $('<textarea></textarea>');
 
-				var terminal
-					= $('<div></div>')
-						.attr('id','SQLinJS')
-						.append(screen, input);
+			var terminal
+				= $('<div></div>')
+					.attr('id','SQLinJS')
+					.append(screen, input);
 
-				$this.append(terminal);
+			$this.append(terminal);
 
-				$this.SQLinJS('bindEvents', ['screen','input']);
+			$this.SQLinJS('bindEvents', ['screen','input']);
 
-				input.focus();
+			input.focus();
 
-				stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
-				stdOut();
-				stdOut("Type 'help;' or '\\h' for help.");
+			stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
+			stdOut();
+			stdOut("Type 'help;' or '\\h' for help.");
 
-				runCallback(callback);
-			});
+			runCallback(callback);
 		},
 
 		"bindEvents" : function(names) {
-			return this.each(function() {
-				var $this = $(this);
+			var $this = $(this);
 
-				var terminal = $('#SQLinJS'),
-					screen   = terminal.find('pre'),
-					input    = terminal.find('textarea');
+			var terminal = $('#SQLinJS'),
+				screen   = terminal.find('pre'),
+				input    = terminal.find('textarea');
 
-				for (var i = 0; i < names.length; i++) {
-					switch (names[i]) {
-						case 'screen':
-							terminal
-								.on('click', function() { input.focus() });
-						break;
+			for (var i = 0; i < names.length; i++) {
+				switch (names[i]) {
+					case 'screen':
+						terminal
+							.on('click', function() { input.focus() });
+					break;
 
-						case 'input':
-							var buffer = $this.data('_query_log'),
-								index  = 0;
+					case 'input':
+						var buffer = $this.data('_query_log'),
+							index  = 0;
 
-							input
-								.on('keypress', function(event) {
-									if (event.which != 13) return;
+						input
+							.on('keypress', function(event) {
+								if (event.which != 13) return;
 
-									event.preventDefault();
+								event.preventDefault();
 
-									// execute SQL queries seperated by semicolon
-									var str = $(this).val();
+								// execute SQL queries seperated by semicolon
+								var str = $(this).val();
 
-									var queries =
-										$.grep(str.split(/;|\\g/), function(bucket) {
-											if (! /^(\s+|\\g+|;)*$/.test(bucket) ) {
-												return bucket;
-											}
-										});
-
-									var count = queries.length;
-									if (count > 0) {
-										for (var i = 0; i < count; i++) {
-											$this.SQLinJS('executeQuery', queries[i]);
+								var queries =
+									$.grep(str.split(/;|\\g/), function(bucket) {
+										if (! /^(\s+|\\g+|;)*$/.test(bucket) ) {
+											return bucket;
 										}
+									});
+
+								var count = queries.length;
+								if (count > 0) {
+									for (var i = 0; i < count; i++) {
+										$this.SQLinJS('executeQuery', queries[i]);
 									}
+								}
 
-									$(this).val(null).focus();
+								$(this).val(null).focus();
 
-									index = buffer.length;
+								index = buffer.length;
 
-									// force scroll positioning
-									screen.scrollTop( screen.prop('scrollHeight') );
-								})
-								.on('keyup', function(event) {
-									var count = buffer.length;
+								// force scroll positioning
+								screen.scrollTop( screen.prop('scrollHeight') );
+							})
+							.on('keyup', function(event) {
+								var count = buffer.length;
 
-									// scroll command buffer
-									switch (event.which) {
-										case 38:
+								// scroll command buffer
+								switch (event.which) {
+									case 38:
 
-											// .. view last command
-											index = (index > 0)
-												? index -= 1
-												: 0;
-										break;
+										// .. view last command
+										index = (index > 0)
+											? index -= 1
+											: 0;
+									break;
 
-										case 40:
+									case 40:
 
-											// .. view next command
-											index = ( (index + 1) < count)
-												? index += 1
-												: index;
-										break;
+										// .. view next command
+										index = ( (index + 1) < count)
+											? index += 1
+											: index;
+									break;
 
-										default: return;
-									}
+									default: return;
+								}
 
-									if (count) {
-										$(this).val(buffer[index].query);
-									}
-								});
-						break;
-					}
+								if (count) {
+									$(this).val(buffer[index].query);
+								}
+							});
+					break;
 				}
-			});
+			}
 		},
 
 		"executeQuery" : function(str, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data();
+			var $this = $(this),
+				data  = $this.data();
 
-				str = $.trim(str);
+			str = $.trim(str);
 
-				stdOut('\nsql> ' + str);
+			stdOut('\nsql> ' + str);
 
-				// .. save request state
-				data['_query_log'].push( logFormat(str) );
-				data['_sql_query'] = str;
-				data['_callback']  = callback;
+			// .. save request state
+			data['_query_log'].push( logFormat(str) );
+			data['_sql_query'] = str;
+			data['_callback']  = callback;
 
-				switch (true) {
-					case /^CREATE/i.test(str):
-						$this.SQLinJS('_Create');
-					break;
+			switch (true) {
+				case /^CREATE/i.test(str):
+					$this.SQLinJS('_Create');
+				break;
 
-					case /^DELETE/i.test(str):
-						$this.SQLinJS('_Delete');
-					break;
+				case /^DELETE/i.test(str):
+					$this.SQLinJS('_Delete');
+				break;
 
-					case /^DESCRIBE/i.test(str):
-						$this.SQLinJS('_Describe');
-					break;
+				case /^DESCRIBE/i.test(str):
+					$this.SQLinJS('_Describe');
+				break;
 
-					case /^DROP/i.test(str):
-						$this.SQLinJS('_Drop');
-					break;
+				case /^DROP/i.test(str):
+					$this.SQLinJS('_Drop');
+				break;
 
-					case /^INSERT/i.test(str):
-						$this.SQLinJS('_Insert');
-					break;
+				case /^INSERT/i.test(str):
+					$this.SQLinJS('_Insert');
+				break;
 
-					case /^SELECT/i.test(str):
-						$this.SQLinJS('_Select');
-					break;
+				case /^SELECT/i.test(str):
+					$this.SQLinJS('_Select');
+				break;
 
-					case /^SHOW/i.test(str):
-						$this.SQLinJS('_Show');
-					break;
+				case /^SHOW/i.test(str):
+					$this.SQLinJS('_Show');
+				break;
 
-					case /^UPDATE/i.test(str):
-						$this.SQLinJS('_Update');
-					break;
+				case /^UPDATE/i.test(str):
+					$this.SQLinJS('_Update');
+				break;
 
-					case /^USE/i.test(str):
-						$this.SQLinJS('_Use');
-					break;
+				case /^USE/i.test(str):
+					$this.SQLinJS('_Use');
+				break;
 
-					case /^help|\\h/i.test(str):
-						viewHelp();
-					break;
+				case /^help|\\h/i.test(str):
+					viewHelp();
+				break;
 
-					default:
-						stdErr('UNKNOWN_COM', callback);
-				}
-			});
+				default:
+					stdErr('UNKNOWN_COM', callback);
+			}
 		},
 
 		"importDatabase" : function(obj, callback) {
-			return this.each(function() {
-				if (typeof obj === 'object') {
-					for (var key in obj) {
-						if ( !obj.hasOwnProperty(key) ) {
-							return stdErr('CANT_CREATE_DB', key, callback);
-						}
-
-						$(this).data('_database', obj);
-
-						runCallback(callback, true);
+			if (typeof obj === 'object') {
+				for (var key in obj) {
+					if ( !obj.hasOwnProperty(key) ) {
+						return stdErr('CANT_CREATE_DB', key, callback);
 					}
+
+					$(this).data('_database', obj);
+
+					runCallback(callback, true);
 				}
-			});
+			}
 		},
 
 		"createDatabase" : function(name, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data('_database');
+			var $this = $(this),
+				data  = $this.data('_database');
 
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
 
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
 
-				if ( data.hasOwnProperty(name) ) {
-					return stdErr('CANT_CREATE_DB', name, callback);
-				}
+			if ( data.hasOwnProperty(name) ) {
+				return stdErr('CANT_CREATE_DB', name, callback);
+			}
 
-				// create an empty database
-				data[name] = {};
+			// create an empty database
+			data[name] = {};
 
-				stdStatOut();
+			stdStatOut();
 
-				runCallback(callback, true);
-			});
+			runCallback(callback, true);
 		},
 
 		"createTable" : function(name, defs, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
 
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( data.hasOwnProperty(name) ) {
+				return stdErr('TABLE_EXISTS', name, callback);
+			}
+
+			var cols = [];
+
+			// check supported data types
+			for (var type in defs) {
+				if ( /^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type]) ) {
+					cols.push(type);
 				}
+			}
 
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
+			if (cols.length == 0) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
 
-				if ( data.hasOwnProperty(name) ) {
-					return stdErr('TABLE_EXISTS', name, callback);
-				}
+			var timer = calcExecTime(function() {
 
-				var cols = [];
-
-				// check supported data types
-				for (var type in defs) {
-					if ( /^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type]) ) {
-						cols.push(type);
-					}
-				}
-
-				if (cols.length == 0) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				var timer = calcExecTime(function() {
-
-					// create table properties
-					data[name] = {
-						_cols : cols,
-						_defs : defs,
-						_data : []
-					};
-				});
-
-				stdStatOut(0, timer);
-
-				runCallback(callback, true);
+				// create table properties
+				data[name] = {
+					_cols : cols,
+					_defs : defs,
+					_data : []
+				};
 			});
+
+			stdStatOut(0, timer);
+
+			runCallback(callback, true);
 		},
 
 		"deleteFrom" : function(table, conds, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					count = 0;
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used],
+				count = 0;
 
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(table) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data || !data.hasOwnProperty(table) ) {
+				return stdErr('UNKNOWN_TABLE', table, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				var cols = data[table]['_cols'],
+					defs = data[table]['_defs'],
+					rows = data[table]['_data'];
+
+				if (!conds) {
+
+					// delete all records
+					data = [];
+					count = rows.length;
+					return;
 				}
 
-				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
+				// iterate table rows
+				for (var i = 0; i < rows.length; i++) {
+					var row  = rows[i],
+						skip = null,
+						del  = null;
 
-				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table, callback);
-				}
+					if (row === undefined) continue;
 
-				var timer = calcExecTime(function() {
-					var cols = data[table]['_cols'],
-						defs = data[table]['_defs'],
-						rows = data[table]['_data'];
+					// .. columns/values
+					for (var j = 0; j < cols.length; j++) {
+						var col = cols[j],
+							val = (row[col] !== undefined) ? row[col] : 'NULL';
 
-					if (!conds) {
+						if ( !defs.hasOwnProperty(col) ) {
+							return stdErr('UNKNOWN_FIELD', table, col, callback);
+						}
 
-						// delete all records
-						data = [];
-						count = rows.length;
-						return;
+						if (skip) continue;
+
+						// delete record based on conditional expressions
+						for (var k = 0; k < conds.length; k++) {
+							var res = testExpr(conds[k], col, val);
+
+							switch (res) {
+								case 0:
+									skip = true;
+									break;
+								break;
+
+								case 1:
+									del = true;
+								break;
+
+								case 2:
+									return stdErr('SYNTAX_ERROR', callback);
+								break;
+							}
+						}
 					}
 
-					// iterate table rows
-					for (var i = 0; i < rows.length; i++) {
-						var row  = rows[i],
-							skip = null,
-							del  = null;
+					if (del && !skip) {
+						rows.splice(i, 1);
+						count += 1;
+					}
+				}
 
-						if (row === undefined) continue;
+				// remove 'undefined' buckets from array
+				data[table]['_data'] = reindexArray(rows);
+			});
 
-						// .. columns/values
-						for (var j = 0; j < cols.length; j++) {
-							var col = cols[j],
-								val = (row[col] !== undefined) ? row[col] : 'NULL';
+			stdStatOut(count, timer);
 
-							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col, callback);
+			runCallback(callback, true);
+		},
+
+		"describeTable" : function(name, callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data.hasOwnProperty(name) ) {
+				return stdErr('UNKNOWN_TABLE', name, callback);
+			}
+
+			var cols  = ['Field','Type'],
+				count = 0;
+
+			var timer = calcExecTime(function() {
+				var vals = getObjAsCols(cols, data[name]['_defs']);
+
+				stdTermOut(cols, vals);
+
+				count = vals.length;
+			});
+
+			stdStatOut(count, timer);
+
+			runCallback(callback);
+		},
+
+		"dropDatabase" : function(name, callback) {
+			var $this = $(this),
+				data  = $this.data('_database');
+
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data && !data.hasOwnProperty(name) ) {
+				return stdErr('CANT_DROP_DB', name, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				delete data[name];
+			});
+
+			stdStatOut(0, timer);
+
+			runCallback(callback, true);
+		},
+
+		"dropTable" : function(name, callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data || !data.hasOwnProperty(name) ) {
+				return stdErr('CANT_DROP_TABLE', name, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				delete data[name];
+			});
+
+			stdStatOut(0, timer);
+
+			runCallback(callback, true);
+		},
+
+		"insertInto" : function(table, vals, callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(table) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data || !data.hasOwnProperty(table) ) {
+				return stdErr('UNKNOWN_TABLE', table, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				var defs = data[table]['_defs'],
+					obj  = {};
+
+				for (var col in vals) {
+					var val = vals[col].replace(/'(.*)'/,'$1');
+
+					if ( !defs.hasOwnProperty(col) ) {
+						return stdErr('UNKNOWN_FIELD', table, col, callback);
+					}
+
+					// process values based on data type definition
+					var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
+						name = type[0],
+						size = (typeof type[1] === 'number') ? type[1] : val.length;
+
+					switch (true) {
+						case /((VAR)*CHAR)/i.test(name):
+
+							// truncate value to defined type length
+							obj[col] = val.substring(0, size) || undefined;
+						break;
+
+						case /INT/i.test(name):
+							obj[col] = parseInt(val);
+						break;
+					}
+				}
+
+				if (obj) {
+
+					// insert new record
+					data[table]['_data'].push(obj);
+				}
+			});
+
+			if (timer) {
+				stdStatOut(0, timer);
+
+				runCallback(callback, true);
+			}
+		},
+
+		"selectFrom" : function(table, cols, clause, callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used],
+				vals  = [],
+				count = 0;
+
+			if (typeof clause === 'function') {
+				callback = clause;
+			}
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(table) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data || !data.hasOwnProperty(table) ) {
+				return stdErr('UNKNOWN_TABLE', table, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				var names = data[table]['_cols'],
+					defs  = data[table]['_defs'],
+					rows  = data[table]['_data'];
+
+				// iterate table rows
+				for (var i = 0; i < rows.length; i++) {
+					var row  = rows[i],
+						obj  = {},
+						skip = null;
+
+					// return all columns; boolean or wildcard
+					if (cols[0] == '1' || cols[0] == '*') {
+						cols = data[table]['_cols'];
+					}
+
+					// .. columns/values
+					for (var j = 0; j < cols.length; j++) {
+						var col = cols[j];
+
+						if ( !defs.hasOwnProperty(col) ) {
+							return stdErr('UNKNOWN_FIELD', table, col, callback);
+						}
+
+						for (var k = 0; k < names.length; k++) {
+							var name = names[k],
+								val  = (row[name] !== undefined) ? row[name] : 'NULL';
+
+							if (!clause.conds || skip) {
+								if (name != col) continue;
+								obj[name] = val;
+								continue;
 							}
 
-							if (skip) continue;
+							// test WHERE clause conditional expressions
+							for (var m = 0; m < clause.conds.length; m++) {
+								var res = testExpr(clause.conds[m], name, val);
 
-							// delete record based on conditional expressions
-							for (var k = 0; k < conds.length; k++) {
-								var res = testExpr(conds[k], col, val);
+								switch (res) {
+									case 0:
+										skip = true;
+										break;
+									break;
+
+									case 2:
+										return stdErr('SYNTAX_ERROR', callback);
+									break;
+
+									default:
+										if (name != col) continue;
+										obj[name] = val;
+								}
+							}
+						}
+					}
+
+					if (!skip) {
+						if (parseInt(clause.limit) <= count) continue;
+
+						vals.push(obj);
+						count += 1;
+					}
+				}
+
+				// sort results array of objects, by key (column name)
+				if (clause.order_by && clause.sort == 'desc') {
+					vals.sort(function(a, b) {
+						return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
+					});
+				}
+			});
+
+			if (timer) {
+				if (vals[0]) {
+					stdTermOut(cols, vals);
+				}
+
+				stdStatOut(count, timer);
+
+				runCallback(callback, vals);
+			}
+		},
+
+		"showDatabases" : function(callback) {
+			var $this = $(this),
+				data  = $this.data('_database');
+
+			if (!data) {
+				return stdErr('NO_DB_EXISTS', callback);
+			}
+
+			var cols  = ['Database'];
+				count = 0,
+				vals  = null;
+
+			var timer = calcExecTime(function() {
+				vals = getObjKeys(data, cols);
+
+				stdTermOut(cols, vals);
+
+				count = vals.length;
+			});
+
+			stdStatOut(count, timer);
+
+			runCallback(callback, vals);
+		},
+
+		"showTables" : function(callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used];
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( $.isEmptyObject(data) ) {
+				return stdErr('NO_TABLES_USED', callback);
+			}
+
+			var cols  = ['Tables' + '_in_' + used],
+				count = 0,
+				vals  = null;
+
+			var timer = calcExecTime(function() {
+				vals = getObjKeys(data, cols);
+
+				stdTermOut(cols, vals);
+
+				count = vals.length;
+			});
+
+			stdStatOut(count, timer);
+
+			runCallback(callback, vals);
+		},
+
+		"updateSet" : function(table, cols, conds, callback) {
+			var $this = $(this),
+				used  = $this.data('_active_db'),
+				data  = $this.data('_database')[used],
+				count = 0;
+
+			if (typeof conds === 'function') {
+				callback = conds;
+			}
+
+			if (!data) {
+				return stdErr('NO_DB_SELECTED', callback);
+			}
+
+			if ( !validName(table) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
+
+			if ( !data || !data.hasOwnProperty(table) ) {
+				return stdErr('UNKNOWN_TABLE', table, callback);
+			}
+
+			var timer = calcExecTime(function() {
+				var names = data[table]['_cols'],
+					defs  = data[table]['_defs'],
+					rows  = data[table]['_data'];
+
+				// iterate table rows
+				for (var i = 0; i < rows.length; i++) {
+					var row  = rows[i],
+						skip = null;
+
+					// .. columns/values
+					for (var j = 0; j < cols.length; j++) {
+						var parts = cols[j].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
+							col   = parts[0],
+							val   = parts[1];
+
+						if ( !defs.hasOwnProperty(col) ) {
+							return stdErr('UNKNOWN_FIELD', table, col, callback);
+						}
+
+						for (var k = 0; k < names.length; k++) {
+							var name = names[k];
+
+							// test WHERE clause conditional expressions
+							for (var m = 0; m < conds.length; m++) {
+								var res = testExpr(conds[m], name, row[name]);
 
 								switch (res) {
 									case 0:
@@ -380,7 +745,8 @@
 									break;
 
 									case 1:
-										del = true;
+										row[name] = val;
+										count += 1;
 									break;
 
 									case 2:
@@ -389,655 +755,235 @@
 								}
 							}
 						}
-
-						if (del && !skip) {
-							rows.splice(i, 1);
-							count += 1;
-						}
 					}
+				}
+			});
 
-					// remove 'undefined' buckets from array
-					data[table]['_data'] = reindexArray(rows);
-				});
-
+			if (timer) {
 				stdStatOut(count, timer);
 
 				runCallback(callback, true);
-			});
-		},
-
-		"describeTable" : function(name, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data.hasOwnProperty(name) ) {
-					return stdErr('UNKNOWN_TABLE', name, callback);
-				}
-
-				var cols  = ['Field','Type'],
-					count = 0;
-
-				var timer = calcExecTime(function() {
-					var vals = getObjAsCols(cols, data[name]['_defs']);
-
-					stdTermOut(cols, vals);
-
-					count = vals.length;
-				});
-
-				stdStatOut(count, timer);
-
-				runCallback(callback);
-			});
-		},
-
-		"dropDatabase" : function(name, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data('_database');
-
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data && !data.hasOwnProperty(name) ) {
-					return stdErr('CANT_DROP_DB', name, callback);
-				}
-
-				var timer = calcExecTime(function() {
-					delete data[name];
-				});
-
-				stdStatOut(0, timer);
-
-				runCallback(callback, true);
-			});
-		},
-
-		"dropTable" : function(name, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr('CANT_DROP_TABLE', name, callback);
-				}
-
-				var timer = calcExecTime(function() {
-					delete data[name];
-				});
-
-				stdStatOut(0, timer);
-
-				runCallback(callback, true);
-			});
-		},
-
-		"insertInto" : function(table, vals, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table, callback);
-				}
-
-				var timer = calcExecTime(function() {
-					var defs = data[table]['_defs'],
-						obj  = {};
-
-					for (var col in vals) {
-						var val = vals[col].replace(/'(.*)'/,'$1');
-
-						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr('UNKNOWN_FIELD', table, col, callback);
-						}
-
-						// process values based on data type definition
-						var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
-							name = type[0],
-							size = (typeof type[1] === 'number') ? type[1] : val.length;
-
-						switch (true) {
-							case /((VAR)*CHAR)/i.test(name):
-
-								// truncate value to defined type length
-								obj[col] = val.substring(0, size) || undefined;
-							break;
-
-							case /INT/i.test(name):
-								obj[col] = parseInt(val);
-							break;
-						}
-					}
-
-					if (obj) {
-
-						// insert new record
-						data[table]['_data'].push(obj);
-					}
-				});
-
-				if (timer) {
-					stdStatOut(0, timer);
-
-					runCallback(callback, true);
-				}
-			});
-		},
-
-		"selectFrom" : function(table, cols, clause, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					vals  = [],
-					count = 0;
-
-				if (typeof clause === 'function') {
-					callback = clause;
-				}
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table, callback);
-				}
-
-				var timer = calcExecTime(function() {
-					var names = data[table]['_cols'],
-						defs  = data[table]['_defs'],
-						rows  = data[table]['_data'];
-
-					// iterate table rows
-					for (var i = 0; i < rows.length; i++) {
-						var row  = rows[i],
-							obj  = {},
-							skip = null;
-
-						// return all columns; boolean or wildcard
-						if (cols[0] == '1' || cols[0] == '*') {
-							cols = data[table]['_cols'];
-						}
-
-						// .. columns/values
-						for (var j = 0; j < cols.length; j++) {
-							var col = cols[j];
-
-							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col, callback);
-							}
-
-							for (var k = 0; k < names.length; k++) {
-								var name = names[k],
-									val  = (row[name] !== undefined) ? row[name] : 'NULL';
-
-								if (!clause.conds || skip) {
-									if (name != col) continue;
-									obj[name] = val;
-									continue;
-								}
-
-								// test WHERE clause conditional expressions
-								for (var m = 0; m < clause.conds.length; m++) {
-									var res = testExpr(clause.conds[m], name, val);
-
-									switch (res) {
-										case 0:
-											skip = true;
-											break;
-										break;
-
-										case 2:
-											return stdErr('SYNTAX_ERROR', callback);
-										break;
-
-										default:
-											if (name != col) continue;
-											obj[name] = val;
-									}
-								}
-							}
-						}
-
-						if (!skip) {
-							if (parseInt(clause.limit) <= count) continue;
-
-							vals.push(obj);
-							count += 1;
-						}
-					}
-
-					// sort results array of objects, by key (column name)
-					if (clause.order_by && clause.sort == 'desc') {
-						vals.sort(function(a, b) {
-							return (a[clause.order_by] < b[clause.order_by]) ? 1 : ((b[clause.order_by] < a[clause.order_by]) ? -1 : 0);
-						});
-					}
-				});
-
-				if (timer) {
-					if (vals[0]) {
-						stdTermOut(cols, vals);
-					}
-
-					stdStatOut(count, timer);
-
-					runCallback(callback, vals);
-				}
-			});
-		},
-
-		"showDatabases" : function(callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data('_database');
-
-				if (!data) {
-					return stdErr('NO_DB_EXISTS', callback);
-				}
-
-				var cols  = ['Database'];
-					count = 0,
-					vals  = null;
-
-				var timer = calcExecTime(function() {
-					vals = getObjKeys(data, cols);
-
-					stdTermOut(cols, vals);
-
-					count = vals.length;
-				});
-
-				stdStatOut(count, timer);
-
-				runCallback(callback, vals);
-			});
-		},
-
-		"showTables" : function(callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used];
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( $.isEmptyObject(data) ) {
-					return stdErr('NO_TABLES_USED', callback);
-				}
-
-				var cols  = ['Tables' + '_in_' + used],
-					count = 0,
-					vals  = null;
-
-				var timer = calcExecTime(function() {
-					vals = getObjKeys(data, cols);
-
-					stdTermOut(cols, vals);
-
-					count = vals.length;
-				});
-
-				stdStatOut(count, timer);
-
-				runCallback(callback, vals);
-			});
-		},
-
-		"updateSet" : function(table, cols, conds, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					used  = $this.data('_active_db'),
-					data  = $this.data('_database')[used],
-					count = 0;
-
-				if (typeof conds === 'function') {
-					callback = conds;
-				}
-
-				if (!data) {
-					return stdErr('NO_DB_SELECTED', callback);
-				}
-
-				if ( !validName(table) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
-
-				if ( !data || !data.hasOwnProperty(table) ) {
-					return stdErr('UNKNOWN_TABLE', table, callback);
-				}
-
-				var timer = calcExecTime(function() {
-					var names = data[table]['_cols'],
-						defs  = data[table]['_defs'],
-						rows  = data[table]['_data'];
-
-					// iterate table rows
-					for (var i = 0; i < rows.length; i++) {
-						var row  = rows[i],
-							skip = null;
-
-						// .. columns/values
-						for (var j = 0; j < cols.length; j++) {
-							var parts = cols[j].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
-								col   = parts[0],
-								val   = parts[1];
-
-							if ( !defs.hasOwnProperty(col) ) {
-								return stdErr('UNKNOWN_FIELD', table, col, callback);
-							}
-
-							for (var k = 0; k < names.length; k++) {
-								var name = names[k];
-
-								// test WHERE clause conditional expressions
-								for (var m = 0; m < conds.length; m++) {
-									var res = testExpr(conds[m], name, row[name]);
-
-									switch (res) {
-										case 0:
-											skip = true;
-											break;
-										break;
-
-										case 1:
-											row[name] = val;
-											count += 1;
-										break;
-
-										case 2:
-											return stdErr('SYNTAX_ERROR', callback);
-										break;
-									}
-								}
-							}
-						}
-					}
-				});
-
-				if (timer) {
-					stdStatOut(count, timer);
-
-					runCallback(callback, true);
-				}
-			});
+			}
 		},
 
 		"useDatabase" : function(name, callback) {
-			return this.each(function() {
-				var $this = $(this),
-					data  = $this.data('_database');
+			var $this = $(this),
+				data  = $this.data('_database');
 
-				if ( !validName(name) ) {
-					return stdErr('SYNTAX_ERROR', callback);
-				}
+			if ( !validName(name) ) {
+				return stdErr('SYNTAX_ERROR', callback);
+			}
 
-				if ( !data || !data.hasOwnProperty(name) ) {
-					return stdErr('UNKNOWN_DB', name, callback);
-				}
+			if ( !data || !data.hasOwnProperty(name) ) {
+				return stdErr('UNKNOWN_DB', name, callback);
+			}
 
-				$this.data('_active_db', name);
+			$this.data('_active_db', name);
 
-				stdOut('Database changed');
+			stdOut('Database changed');
 
-				runCallback(callback, true);
-			});
+			runCallback(callback, true);
 		},
 
 		"_Create" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				switch (true) {
-					case /^CREATE\s+DATABASE/i.test(sql_query):
-						try {
-							var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
-								name  = sql_query.replace(regex,'$1');
+			switch (true) {
+				case /^CREATE\s+DATABASE/i.test(sql_query):
+					try {
+						var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
+							name  = sql_query.replace(regex,'$1');
 
-							$this.SQLinJS('createDatabase', name, callback);
+						$this.SQLinJS('createDatabase', name, callback);
+					}
+					catch(err) {
+						stdErr('SYNTAX_ERROR', callback);
+					}
+				break;
+
+				case /^CREATE\s+TABLE/i.test(sql_query):
+					try {
+						var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
+							parts = sql_query.replace(regex,'$1|$2').split(/\|/),
+							name  = parts[0],
+							defs  = parts[1].split(/\s*,\s*/);
+
+						var obj  = {};
+
+						// fold column type key/values into an object
+						for (var i = 0; i < defs.length; i++) {
+							var val = defs[i].split(/\s+/);
+							obj[ val[0] ] = val[1];
 						}
-						catch(err) {
-							stdErr('SYNTAX_ERROR', callback);
-						}
-					break;
 
-					case /^CREATE\s+TABLE/i.test(sql_query):
-						try {
-							var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
-								parts = sql_query.replace(regex,'$1|$2').split(/\|/),
-								name  = parts[0],
-								defs  = parts[1].split(/\s*,\s*/);
+						$this.SQLinJS('createTable', name, obj, callback);
+					}
+					catch(err) {
+						stdErr('SYNTAX_ERROR', callback);
+					}
+				break;
 
-							var obj  = {};
-
-							// fold column type key/values into an object
-							for (var i = 0; i < defs.length; i++) {
-								var val = defs[i].split(/\s+/);
-								obj[ val[0] ] = val[1];
-							}
-
-							$this.SQLinJS('createTable', name, obj, callback);
-						}
-						catch(err) {
-							stdErr('SYNTAX_ERROR', callback);
-						}
-					break;
-
-					default:
-						stdErr('UNKNOWN_COM', callback);
-				}
-			});
+				default:
+					stdErr('UNKNOWN_COM', callback);
+			}
 		},
 
 		"_Delete" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				try {
-					var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
-						parts = sql_query.replace(regex,'$1\0$2').split('\0'),
-						table = parts[0],
-						conds = parts[1].split(/AND/i);
+			try {
+				var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
+					parts = sql_query.replace(regex,'$1\0$2').split('\0'),
+					table = parts[0],
+					conds = parts[1].split(/AND/i);
 
-					$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null), callback);
-				}
-				catch(err) {
-					stdErr('SYNTAX_ERROR', callback);
-				}
-			});
+				$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null), callback);
+			}
+			catch(err) {
+				stdErr('SYNTAX_ERROR', callback);
+			}
 		},
 
 		"_Describe" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				var regex = /^DESCRIBE\s+(\w+)*$/i,
-					table = sql_query.replace(regex,'$1');
+			var regex = /^DESCRIBE\s+(\w+)*$/i,
+				table = sql_query.replace(regex,'$1');
 
-				$this.SQLinJS('describeTable', table, callback);
-			});
+			$this.SQLinJS('describeTable', table, callback);
 		},
 
 		"_Drop" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				switch (true) {
-					case /^DROP\s+DATABASE/i.test(sql_query):
-						var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
-							name  = sql_query.replace(regex,'$1');
+			switch (true) {
+				case /^DROP\s+DATABASE/i.test(sql_query):
+					var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
+						name  = sql_query.replace(regex,'$1');
 
-						$this.SQLinJS('dropDatabase', name, callback);
-					break;
+					$this.SQLinJS('dropDatabase', name, callback);
+				break;
 
-					case /^DROP\s+TABLE/i.test(sql_query):
-						var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
-							name  = sql_query.replace(regex,'$1');
+				case /^DROP\s+TABLE/i.test(sql_query):
+					var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
+						name  = sql_query.replace(regex,'$1');
 
-						$this.SQLinJS('dropTable', name, callback);
-					break;
+					$this.SQLinJS('dropTable', name, callback);
+				break;
 
-					default:
-						stdErr('UNKNOWN_COM', callback);
-				}
-			});
+				default:
+					stdErr('UNKNOWN_COM', callback);
+			}
 		},
 
 		"_Insert" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback'),
-					used      = $this.data('_active_db'),
-					data      = $this.data('_database')[used];
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback'),
+				used      = $this.data('_active_db'),
+				data      = $this.data('_database')[used];
 
-				try {
-					var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
-						parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
-						table = parts[0],
-						cols  = parts[1].split(/\s*,\s*/),
-						vals  = parts[2].split(/\s*,\s*/);
+			try {
+				var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
+					parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
+					table = parts[0],
+					cols  = parts[1].split(/\s*,\s*/),
+					vals  = parts[2].split(/\s*,\s*/);
 
-					if (!cols[0]) {
-						cols = data[table]['_cols'];
-					}
-
-					if (cols.length != vals.length) {
-						return stdErr('WRONG_VALUE_COUNT', callback);
-					}
-
-					$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals), callback);
+				if (!cols[0]) {
+					cols = data[table]['_cols'];
 				}
-				catch(err) {
-					stdErr('SYNTAX_ERROR', callback);
+
+				if (cols.length != vals.length) {
+					return stdErr('WRONG_VALUE_COUNT', callback);
 				}
-			});
+
+				$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals), callback);
+			}
+			catch(err) {
+				stdErr('SYNTAX_ERROR', callback);
+			}
 		},
 
 		"_Select" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				try {
-					var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
-						parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5\0$6').split('\0'),
-						table = parts[1],
-						cols  = parts[0].split(/\s*,\s*/),
-						conds = parts[2].split(/AND/i);
+			try {
+				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
+					parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5\0$6').split('\0'),
+					table = parts[1],
+					cols  = parts[0].split(/\s*,\s*/),
+					conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('selectFrom', table, cols, {
-						conds    : ((conds[0]) ? conds : undefined),
-						order_by : parts[3],
-						sort     : parts[4],
-						limit    : parts[5]
-					}, callback);
-				}
-				catch(err) {
-					stdErr('SYNTAX_ERROR', callback);
-				}
-			});
+				$this.SQLinJS('selectFrom', table, cols, {
+					conds    : ((conds[0]) ? conds : undefined),
+					order_by : parts[3],
+					sort     : parts[4],
+					limit    : parts[5]
+				}, callback);
+			}
+			catch(err) {
+				stdErr('SYNTAX_ERROR', callback);
+			}
 		},
 
 		"_Show" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				switch (true) {
-					case /^SHOW\s+DATABASES/i.test(sql_query):
-						$this.SQLinJS('showDatabases', callback);
-					break;
+			switch (true) {
+				case /^SHOW\s+DATABASES/i.test(sql_query):
+					$this.SQLinJS('showDatabases', callback);
+				break;
 
-					case /^SHOW\s+TABLES/i.test(sql_query):
-						$this.SQLinJS('showTables', callback);
-					break;
+				case /^SHOW\s+TABLES/i.test(sql_query):
+					$this.SQLinJS('showTables', callback);
+				break;
 
-					default:
-						stdErr('UNKNOWN_COM', callback);
-				}
-			});
+				default:
+					stdErr('UNKNOWN_COM', callback);
+			}
 		},
 
 		"_Update" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				try {
-					var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
-						parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
-						table = parts[0],
-						cols  = parts[1].split(/\s*,\s*/),
-						conds = parts[2].split(/AND/i);
+			try {
+				var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
+					parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
+					table = parts[0],
+					cols  = parts[1].split(/\s*,\s*/),
+					conds = parts[2].split(/AND/i);
 
-					$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null), callback);
-				}
-				catch(err) {
-					stdErr('SYNTAX_ERROR', callback);
-				}
-			});
+				$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null), callback);
+			}
+			catch(err) {
+				stdErr('SYNTAX_ERROR', callback);
+			}
 		},
 
 		"_Use" : function() {
-			return this.each(function() {
-				var $this = $(this),
-					sql_query = $this.data('_sql_query'),
-					callback  = $this.data('_callback');
+			var $this = $(this),
+				sql_query = $this.data('_sql_query'),
+				callback  = $this.data('_callback');
 
-				var regex = /^USE\s+(\w+)/i,
-					name  = sql_query.replace(regex,'$1');
+			var regex = /^USE\s+(\w+)/i,
+				name  = sql_query.replace(regex,'$1');
 
-				$this.SQLinJS('useDatabase', name, callback);
-			});
+			$this.SQLinJS('useDatabase', name, callback);
 		}
 	};
 
