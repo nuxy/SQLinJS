@@ -21,7 +21,7 @@ http://github.com/nuxy/SQLinJS/raw/master/preview.jpg
 
 == Installation
 
-Download the latest {sources}[https://github.com/nuxy/SQLinJS/downloads] and refer to the {README}[http://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
+Download the latest {sources}[https://github.com/nuxy/SQLinJS/tags] and refer to the {README}[http://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
 
 == Author
 
