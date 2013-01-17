@@ -523,7 +523,7 @@
 			});
 
 			if (timer) {
-				if (res[0]) {
+				if (res[1].length > 0) {
 					stdTermOut(res[0], res[1]);
 				}
 
