@@ -249,10 +249,13 @@
 				return stdErr('CANT_CREATE_DB', name, callback);
 			}
 
-			// create an empty database
-			data[name] = {};
+			var timer = calcExecTime(function() {
 
-			stdStatOut();
+				// create an empty database
+				data[name] = {};
+			});
+
+			stdStatOut(0, timer, true);
 
 			runCallback(callback, true);
 		},
@@ -297,15 +300,16 @@
 				};
 			});
 
-			stdStatOut(0, timer);
+			stdStatOut(0, timer, true);
 
 			runCallback(callback, true);
 		},
 
-		"deleteFrom" : function(table, conds, callback) {
+		"deleteFrom" : function(table, clause, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
 				data  = $this.data('_database')[used],
+				res   = [],
 				count = 0;
 
 			if (!data) {
@@ -322,60 +326,22 @@
 
 			var timer = calcExecTime(function() {
 				var cols = data[table]['_cols'],
-					defs = data[table]['_defs'],
 					rows = data[table]['_data'];
 
-				if (!conds) {
-
-					// delete all records
-					data = [];
-					count = rows.length;
-					return;
-				}
+				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
 
 				// iterate table rows
-				for (var i = 0; i < rows.length; i++) {
-					var row  = rows[i],
-						skip = null,
-						del  = null;
+				for (var i = 0; i < res[1].length; i++) {
+					var obj = res[1][i];
 
-					if (row === undefined) continue;
+					for (var j = 0; j < rows.length; j++) {
+						var row = rows[j];
 
-					// .. columns/values
-					for (var j = 0; j < cols.length; j++) {
-						var col = cols[j],
-							val = (row[col] !== undefined) ? row[col] : 'NULL';
-
-						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr('UNKNOWN_FIELD', table, col, callback);
+						// compare results
+						if ( compareObj(row, obj) ) {
+							rows.splice(j, 1);
+							count += 1;
 						}
-
-						if (skip) continue;
-
-						// delete record based on conditional expressions
-						for (var k = 0; k < conds.length; k++) {
-							var res = testExpr(conds[k], col, val);
-
-							switch (res) {
-								case 0:
-									skip = true;
-									break;
-								break;
-
-								case 1:
-									del = true;
-								break;
-
-								case 2:
-									return stdErr('SYNTAX_ERROR', callback);
-								break;
-							}
-						}
-					}
-
-					if (del && !skip) {
-						rows.splice(i, 1);
-						count += 1;
 					}
 				}
 
@@ -383,7 +349,7 @@
 				data[table]['_data'] = reindexArray(rows);
 			});
 
-			stdStatOut(count, timer);
+			stdStatOut(count, timer, true);
 
 			runCallback(callback, true);
 		},
@@ -437,7 +403,7 @@
 				delete data[name];
 			});
 
-			stdStatOut(0, timer);
+			stdStatOut(0, timer, true);
 
 			runCallback(callback, true);
 		},
@@ -463,7 +429,7 @@
 				delete data[name];
 			});
 
-			stdStatOut(0, timer);
+			stdStatOut(0, timer, true);
 
 			runCallback(callback, true);
 		},
@@ -522,7 +488,7 @@
 			});
 
 			if (timer) {
-				stdStatOut(0, timer);
+				stdStatOut(0, timer, true);
 
 				runCallback(callback, true);
 			}
@@ -532,7 +498,8 @@
 			var $this = $(this),
 				used  = $this.data('_active_db'),
 				data  = $this.data('_database')[used],
-				res   = [];
+				res   = [],
+				count = 0;
 
 			if (typeof clause === 'function') {
 				callback = clause;
@@ -552,6 +519,8 @@
 
 			var timer = calcExecTime(function() {
 				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
+
+				count = res[1].length;
 			});
 
 			if (timer) {
@@ -559,7 +528,7 @@
 					stdTermOut(res[0], res[1]);
 				}
 
-				stdStatOut(res[1].length, timer);
+				stdStatOut(count, timer);
 
 				runCallback(callback, res[1]);
 			}
@@ -691,7 +660,7 @@
 			});
 
 			if (timer) {
-				stdStatOut(count, timer);
+				stdStatOut(count, timer, true);
 
 				runCallback(callback, true);
 			}
@@ -767,12 +736,17 @@
 				callback  = $this.data('_callback');
 
 			try {
-				var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.*))*$/i,
-					parts = sql_query.replace(regex,'$1\0$2').split('\0'),
+				var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
+					parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
 					table = parts[0],
 					conds = parts[1].split(/AND/i);
 
-				$this.SQLinJS('deleteFrom', table, ((conds[0]) ? conds: null), callback);
+				$this.SQLinJS('deleteFrom', table, {
+					conds    : ((conds[0]) ? conds : undefined),
+					order_by : parts[2],
+					sort     : parts[3],
+					limit    : parts[4]
+				}, callback);
 			}
 			catch(err) {
 				stdErr('SYNTAX_ERROR', callback);
@@ -922,14 +896,14 @@
 				names = data[table]['_cols'],
 				defs  = data[table]['_defs'],
 				rows  = data[table]['_data'],
-				vals  = [];
+				vals  = [],
+				count = 0;
 
 			// iterate table rows
 			for (var i = 0; i < rows.length; i++) {
-				var count = 1,
-					row   = rows[i],
-					obj   = {},
-					skip  = null
+				var row  = rows[i],
+					obj  = {},
+					skip = null
 
 				// return all columns; boolean or wildcard
 				if (cols[0] == '1' || cols[0] == '*') {
@@ -1071,6 +1045,29 @@
 	 */
 	function getObjSize(obj) {
 		return $.map(obj, function(val, index) { return index; }).length;
+	}
+
+	/*
+	 * Perform single-level comparison of two objects
+	 */
+	function compareObj(obj1, obj2) {
+		for (var key1 in obj1) {
+			if ( obj1.hasOwnProperty(key1) ) {
+				if (obj1[key1] !== obj2[key1]) {
+					return false;
+				}
+			}
+		}
+
+		for (var key2 in obj2) {
+			if ( obj2.hasOwnProperty(key2) ) {
+				if (obj1[key2] !== obj2[key2]) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/*
@@ -1229,14 +1226,16 @@
 	/*
 	 * Print query response message to screen
 	 */
-	function stdStatOut(count, timer) {
+	function stdStatOut(count, timer, write) {
 		if (!debug) return;
 
-		if (arguments.length > 1) {
-			stdOut(count + ' row' + ((count == 0 || count > 1) ? 's' : '') + ' in set &#40;' + timer + ' sec&#41;');
+		var rows = count + ' row' + ((count == 0 || count > 1) ? 's' : '');
+
+		if (arguments.length > 1 && !write) {
+			stdOut(rows + ' in set &#40;' + timer + ' sec&#41;');
 		}
 		else {
-			stdOut('Query OK, 0 rows affected' + ((timer) ? ' &#40;' + timer + ' sec&#41;' : ''));
+			stdOut('Query OK, ' + rows + ' affected' + ((timer) ? ' &#40;' + timer + ' sec&#41;' : ''));
 		}
 	}
 

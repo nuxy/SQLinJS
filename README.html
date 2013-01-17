@@ -14,8 +14,9 @@
 <h2>Features</h2>
 
 <ul>
-	<li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 8+ web browsers.</li>
+	<li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.</li>
 	<li>Compatible with iOS and Android mobile web browsers.</li>
+	<li>Supports <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> database storage</li>
 	<li>Fast and lightweight (jQuery plug-in *only 11 kB)</li>
 </ul>
 
@@ -191,14 +192,20 @@ dbh.SQLinJS('createTable','user', { "id" : "int(10)", "name" : "varchar(10)" },
 <p>Delete record(s) from the selected table.</p>
 
 <pre>
-dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>conds</em>] [,<em>handler</em>]);</pre>
+dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>clause</em>] [,<em>handler</em>]);</pre>
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; DELETE FROM user WHERE id &gt; 2 AND id != 4</samp>
+<samp>sql&gt; DELETE FROM user WHERE id &gt; 2 AND id != 4 ORDER BY id DESC LIMIT 5</samp>
 
 <pre>
-dbh.SQLinJS('deleteFrom','user', ['id &gt; 2','id != 4'],
+dbh.SQLinJS('deleteFrom','user',
+	{
+		conds    : ['id &gt; 2',"id != 4"],
+		order_by : 'id',
+		sort     : 'desc',
+		limit    : 5
+	},
 	function(response) {
 
 		// do something
@@ -444,7 +451,9 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <h3><a name="DELETE">DELETE</a></h3>
 
-<pre>DELETE FROM <em>tbl_name</em> [<em>create_specification</em>]</pre>
+<pre>DELETE FROM <em>tbl_name</em>
+   [WHERE <em>where_condition</em>]
+   [ORDER BY <em>col_name</em> [ASC | DESC]]</pre>
 
 <a class="back" href="#syntax">Back to Top</a>
 
