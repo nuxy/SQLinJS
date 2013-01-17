@@ -894,7 +894,7 @@
 			for (var i = 0; i < rows.length; i++) {
 				var row  = rows[i],
 					obj  = {},
-					skip = null
+					skip = null;
 
 				// return all columns; boolean or wildcard
 				if (cols[0] == '1' || cols[0] == '*') {
