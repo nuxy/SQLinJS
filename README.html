@@ -9,14 +9,17 @@
 
 <h1>SQLinJS</h1>
 
-<p>Manage a Javascript object database using the SQL syntax</p>
+<p>Create applications with offline capabilities using this simple embeddable DBMS written in Javascript. </p>
 
 <h2>Features</h2>
 
 <ul>
 	<li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.</li>
 	<li>Compatible with iOS and Android mobile web browsers.</li>
-	<li>Supports <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> database storage</li>
+	<li>Includes SQL parsing and processing engine (refer to <a href="#syntax">Supported Syntax</a> for language support)</li>
+	<li>Provides command-line terminal for managing object data using the SQL syntax.</li>
+	<li>Provides API methods for managing object data from within your application.</li>
+	<li>Supports <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> for database storage.</li>
 	<li>Fast and lightweight (jQuery plug-in *only 12 kB)</li>
 </ul>
 
@@ -128,7 +131,7 @@ dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND name != 'John
 
 <h3><a name="importDatabase">importDatabase</a></h3>
 
-<p>Import an existing database in supported <a href="#import">database format</a>.</p>
+<p>Import an existing database in supported <a href="demo.json">database format</a>.</p>
 
 <pre>
 dbh.SQLinJS('importDatabase', <em>data</em> [,<em>handler</em>]);</pre>
@@ -289,8 +292,7 @@ dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>handler</em>]);</p
 <samp>sql&gt; INSERT INTO user (id, name) VALUES ('1','Jerry')</samp>
 
 <pre>
-dbh.SQLinJS('insertInto',
-	'user',
+dbh.SQLinJS('insertInto','user',
 	{
 		id   : 1,
 		name : 'Jerry'
