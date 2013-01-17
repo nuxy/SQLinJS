@@ -325,23 +325,22 @@
 			}
 
 			var timer = calcExecTime(function() {
-				var cols = data[table]['_cols'],
-					rows = data[table]['_data'];
+				var rows = data[table]['_data'];
 
-				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
+				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
 
-				// iterate table rows
 				for (var i = 0; i < res[1].length; i++) {
 					var obj = res[1][i];
 
+					// iterate table rows
 					for (var j = 0; j < rows.length; j++) {
 						var row = rows[j];
 
-						// compare results
-						if ( compareObj(row, obj) ) {
-							rows.splice(j, 1);
-							count += 1;
-						}
+						if ( !compareObj(row, obj) ) continue;
+
+						// .. remove row data
+						rows.splice(j, 1);
+						count += 1;
 					}
 				}
 
@@ -459,7 +458,7 @@
 					var val = vals[col].replace(/'(.*)'/,'$1');
 
 					if ( !defs.hasOwnProperty(col) ) {
-						return stdErr('UNKNOWN_FIELD', table, col, callback);
+						return stdErr('UNKNOWN_FIELD', col, table, callback);
 					}
 
 					// process values based on data type definition
@@ -589,14 +588,15 @@
 			runCallback(callback, vals);
 		},
 
-		"updateSet" : function(table, cols, conds, callback) {
+		"updateSet" : function(table, cols, clause, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
 				data  = $this.data('_database')[used],
+				res   = [],
 				count = 0;
 
-			if (typeof conds === 'function') {
-				callback = conds;
+			if (typeof clause === 'function') {
+				callback = clause;
 			}
 
 			if (!data) {
@@ -612,49 +612,35 @@
 			}
 
 			var timer = calcExecTime(function() {
-				var names = data[table]['_cols'],
-					defs  = data[table]['_defs'],
-					rows  = data[table]['_data'];
+				var defs = data[table]['_defs'],
+					rows = data[table]['_data'];
 
-				// iterate table rows
-				for (var i = 0; i < rows.length; i++) {
-					var row  = rows[i],
-						skip = null;
+				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
 
-					// .. columns/values
-					for (var j = 0; j < cols.length; j++) {
-						var parts = cols[j].replace(/^(\w+)\s*=\s*(.+)$/,'$1\0$2').split('\0'),
-							col   = parts[0],
-							val   = parts[1];
+				for (var i = 0; i < res[1].length; i++) {
+					var obj = res[1][i];
 
-						if ( !defs.hasOwnProperty(col) ) {
-							return stdErr('UNKNOWN_FIELD', table, col, callback);
-						}
+					// iterate table rows
+					for (var j = 0; j < rows.length; j++) {
+						var row = rows[j];
 
-						for (var k = 0; k < names.length; k++) {
-							var name = names[k];
+						if ( !compareObj(row, obj) ) continue;
 
-							// test WHERE clause conditional expressions
-							for (var m = 0; m < conds.length; m++) {
-								var res = testExpr(conds[m], name, row[name]);
+						// .. columns/values
+						for (var k = 0; k < cols.length; k++) {
+							var parts = cols[k].replace(/^(\w+)\s*=\s*(?:'|")*(.+?)(?:'|")*$/,'$1\0$2').split('\0'),
+								col   = parts[0],
+								val   = parts[1];
 
-								switch (res) {
-									case 0:
-										skip = true;
-										break;
-									break;
-
-									case 1:
-										row[name] = val;
-										count += 1;
-									break;
-
-									case 2:
-										return stdErr('SYNTAX_ERROR', callback);
-									break;
-								}
+							if ( !defs.hasOwnProperty(col) ) {
+								return stdErr('UNKNOWN_FIELD', col, table, callback);
 							}
+
+							// .. update column value
+							row[col] = val;
 						}
+
+						count += 1;
 					}
 				}
 			});
@@ -867,13 +853,18 @@
 				callback  = $this.data('_callback');
 
 			try {
-				var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.*))*$/i,
-					parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
+				var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
+					parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
 					table = parts[0],
 					cols  = parts[1].split(/\s*,\s*/),
 					conds = parts[2].split(/AND/i);
 
-				$this.SQLinJS('updateSet', table, cols, ((conds[0]) ? conds: null), callback);
+				$this.SQLinJS('updateSet', table, cols, {
+					conds    : ((conds[0]) ? conds : undefined),
+					order_by : parts[3],
+					sort     : parts[4],
+					limit    : parts[5]
+				}, callback);
 			}
 			catch(err) {
 				stdErr('SYNTAX_ERROR', callback);
@@ -915,7 +906,7 @@
 					var col = cols[j];
 
 					if ( !defs.hasOwnProperty(col) ) {
-						return stdErr('UNKNOWN_FIELD', table, col, callback);
+						return stdErr('UNKNOWN_FIELD', col, table, callback);
 					}
 
 					for (var k = 0; k < names.length; k++) {

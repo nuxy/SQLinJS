@@ -381,12 +381,15 @@ dbh.SQLinJS('updateSet', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John'</samp>
+<samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC LIMIT 5</samp>
 
 <pre>
 dbh.SQLinJS('updateSet','user', ["name = 'Fred'"],
 	{
-		conds : ['id &gt; 2',"name != 'John'"]
+		conds    : ['id &gt; 2',"name != 'John'"]
+		order_by : 'id',
+		sort     : 'desc',
+		limit    : 5
 	},
 	function(response) {
 
@@ -506,7 +509,8 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <pre>UPDATE <em>tbl_name</em>
    SET <em>col_name1</em>=<em>expr1</em> [,<em>col_name2</em>=<em>expr2</em>] ...
-  [WHERE <em>where_condition</em>]</pre>
+   [WHERE <em>where_condition</em>]</pre>
+   [ORDER BY <em>col_name</em> [ASC | DESC]]</pre>
 
 <a class="back" href="#syntax">Back to Top</a>
 
