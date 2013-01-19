@@ -8,10 +8,10 @@ http://github.com/nuxy/SQLinJS/raw/master/preview.jpg
 
 - Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.
 - Compatible with iOS and Android mobile web browsers.
-- Includes SQL parsing and processing engine (refer to Supported Syntax for language support)
+- Includes SQL parsing and processing engine (refer to {Supported Syntax}[http://labs.mbrooks.info/demos/SQLinJS/README.html#syntax] for language support)
 - Provides command-line terminal for managing object data using the SQL syntax.
 - Provides API methods for managing object data from within your application.
-- Supports jQuery .data() for database storage.
+- Supports jQuery {.data()}[http://api.jquery.com/jQuery.data] for database storage.
 - Fast and lightweight (jQuery plug-in *only 12 kB)
 
 == To Do
