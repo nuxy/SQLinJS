@@ -1169,7 +1169,7 @@
 	 * Return help menu as a string
 	 */
 	function viewHelp() {
-		stdErr('Help menu is not available');
+		window.open('http://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
 	}
 
 	/*
