@@ -452,6 +452,8 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <pre>CREATE TABLE <em>tbl_name</em> [<em>create_specification</em>]</pre>
 
+<p>Currently supported data types are <em>INT</em>, <em>CHAR</em>, <em>VARCHAR</em>. Furthermore, the INT type works similar to a zerofill (character count/length) when an argument is present.  This is due to limitations in the ability to determine the required storage and range for each integer type across web browsers and the various system architectures.</p>
+
 <a class="back" href="#syntax">Back to Top</a>
 
 <h3><a name="DELETE">DELETE</a></h3>
