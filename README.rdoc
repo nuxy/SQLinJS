@@ -18,6 +18,8 @@ http://github.com/nuxy/SQLinJS/raw/master/preview.jpg
 
 - Add support for JOIN using prefixed columns
 - Add support for OR conditional in WHERE clause
+- Add support for NOW() in WHERE clause
+- Improve date type sorting (instead of string based)
 
 == Installation
 
