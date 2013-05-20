@@ -1100,7 +1100,7 @@
 	 *  2 - Invalid condition/expression
 	 */
 	function testExpr(str, col1, val1) {
-		var regex = /^\s*(\w+)\s*([!=<>]+)\s*(.*)\s*$/i,
+		var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s*$/i,
 			parts = str.replace(regex,'$1\0$2\0$3').split('\0');
 
 		if (parts.length != 3 || !parts[2]) return 2;
@@ -1112,7 +1112,7 @@
 		if (col1 != col2) return;
 
 		// test expression by type
-		if (! /([!=]+|<>)/.test(op) && validNum(val1) && validNum(val2) ) {
+		if (! /([!=]+|<>|LIKE)/i.test(op) && validNum(val1) && validNum(val2) ) {
 			var num1 = val1,
 				num2 = val2;
 
@@ -1139,8 +1139,11 @@
 			var str1 = val1,
 				str2 = val2.replace(/'(.*)'/,'$1');
 
+			str1 = str1.toLowerCase();
+			str2 = str2.toLowerCase();
+
 			// .. string comparison
-			switch (op) {
+			switch (op.toUpperCase()) {
 				case '=':
 					if (str1 == str2) return 1;
 				break;
@@ -1151,6 +1154,15 @@
 
 				case '<>':
 					if (str1 != str2) return 1;
+				break;
+
+				case 'LIKE':
+					var regex = str2.replace(/^%+|%+$/g,'(.*)');
+
+					// use per-character matching
+					if ( val1.match(new RegExp('^' + regex + '$','i')) ) {
+						return 1;
+					}
 				break;
 			}
 		}
