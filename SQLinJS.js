@@ -166,7 +166,7 @@
 
 			str = $.trim(str);
 
-			stdOut('\nsql> ' + str);
+			stdOut('\r\nsql> ' + str);
 
 			// .. save request state
 			data['_query_log'].push( logFormat(str) );
@@ -1211,7 +1211,7 @@
 	function stdOut(str) {
 		if (!debug) return;
 
-		$('#SQLinJS pre').append( ((str) ? str : '') + '\n');
+		$('#SQLinJS pre').append( ((str) ? str : '') + '\r\n');
 	}
 
 	/*
