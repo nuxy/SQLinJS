@@ -40,7 +40,7 @@
 					_database  : null,
 					_sql_query : null,
 					_callback  : null,
-					_query_log : [],
+					_query_log : []
 				});
 
 				if (typeof obj === 'object') {
