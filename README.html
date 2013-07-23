@@ -199,15 +199,12 @@ dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>clause</em>] [,<em>handler</em>])
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; DELETE FROM user WHERE id &gt; 2 AND id != 4 ORDER BY id DESC LIMIT 5</samp>
+<samp>sql&gt; DELETE FROM user WHERE id &gt; 2 AND id != 4</samp>
 
 <pre>
 dbh.SQLinJS('deleteFrom','user',
 	{
-		conds    : ['id &gt; 2',"id != 4"],
-		order_by : 'id',
-		sort     : 'desc',
-		limit    : 5
+		conds : ['id &gt; 2',"id != 4"]
 	},
 	function(response) {
 
@@ -383,15 +380,12 @@ dbh.SQLinJS('updateSet', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC LIMIT 5</samp>
+<samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John'</samp>
 
 <pre>
 dbh.SQLinJS('updateSet','user', ["name = 'Fred'"],
 	{
-		conds    : ['id &gt; 2',"name != 'John'"]
-		order_by : 'id',
-		sort     : 'desc',
-		limit    : 5
+		conds : ['id &gt; 2',"name != 'John'"]
 	},
 	function(response) {
 
