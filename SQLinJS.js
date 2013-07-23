@@ -1139,8 +1139,8 @@
 			var str1 = val1,
 				str2 = val2.replace(/'(.*)'/,'$1');
 
-			str1 = str1.toLowerCase();
-			str2 = str2.toLowerCase();
+			str1 = (typeof str1 !== 'number') ? str1.toLowerCase() : str1;
+			str2 = (typeof str2 !== 'number') ? str2.toLowerCase() : str2;
 
 			// .. string comparison
 			switch (op.toUpperCase()) {
