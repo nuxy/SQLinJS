@@ -901,42 +901,39 @@
 					cols = data[table]['_cols'];
 				}
 
-				// .. columns/values
-				for (var j = 0; j < cols.length; j++) {
-					var col = cols[j];
+				// process columns/values
+				for (var j = 0; j < names.length; j++) {
+					var name = names[j],
+						col  = cols [j],
+						val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
-					if ( !defs.hasOwnProperty(col) ) {
-						return stdErr('UNKNOWN_FIELD', col, table, callback);
+					if ( !defs.hasOwnProperty(name) ) {
+						return stdErr('UNKNOWN_FIELD', name, table, callback);
 					}
 
-					for (var k = 0; k < names.length; k++) {
-						var name = names[k],
-							val  = (row[name] !== undefined) ? row[name] : 'NULL';
+					if (!clause.conds || skip) {
+						if (name != col) continue;
+						obj[name] = val;
+						continue;
+					}
 
-						if (!clause.conds || skip) {
-							if (name != col) continue;
-							obj[name] = val;
-							continue;
-						}
+					// test WHERE clause conditional expressions
+					for (var k = 0; k < clause.conds.length; k++) {
+						var res = testExpr(clause.conds[k], name, val);
 
-						// test WHERE clause conditional expressions
-						for (var m = 0; m < clause.conds.length; m++) {
-							var res = testExpr(clause.conds[m], name, val);
-
-							switch (res) {
-								case 0:
-									skip = true;
-									break;
+						switch (res) {
+							case 0:
+								skip = true;
 								break;
+							break;
 
-								case 2:
-									return stdErr('SYNTAX_ERROR', callback);
-								break;
+							case 2:
+								return stdErr('SYNTAX_ERROR', callback);
+							break;
 
-								default:
-									if (name != col) continue;
-									obj[name] = val;
-							}
+							default:
+								if (name != col) continue;
+								obj[name] = val;
 						}
 					}
 				}
@@ -1112,7 +1109,7 @@
 		if (col1 != col2) return;
 
 		// test expression by type
-		if (! /([!=]+|<>|LIKE)/i.test(op) && validNum(val1) && validNum(val2) ) {
+		if (! /^([!=]+|<>|LIKE)$/i.test(op) && validNum(val1) && validNum(val2) ) {
 			var num1 = val1,
 				num2 = val2;
 
