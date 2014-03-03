@@ -1,4 +1,4 @@
-/*
+/**
  *  SQLinJS
  *  Manage a Javascript object database using the SQL syntax
  *
@@ -21,7 +21,7 @@
 		UNKNOWN_COM       : 'Unknown command',
 		UNKNOWN_DB        : "Unknown database '%s'",
 		UNKNOWN_TABLE     : "Unknown table '%s'",
-		UNKNOWN_FIELD     : "Unknown column '%s' in '%s'",
+		UNKNOWN_FIELD     : "Unknown column '%s' in '%s' table",
 		CANT_CREATE_DB    : "Can't create database %s",
 		CANT_DROP_DB      : "Can't drop database '%s'; database doesn't exist",
 		CANT_DROP_TABLE   : "Can't drop table '%s'",
@@ -58,8 +58,8 @@
 
 			debug = true;
 
-			var screen = $('<pre></pre>');
-			var input  = $('<textarea></textarea>');
+			var screen = $('<pre></pre>'),
+				input  = $('<textarea></textarea>');
 
 			var terminal
 				= $('<div></div>')
@@ -143,7 +143,7 @@
 									case 40:
 
 										// .. view next command
-										index = ( (index + 1) < count)
+										index = ((index + 1) < count)
 											? index += 1
 											: index;
 									break;
@@ -898,7 +898,7 @@
 
 				// return all columns; boolean or wildcard
 				if (cols[0] == '1' || cols[0] == '*') {
-					cols = data[table]['_cols'];
+					cols = names;
 				}
 
 				// process columns/values
@@ -973,39 +973,49 @@
 		}
 	};
 
-	/*
+	/**
 	 * Return true if in valid format - [a-zA-Z0-9_]
+	 * @param {String} str
+	 * @returns {Boolean}
 	 */
 	function validName(str) {
 		if (!str) return false;
 		return /^\w+$/g.test(str);
 	}
 
-	/*
+	/**
 	 * Return true if an integer
+	 * @param {String} val
+	 * @returns {Boolean}
 	 */
 	function validNum(val) {
 		if (parseInt(val) == val) return true;
 	}
 
-	/*
+	/**
 	 * Return array values (folded) as an object
+	 * @param {Array} names
+	 * @param {Array} vals
+	 * @returns {Object}
 	 */
 	function getValsAsObj(names, vals) {
 		var obj = {};
 		for (var i = 0; i < names.length; i++) {
-			obj[ names[i] ] = vals[i];
+			obj[names[i]] = vals[i];
 		}
 		return obj;
 	}
 
-	/*
+	/**
 	 * Return key/values as array of object(s)
+	 * @param {Array}  names
+	 * @param {Object} obj
+	 * @returns {Array}
 	 */
 	function getObjAsCols(names, obj) {
 		var vals = [];
 		for (var key in obj) {
-			if ( !obj.hasOwnProperty(key) ) continue;
+			if (!obj.hasOwnProperty(key)) continue;
 
 			var new_obj = {};
 			for (var i = 0; i < names.length; i++) {
@@ -1016,13 +1026,15 @@
 		return vals;
 	}
 
-	/*
+	/**
 	 * Return key names (1st child) as array of objects
+	 * @param {Object} data
+	 * @param {String} name
 	 */
 	function getObjKeys(data, name) {
 		var vals = [];
 		for (var key in data) {
-			if ( !data.hasOwnProperty(key) ) continue;
+			if (!data.hasOwnProperty(key)) continue;
 
 			var new_obj = {};
 			new_obj[name] = key;
@@ -1031,15 +1043,20 @@
 		return vals;
 	}
 
-	/*
+	/**
 	 * Returns object key total count
+	 * @param {Object} obj
+	 * @returns {String}
 	 */
 	function getObjSize(obj) {
 		return $.map(obj, function(val, index) { return index; }).length;
 	}
 
-	/*
+	/**
 	 * Perform single-level comparison of two objects
+	 * @param {Object} obj1
+	 * @param {Object} obj2
+	 * @returns Boolean
 	 */
 	function compareObj(obj1, obj2) {
 		for (var key1 in obj1) {
@@ -1061,8 +1078,10 @@
 		return true;
 	}
 
-	/*
+	/**
 	 * Remove 'undefined' buckets from an array
+	 * @param {Array} arr
+	 * @returns {Array}
 	 */
 	function reindexArray(arr) {
 		var new_arr = [];
@@ -1074,8 +1093,10 @@
 		return new_arr;
 	}
 
-	/*
+	/**
 	 * Calculate execution time of a function (not precise, but simple)
+	 * @param {Function} func
+	 * @returns {String}
 	 */
 	function calcExecTime(func) {
 		try {
@@ -1092,8 +1113,12 @@
 		}
 	}
 
-	/*
+	/**
 	 * Return values based on expression result
+	 * @param {Array} conds
+	 * @param {String} col1
+	 * @param {String} val1
+	 * @returns {Integer}
 	 *
 	 *  0 - Expression result is false
 	 *  1 - Expression result is true
@@ -1167,29 +1192,33 @@
 		return 0;
 	}
 
-	/*
+	/**
 	 * Return 'query_log' entry as an object
+	 * @param {String} str
+	 * @returns {Object}
 	 */
 	function logFormat(str) {
 		return { query : str, time : new Date().getTime() };
 	}
 
-	/*
+	/**
 	 * Return help menu as a string
 	 */
 	function viewHelp() {
 		window.open('http://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
 	}
 
-	/*
+	/**
 	 * Clear all messages in screen
 	 */
 	function clearTerminal() {
 		$('#SQLinJS pre').empty();
 	}
 
-	/*
+	/**
 	 * Print error message to screen
+	 * @param {String}   code
+	 * @param {Function} func
 	 */
 	function stdErr() {
 		var args = arguments;
@@ -1214,17 +1243,21 @@
 		}
 	}
 
-	/*
+	/**
 	 * Print message to screen; add newline to output
+	 * @param {String} str
 	 */
 	function stdOut(str) {
 		if (!debug) return;
 
-		$('#SQLinJS pre').append( ((str) ? str : '') + '\r\n');
+		$('#SQLinJS pre').append(((str) ? str : '') + '\r\n');
 	}
 
-	/*
+	/**
 	 * Print query response message to screen
+	 * @param {String}  count
+	 * @param {String}  timer
+	 * @param {Boolean} write
 	 */
 	function stdStatOut(count, timer, write) {
 		if (!debug) return;
@@ -1239,8 +1272,10 @@
 		}
 	}
 
-	/*
+	/**
 	 * Print tablular format message to screen
+	 * @param {Array} cols
+	 * @param {Array} data
 	 *
 	 * Example:
 	 *     stdTermOut(
@@ -1294,8 +1329,10 @@
 		genTermRow(count);
 	}
 
-	/*
+	/**
 	 * Print tablular format header to screen
+	 * @param {String} len
+	 * @param {Array}  cols
 	 */
 	function genTermHeader(len, cols) {
 		genTermRow(len);
@@ -1303,8 +1340,10 @@
 		genTermRow(len);
 	}
 
-	/*
+	/**
 	 * Print tablular format row to screen
+	 * @param {String} len
+	 * @param {Array}  cols
 	 */
 	function genTermRow(len, cols) {
 		var temp = new Array(len);
@@ -1316,15 +1355,20 @@
 		);
 	}
 
-	/*
+	/**
 	 * Append white space to the right side of a string
+	 * @param {String} str
+	 * @param {String} len
+	 * @param {String}
 	 */
 	function padStrRgt(str, len) {
 		return str + (new Array(len).join(' ')).slice(0, len - str.length);
 	}
 
-	/*
+	/**
 	 * Run callback function; die on errors
+	 * @param {Function} func
+	 * @param {*} data
 	 */
 	function runCallback(func, data) {
 		try {
@@ -1337,8 +1381,9 @@
 		}
 	}
 
-	/*
+	/**
 	 * Output errors including caller object
+	 * @param {String} str
 	 */
 	function throwError(str) {
 		throw new Error(
