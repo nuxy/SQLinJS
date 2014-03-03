@@ -108,7 +108,7 @@
 
 								var queries =
 									$.grep(str.split(/;|\\g/), function(bucket) {
-										if (! /^(\s+|\\g+|;)*$/.test(bucket) ) {
+										if (!/^(\s+|\\g+|;)*$/.test(bucket)) {
 											return bucket;
 										}
 									});
@@ -222,7 +222,7 @@
 		"importDatabase" : function(obj, callback) {
 			if (typeof obj === 'object') {
 				for (var key in obj) {
-					if ( !obj.hasOwnProperty(key) ) {
+					if (!obj.hasOwnProperty(key)) {
 						return stdErr('CANT_CREATE_DB', key, callback);
 					}
 
@@ -241,11 +241,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( data.hasOwnProperty(name) ) {
+			if (data.hasOwnProperty(name)) {
 				return stdErr('CANT_CREATE_DB', name, callback);
 			}
 
@@ -269,11 +269,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( data.hasOwnProperty(name) ) {
+			if (data.hasOwnProperty(name)) {
 				return stdErr('TABLE_EXISTS', name, callback);
 			}
 
@@ -281,7 +281,7 @@
 
 			// check supported data types
 			for (var type in defs) {
-				if ( /^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type]) ) {
+				if (/^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type])) {
 					cols.push(type);
 				}
 			}
@@ -316,11 +316,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(table) ) {
+			if (!validName(table)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(table) ) {
+			if (!data || !data.hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
@@ -336,7 +336,7 @@
 					for (var j = 0; j < rows.length; j++) {
 						var row = rows[j];
 
-						if ( !compareObj(row, obj) ) continue;
+						if (!compareObj(row, obj)) continue;
 
 						// .. remove row data
 						rows.splice(j, 1);
@@ -362,11 +362,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data.hasOwnProperty(name) ) {
+			if (!data.hasOwnProperty(name)) {
 				return stdErr('UNKNOWN_TABLE', name, callback);
 			}
 
@@ -390,11 +390,11 @@
 			var $this = $(this),
 				data  = $this.data('_database');
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data && !data.hasOwnProperty(name) ) {
+			if (!data && !data.hasOwnProperty(name)) {
 				return stdErr('CANT_DROP_DB', name, callback);
 			}
 
@@ -416,11 +416,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(name) ) {
+			if (!data || !data.hasOwnProperty(name)) {
 				return stdErr('CANT_DROP_TABLE', name, callback);
 			}
 
@@ -442,11 +442,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(table) ) {
+			if (!validName(table)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(table) ) {
+			if (!data || !data.hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
@@ -457,7 +457,7 @@
 				for (var col in vals) {
 					var val = vals[col].replace(/'(.*)'/,'$1');
 
-					if ( !defs.hasOwnProperty(col) ) {
+					if (!defs.hasOwnProperty(col)) {
 						return stdErr('UNKNOWN_FIELD', col, table, callback);
 					}
 
@@ -508,22 +508,27 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(table) ) {
+			if (!validName(table)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(table) ) {
+			if (!data || !data.hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
 			var timer = calcExecTime(function() {
 				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
 
-				count = res[1].length;
+				if (res[1]) {
+					count = res[1].length;
+				}
+				else {
+					return res;
+				}			
 			});
 
 			if (timer) {
-				if (res[1].length > 0) {
+				if (count > 0) {
 					stdTermOut(res[0], res[1]);
 				}
 
@@ -603,11 +608,11 @@
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( !validName(table) ) {
+			if (!validName(table)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(table) ) {
+			if (!data || !data.hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
@@ -624,7 +629,7 @@
 					for (var j = 0; j < rows.length; j++) {
 						var row = rows[j];
 
-						if ( !compareObj(row, obj) ) continue;
+						if (!compareObj(row, obj)) continue;
 
 						// .. columns/values
 						for (var k = 0; k < cols.length; k++) {
@@ -632,7 +637,7 @@
 								col   = parts[0],
 								val   = parts[1];
 
-							if ( !defs.hasOwnProperty(col) ) {
+							if (!defs.hasOwnProperty(col)) {
 								return stdErr('UNKNOWN_FIELD', col, table, callback);
 							}
 
@@ -656,11 +661,11 @@
 			var $this = $(this),
 				data  = $this.data('_database');
 
-			if ( !validName(name) ) {
+			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if ( !data || !data.hasOwnProperty(name) ) {
+			if (!data || !data.hasOwnProperty(name)) {
 				return stdErr('UNKNOWN_DB', name, callback);
 			}
 
@@ -1060,7 +1065,7 @@
 	 */
 	function compareObj(obj1, obj2) {
 		for (var key1 in obj1) {
-			if ( obj1.hasOwnProperty(key1) ) {
+			if (obj1.hasOwnProperty(key1)) {
 				if (obj1[key1] !== obj2[key1]) {
 					return false;
 				}
@@ -1068,7 +1073,7 @@
 		}
 
 		for (var key2 in obj2) {
-			if ( obj2.hasOwnProperty(key2) ) {
+			if (obj2.hasOwnProperty(key2)) {
 				if (obj1[key2] !== obj2[key2]) {
 					return false;
 				}
@@ -1134,7 +1139,7 @@
 		if (col1 != col2) return;
 
 		// test expression by type
-		if (! /^([!=]+|<>|LIKE)$/i.test(op) && validNum(val1) && validNum(val2) ) {
+		if (!/^([!=]+|<>|LIKE)$/i.test(op) && validNum(val1) && validNum(val2)) {
 			var num1 = val1,
 				num2 = val2;
 
@@ -1182,7 +1187,7 @@
 					var regex = str2.replace(/^%+|%+$/g,'(.*)');
 
 					// use per-character matching
-					if ( val1.match(new RegExp('^' + regex + '$','i')) ) {
+					if (val1.match(new RegExp('^' + regex + '$','i'))) {
 						return 1;
 					}
 				break;
@@ -1225,7 +1230,7 @@
 			code = args[0],
 			func = args[args.length -1];
 
-		if ( !errors.hasOwnProperty(code) ) return;
+		if (!errors.hasOwnProperty(code)) return;
 
 		if (debug) {
 			var str = errors[code];
@@ -1320,7 +1325,7 @@
 				arr  = [];
 
 			for (var key in rows) {
-				arr.push( padStrRgt(String(rows[key]), sizes[key]) );
+				arr.push(padStrRgt(String(rows[key]), sizes[key]));
 			}
 
 			genTermRow(sizes[key], arr);
