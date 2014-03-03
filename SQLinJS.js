@@ -907,10 +907,6 @@
 						col  = cols [j],
 						val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
-					if ( !defs.hasOwnProperty(name) ) {
-						return stdErr('UNKNOWN_FIELD', name, table, callback);
-					}
-
 					if (!clause.conds || skip) {
 						if (name != col) continue;
 						obj[name] = val;
@@ -919,7 +915,14 @@
 
 					// test WHERE clause conditional expressions
 					for (var k = 0; k < clause.conds.length; k++) {
-						var res = testExpr(clause.conds[k], name, val);
+						var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s*$/i,
+							parts = clause.conds[k].replace(regex,'$1\0$2\0$3').split('\0');
+
+						if (names.indexOf(parts[0]) == -1) {
+							return stdErr('UNKNOWN_FIELD', parts[0], table, callback);
+						}
+
+						var res = testExpr(parts, name, val);
 
 						switch (res) {
 							case 0:
@@ -1096,15 +1099,12 @@
 	 *  1 - Expression result is true
 	 *  2 - Invalid condition/expression
 	 */
-	function testExpr(str, col1, val1) {
-		var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s*$/i,
-			parts = str.replace(regex,'$1\0$2\0$3').split('\0');
+	function testExpr(conds, col1, val1) {
+		if (conds.length != 3 || !conds[2]) return 2;
 
-		if (parts.length != 3 || !parts[2]) return 2;
-
-		var col2 = parts[0],
-			op   = parts[1],
-			val2 = parts[2];
+		var col2 = conds[0],
+			op   = conds[1],
+			val2 = conds[2];
 
 		if (col1 != col2) return;
 
