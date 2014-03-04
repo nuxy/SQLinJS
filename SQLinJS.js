@@ -370,11 +370,12 @@
 				return stdErr('UNKNOWN_TABLE', name, callback);
 			}
 
-			var cols  = ['Field','Type'],
+			var defs  = data[name]['_defs'],
 				count = 0;
 
 			var timer = calcExecTime(function() {
-				var vals = getObjAsCols(cols, data[name]['_defs']);
+				var cols  = ['Field','Type'],
+					vals = getObjAsCols(cols, defs);
 
 				stdTermOut(cols, vals);
 
@@ -383,7 +384,7 @@
 
 			stdStatOut(count, timer);
 
-			runCallback(callback);
+			runCallback(callback, defs);
 		},
 
 		"dropDatabase" : function(name, callback) {
