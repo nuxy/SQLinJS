@@ -286,14 +286,15 @@ dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>handler</em>]);</p
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; INSERT INTO user (id, name) VALUES ('1','Jerry')</samp>
+<samp>sql&gt; INSERT INTO user (id, name) VALUES ('1','Jerry'), ('2','Alice'), ('3','Mable')</samp>
 
 <pre>
 dbh.SQLinJS('insertInto','user',
-	{
-		id   : 1,
-		name : 'Jerry'
-	},
+	[
+		{ id : '1', name : 'Jerry' },
+		{ id : '2', name : 'Alice' },
+		{ id : '3', name : 'Mable' }
+	],
 	function(response) {
 
 		// do something

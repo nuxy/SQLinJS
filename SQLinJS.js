@@ -451,39 +451,46 @@
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
+			// support Object values (backwards compatibility)
+			if (typeof vals === 'object') {
+				vals = new Array(vals);
+			}
+
 			var timer = calcExecTime(function() {
 				var defs = data[table]['_defs'],
 					obj  = {};
 
-				for (var col in vals) {
-					var val = vals[col].replace(/'(.*)'/,'$1');
+				for (var i = 0; i < vals.length; i++) {
+					for (var col in vals[i]) {
+						var val = vals[i][col].replace(/'(.*)'/,'$1');
 
-					if (!defs.hasOwnProperty(col)) {
-						return stdErr('UNKNOWN_FIELD', col, table, callback);
+						if (!defs.hasOwnProperty(col)) {
+							return stdErr('UNKNOWN_FIELD', col, table, callback);
+						}
+
+						// process values based on data type definition
+						var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
+							name = type[0],
+							size = (typeof type[1] === 'number') ? type[1] : val.length;
+
+						switch (true) {
+							case /((VAR)*CHAR)/i.test(name):
+
+								// truncate value to defined type length
+								obj[col] = val.substring(0, size) || undefined;
+							break;
+
+							case /INT/i.test(name):
+								obj[col] = parseInt(val);
+							break;
+						}
 					}
 
-					// process values based on data type definition
-					var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
-						name = type[0],
-						size = (typeof type[1] === 'number') ? type[1] : val.length;
+					if (obj) {
 
-					switch (true) {
-						case /((VAR)*CHAR)/i.test(name):
-
-							// truncate value to defined type length
-							obj[col] = val.substring(0, size) || undefined;
-						break;
-
-						case /INT/i.test(name):
-							obj[col] = parseInt(val);
-						break;
+						// insert new record
+						data[table]['_data'].push(obj);
 					}
-				}
-
-				if (obj) {
-
-					// insert new record
-					data[table]['_data'].push(obj);
 				}
 			});
 
@@ -793,17 +800,26 @@
 					parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
 					table = parts[0],
 					cols  = parts[1].split(/\s*,\s*/),
-					vals  = parts[2].split(/\s*,\s*/);
+					vals  = parts[2].split(/\s*\)\s*,\s*\(\s*/);
 
 				if (!cols[0]) {
 					cols = data[table]['_cols'];
 				}
 
-				if (cols.length != vals.length) {
-					return stdErr('WRONG_VALUE_COUNT', callback);
+				var _vals = [];
+
+				// convert string VALUES to an array of object(s)
+				for (var i = 0; i < vals.length; i++) {
+					var items = vals[i].split(/\s*,\s*/);
+
+					if (cols.length != items.length) {
+						return stdErr('WRONG_VALUE_COUNT', callback);
+					}
+
+					_vals.push( getValsAsObj(cols, items) );
 				}
 
-				$this.SQLinJS('insertInto', table, getValsAsObj(cols, vals), callback);
+				$this.SQLinJS('insertInto', table, _vals, callback);
 			}
 			catch(err) {
 				stdErr('SYNTAX_ERROR', callback);
