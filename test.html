@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="http://www.google.com/jsapi"></script>
+	<script>
+		google.load('jquery','1.7.1');
+	</script>
+
+	<script src="test/unit/qunit-1.14.0.js"></script>
+	<script>
+	QUnit.config.scrolltop = true;
+
+	var $this = $(document);
+	</script>
+
+	<script src="SQLinJS.min.js"></script>
+
+
+	<!-- QUnit tests begin (order is important) -->
+
+	<script src="test/init.js"></script>
+	<script src="test/database.js"></script>
+	<script src="test/table.js"></script>
+	<script src="test/insert.js"></script>
+	<script src="test/delete.js"></script>
+	<script src="test/update.js"></script>
+	<script src="test/select.js"></script>
+
+	<!-- QUnit tests end -->
+
+
+	<link rel="stylesheet" type="text/css" href="test/unit/qunit-1.14.0.css">
+
+	<title>SQLinJS - API method tests</title>
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+</body>
+</html>
