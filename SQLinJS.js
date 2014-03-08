@@ -40,12 +40,24 @@
 					_sql_query : null,
 					_callback  : null,
 					_database  : {},
-					_query_log : [],
+					_query_log : []
 				});
 
+				// if database has been provided
 				if (typeof obj === 'object') {
-					$this.SQLinJS('importDatabase', obj, callback);
-					$this.SQLinJS('useDatabase','test', callback);
+					for (var key in obj) {
+
+						// .. import the data
+						$this.SQLinJS('importDatabase', obj, function(res) {
+							if (res === true) {
+
+								// .. use database
+								$this.SQLinJS('useDatabase', key, callback);
+							}
+						});
+
+						break;
+					}
 				}
 			}
 		},
@@ -456,7 +468,7 @@
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
-			// support Object values (backwards compatibility)
+			// support Object values for backwards compatibility
 			if (!vals instanceof Array) {
 			  	 vals = new Array(vals);
 			}
@@ -468,7 +480,7 @@
 					var obj  = {};
 
 					for (var col in vals[i]) {
-						var val = vals[i][col].replace(/'(.*)'/,'$1');
+						var val = vals[i][col].replace(/['"](.*)['"]/,'$1');
 
 						if (!defs.hasOwnProperty(col)) {
 							return stdErr('UNKNOWN_FIELD', col, table, callback);
@@ -635,6 +647,8 @@
 					rows = data[table]['_data'];
 
 				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
+
+return;
 
 				for (var i = 0; i < res[1].length; i++) {
 					var obj = res[1][i];
@@ -946,7 +960,7 @@
 						var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s*$/i,
 							parts = clause.conds[k].replace(regex,'$1\0$2\0$3').split('\0');
 
-						if (names.indexOf(parts[0]) == -1) {
+						if ( !$.inArray(parts[0], names) == -1) {
 							return stdErr('UNKNOWN_FIELD', parts[0], table, callback);
 						}
 
