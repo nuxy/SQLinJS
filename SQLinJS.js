@@ -164,12 +164,20 @@
 			var $this = $(this),
 				data  = $this.data();
 
-			str = $.trim(str);
+			if (debug) {
+				str = $.trim(str);
 
-			stdOut('\r\nsql> ' + str);
+				stdOut('\r\nsql> ' + str);
 
-			// .. save request state
-			data['_query_log'].push( logFormat(str) );
+				// log queries
+				data['_query_log'].push( logFormat(str) );
+			}
+			else
+			if (!data['_database']) {
+				return throwError(errors.NO_DB_SELECTED);
+			}
+
+			// save request state
 			data['_sql_query'] = str;
 			data['_callback']  = callback;
 
@@ -452,8 +460,8 @@
 			}
 
 			// support Object values (backwards compatibility)
-			if (typeof vals === 'object') {
-				vals = new Array(vals);
+			if (!vals instanceof Array) {
+			  	 vals = new Array(vals);
 			}
 
 			var timer = calcExecTime(function() {
