@@ -71,7 +71,7 @@ $(document).ready(function() {
 
 <h2>API</h2>
 
-<p>The following methods can be passed to the plugin-in main function after successful initialization.</p>
+<p>The following methods can be passed to the plugin-in main function after successful initialization.  An optional database in the supported <a href="demo.json">format</a> can be provided and will be autoloaded on initialization.</p>
 
 <pre>
 var dbh = $(document).SQLinJS([<em>data</em>] [,<em>handler</em>]);    // initialize using database</pre>
@@ -131,7 +131,7 @@ dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND name != 'John
 
 <h3><a name="importDatabase">importDatabase</a></h3>
 
-<p>Import an existing database in supported <a href="demo.json">database format</a>.</p>
+<p>Import an existing database in the supported <a href="demo.json">database format</a>.</p>
 
 <pre>
 dbh.SQLinJS('importDatabase', <em>data</em> [,<em>handler</em>]);</pre>
@@ -162,8 +162,10 @@ dbh.SQLinJS('createDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('createDatabase','accounts',
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -183,8 +185,10 @@ dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>handler</em>]);</p
 <pre>
 dbh.SQLinJS('createTable','user', { "id" : "int(10)", "name" : "varchar(10)" },
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -207,8 +211,10 @@ dbh.SQLinJS('deleteFrom','user',
 		conds : ['id &gt; 2',"id != 4"]
 	},
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -228,8 +234,9 @@ dbh.SQLinJS('describeTable', <em>name</em> [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('describeTable','user',
 	function(response) {
-
-		// do something
+		for (var key in response) {
+			alert('column=' + key + '; type=' + response[key]);
+		}
 	}
 );</pre>
 
@@ -249,8 +256,10 @@ dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('dropDatabase','accounts',
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -270,8 +279,10 @@ dbh.SQLinJS('dropTable', <em>name</em> [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('dropTable','user',
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -296,8 +307,10 @@ dbh.SQLinJS('insertInto','user',
 		{ id : '3', name : 'Mable' }
 	],
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -320,11 +333,14 @@ dbh.SQLinJS('selectFrom','user', ['id','name'],
 		conds    : ['id &gt; 2',"name != 'John'"],
 		order_by : 'id',
 		sort     : 'desc',
-		limit    : 1
+		limit    : 3
 	},
 	function(response) {
-
-		// do something
+		for (var i = 0; i < response.length; i++) {
+			for (var key in response[i]) {
+				alert('id=' + key.name + '; name=' + key.name);
+			}
+		}
 	}
 );</pre>
 
@@ -344,8 +360,11 @@ dbh.SQLinJS('showDatabases' [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('showDatabases',
 	function(response) {
-
-		// do something
+		for (var i = 0; i <= response.length; i++) {
+			for (var key in response[i]) {
+				alert(response[key]);
+			}
+		}
 	}
 );</pre>
 
@@ -365,8 +384,11 @@ dbh.SQLinJS('showTables' [,<em>handler</em>]);</pre>
 <pre>
 dbh.SQLinJS('showTables',
 	function(response) {
-
-		// do something
+		for (var i = 0; i <= response.length; i++) {
+			for (var key in response[i]) {
+				alert(response[key]);
+			}
+		}
 	}
 );</pre>
 
@@ -389,8 +411,10 @@ dbh.SQLinJS('updateSet','user', ["name = 'Fred'"],
 		conds : ['id &gt; 2',"name != 'John'"]
 	},
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -409,8 +433,10 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <pre>dbh.SQLinJS('useDatabase','accounts',
 	function(response) {
+		if (response === true) {
 
-		// do something
+			// do something
+		}
 	}
 );</pre>
 
@@ -523,7 +549,7 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <h2>Releases</h2>
 
-<p>I have included with this package a <a href="http://dean.edwards.name/packer">packed</a> version (12 kB) and developers version (unpacked 29 kB)</p>
+<p>I have included with this package a <a href="http://dean.edwards.name/packer">packed</a> version (12 kB) and developers version (unpacked 31 kB)</p>
 
 <p>You can always find the latest updates within this projects repository.</p>
 
