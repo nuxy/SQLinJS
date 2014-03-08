@@ -1416,9 +1416,6 @@
 	 * @param {String} str
 	 */
 	function throwError(str) {
-		throw new Error(
-			'\nCaller: \t' + (throwError.caller.name || '-') +
-			'\nError:\t'   + str
-		);
+		throw new Error(str);
 	}
 })(jQuery);
