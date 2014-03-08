@@ -2,7 +2,7 @@
  *  SQLinJS
  *  Manage a Javascript object database using the SQL syntax
  *
- *  Copyright 2012-2013, Marc S. Brooks (http://mbrooks.info)
+ *  Copyright 2012-2014, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
  *  http://www.opensource.org/licenses/mit-license.php
  *
@@ -37,14 +37,15 @@
 			if ( $.isEmptyObject(data) ) {
 				$this.data({
 					_active_db : null,
-					_database  : null,
 					_sql_query : null,
 					_callback  : null,
-					_query_log : []
+					_database  : {},
+					_query_log : [],
 				});
 
 				if (typeof obj === 'object') {
 					$this.SQLinJS('importDatabase', obj, callback);
+					$this.SQLinJS('useDatabase','test', callback);
 				}
 			}
 		},
@@ -173,7 +174,7 @@
 				data['_query_log'].push( logFormat(str) );
 			}
 			else
-			if (!data['_database']) {
+			if ( $.isEmptyObject(data) ) {
 				return throwError(errors.NO_DB_SELECTED);
 			}
 
@@ -244,10 +245,6 @@
 		"createDatabase" : function(name, callback) {
 			var $this = $(this),
 				data  = $this.data('_database');
-
-			if (!data) {
-				return stdErr('NO_DB_SELECTED', callback);
-			}
 
 			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
