@@ -465,10 +465,11 @@
 			}
 
 			var timer = calcExecTime(function() {
-				var defs = data[table]['_defs'],
-					obj  = {};
+				var defs = data[table]['_defs'];
 
 				for (var i = 0; i < vals.length; i++) {
+					var obj  = {};
+
 					for (var col in vals[i]) {
 						var val = vals[i][col].replace(/'(.*)'/,'$1');
 
