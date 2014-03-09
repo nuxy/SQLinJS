@@ -648,8 +648,6 @@
 
 				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
 
-return;
-
 				for (var i = 0; i < res[1].length; i++) {
 					var obj = res[1][i];
 
