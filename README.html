@@ -338,7 +338,7 @@ dbh.SQLinJS('selectFrom','user', ['id','name'],
 	function(response) {
 		for (var i = 0; i < response.length; i++) {
 			for (var key in response[i]) {
-				alert('id=' + key.name + '; name=' + key.name);
+				alert('id=' + key.id + '; name=' + key.name);
 			}
 		}
 	}
