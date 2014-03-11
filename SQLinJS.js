@@ -874,11 +874,11 @@
 				callback  = $this.data('_callback');
 
 			switch (true) {
-				case /^SHOW\s+DATABASES/i.test(sql_query):
+				case /^SHOW\s+DATABASES;?$/i.test(sql_query):
 					$this.SQLinJS('showDatabases', callback);
 				break;
 
-				case /^SHOW\s+TABLES/i.test(sql_query):
+				case /^SHOW\s+TABLES;?$/i.test(sql_query):
 					$this.SQLinJS('showTables', callback);
 				break;
 
@@ -916,7 +916,7 @@
 				sql_query = $this.data('_sql_query'),
 				callback  = $this.data('_callback');
 
-			var regex = /^USE\s+(\w+)/i,
+			var regex = /^USE\s+(\w+)$/i,
 				name  = sql_query.replace(regex,'$1');
 
 			$this.SQLinJS('useDatabase', name, callback);
