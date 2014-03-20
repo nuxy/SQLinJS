@@ -22,7 +22,7 @@
 
 		// import remote database
 		$.getJSON('demo.json', function(data) {
-			$('body').SQLinJS(data, function() {
+			$('body').SQLinJS('importDatabase', data, function() {
 
 				// launch debug terminal
 				$('body').SQLinJS('initTerminal');

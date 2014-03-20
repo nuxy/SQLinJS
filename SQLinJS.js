@@ -106,8 +106,7 @@
 					break;
 
 					case 'input':
-						var buffer = $this.data('_query_log'),
-							index  = 0;
+						var index = 0;
 
 						input
 							.on('keypress', function(event) {
@@ -134,13 +133,15 @@
 
 								$(this).val(null).focus();
 
+								var buffer = $this.data('_query_log');
 								index = buffer.length;
 
 								// force scroll positioning
 								screen.scrollTop( screen.prop('scrollHeight') );
 							})
 							.on('keyup', function(event) {
-								var count = buffer.length;
+								var buffer = $this.data('_query_log'),
+									count  = buffer.length;
 
 								// scroll command buffer
 								switch (event.which) {
@@ -182,7 +183,9 @@
 				stdOut('\r\nsql> ' + str);
 
 				// log queries
-				$this.data('_query_log').push( logFormat(str) );
+				data['_query_log'].push( logFormat(str) );
+
+				$this.data('_query_log', data['_query_log']);
 			}
 			else
 			if ( $.isEmptyObject(data) ) {
@@ -267,6 +270,8 @@
 			}
 
 			var timer = calcExecTime(function() {
+
+				// create an empty database
 				data[name] = {};
 
 				$this.data('_database', data);
@@ -308,6 +313,8 @@
 			}
 
 			var timer = calcExecTime(function() {
+
+				// create table properties
 				data[used][name] = {
 					_cols : cols,
 					_defs : defs,
@@ -1435,7 +1442,9 @@
 	 * @param {*} val
 	 * @returns {*}
 	 */
-	var fn = $.fn.data = function(key, val) {
+	var fn = $.fn.data;
+
+	$.fn.data = function(key, val) {
 
 		// HTML5 storage
 		if (window.sessionStorage) {
