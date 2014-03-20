@@ -38,7 +38,6 @@
 				$this.data({
 					_active_db : null,
 					_sql_query : null,
-					_callback  : null,
 					_database  : {},
 					_query_log : []
 				});
@@ -183,7 +182,7 @@
 				stdOut('\r\nsql> ' + str);
 
 				// log queries
-				data['_query_log'].push( logFormat(str) );
+				$this.data('_query_log').push( logFormat(str) );
 			}
 			else
 			if ( $.isEmptyObject(data) ) {
@@ -191,44 +190,43 @@
 			}
 
 			// save request state
-			data['_sql_query'] = str;
-			data['_callback']  = callback;
+			$this.data('_sql_query', str);
 
 			switch (true) {
 				case /^CREATE/i.test(str):
-					$this.SQLinJS('_Create');
+					$this.SQLinJS('_Create', callback);
 				break;
 
 				case /^DELETE/i.test(str):
-					$this.SQLinJS('_Delete');
+					$this.SQLinJS('_Delete', callback);
 				break;
 
 				case /^DESCRIBE/i.test(str):
-					$this.SQLinJS('_Describe');
+					$this.SQLinJS('_Describe', callback);
 				break;
 
 				case /^DROP/i.test(str):
-					$this.SQLinJS('_Drop');
+					$this.SQLinJS('_Drop', callback);
 				break;
 
 				case /^INSERT/i.test(str):
-					$this.SQLinJS('_Insert');
+					$this.SQLinJS('_Insert', callback);
 				break;
 
 				case /^SELECT/i.test(str):
-					$this.SQLinJS('_Select');
+					$this.SQLinJS('_Select', callback);
 				break;
 
 				case /^SHOW/i.test(str):
-					$this.SQLinJS('_Show');
+					$this.SQLinJS('_Show', callback);
 				break;
 
 				case /^UPDATE/i.test(str):
-					$this.SQLinJS('_Update');
+					$this.SQLinJS('_Update', callback);
 				break;
 
 				case /^USE/i.test(str):
-					$this.SQLinJS('_Use');
+					$this.SQLinJS('_Use', callback);
 				break;
 
 				case /^help|\\h/i.test(str):
@@ -241,13 +239,15 @@
 		},
 
 		"importDatabase" : function(obj, callback) {
+			var $this = $(this);
+
 			if (typeof obj === 'object') {
 				for (var key in obj) {
 					if (!obj.hasOwnProperty(key)) {
 						return stdErr('CANT_CREATE_DB', key, callback);
 					}
 
-					$(this).data('_database', obj);
+					$this.data('_database', obj);
 
 					runCallback(callback, true);
 				}
@@ -267,9 +267,9 @@
 			}
 
 			var timer = calcExecTime(function() {
-
-				// create an empty database
 				data[name] = {};
+
+				$this.data('_database', data);
 			});
 
 			stdStatOut(0, timer, true);
@@ -280,9 +280,9 @@
 		"createTable" : function(name, defs, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used];
+				data  = $this.data('_database');
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -290,7 +290,7 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (data.hasOwnProperty(name)) {
+			if (data[used].hasOwnProperty(name)) {
 				return stdErr('TABLE_EXISTS', name, callback);
 			}
 
@@ -308,13 +308,13 @@
 			}
 
 			var timer = calcExecTime(function() {
-
-				// create table properties
-				data[name] = {
+				data[used][name] = {
 					_cols : cols,
 					_defs : defs,
 					_data : []
 				};
+
+				$this.data('_database', data);
 			});
 
 			stdStatOut(0, timer, true);
@@ -325,11 +325,11 @@
 		"deleteFrom" : function(table, clause, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used],
+				data  = $this.data('_database'),
 				res   = [],
 				count = 0;
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -337,14 +337,14 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data || !data.hasOwnProperty(table)) {
+			if (!data[used] || !data[used].hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
 			var timer = calcExecTime(function() {
-				var rows = data[table]['_data'];
+				var rows = data[used][table]['_data'];
 
-				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
+				res = $this.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
 
 				for (var i = 0; i < res[1].length; i++) {
 					var obj = res[1][i];
@@ -362,7 +362,9 @@
 				}
 
 				// remove 'undefined' buckets from array
-				data[table]['_data'] = reindexArray(rows);
+				data[used][table]['_data'] = reindexArray(rows);
+
+				$this.data('_database', data);
 			});
 
 			stdStatOut(count, timer, true);
@@ -373,9 +375,9 @@
 		"describeTable" : function(name, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used];
+				data  = $this.data('_database');
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -383,11 +385,11 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data.hasOwnProperty(name)) {
+			if (!data[used].hasOwnProperty(name)) {
 				return stdErr('UNKNOWN_TABLE', name, callback);
 			}
 
-			var defs  = data[name]['_defs'],
+			var defs  = data[used][name]['_defs'],
 				count = 0;
 
 			var timer = calcExecTime(function() {
@@ -418,6 +420,8 @@
 
 			var timer = calcExecTime(function() {
 				delete data[name];
+
+				$this.data('_database', data);
 			});
 
 			stdStatOut(0, timer, true);
@@ -428,9 +432,9 @@
 		"dropTable" : function(name, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used];
+				data  = $this.data('_database');
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -438,12 +442,14 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data || !data.hasOwnProperty(name)) {
+			if (!data[used] || !data[used].hasOwnProperty(name)) {
 				return stdErr('CANT_DROP_TABLE', name, callback);
 			}
 
 			var timer = calcExecTime(function() {
-				delete data[name];
+				delete data[used][name];
+
+				$this.data('_database', data);
 			});
 
 			stdStatOut(0, timer, true);
@@ -454,9 +460,9 @@
 		"insertInto" : function(table, vals, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used];
+				data  = $this.data('_database');
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -464,7 +470,7 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data || !data.hasOwnProperty(table)) {
+			if (!data[used] || !data[used].hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
@@ -474,7 +480,7 @@
 			}
 
 			var timer = calcExecTime(function() {
-				var defs = data[table]['_defs'];
+				var defs = data[used][table]['_defs'];
 
 				for (var i = 0; i < vals.length; i++) {
 					var obj  = {};
@@ -505,9 +511,10 @@
 					}
 
 					if (obj) {
+						data[used][table]['_data'].push(obj);
 
 						// insert new record
-						data[table]['_data'].push(obj);
+						$this.data('_database', data);
 					}
 				}
 			});
@@ -522,7 +529,7 @@
 		"selectFrom" : function(table, cols, clause, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used],
+				data  = $this.data('_database'),
 				res   = [],
 				count = 0;
 
@@ -530,7 +537,7 @@
 				callback = clause;
 			}
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -538,12 +545,12 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data || !data.hasOwnProperty(table)) {
+			if (!data[used] || !data[used].hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
 			var timer = calcExecTime(function() {
-				res = $this.SQLinJS('_QueryDB', data, table, cols, clause, callback);
+				res = $this.SQLinJS('_QueryDB', data[used], table, cols, clause, callback);
 
 				if (res[1]) {
 					count = res[1].length;
@@ -592,13 +599,13 @@
 		"showTables" : function(callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used];
+				data  = $this.data('_database');
 
 			if (!data) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
-			if ( $.isEmptyObject(data) ) {
+			if ( $.isEmptyObject(data[used]) ) {
 				return stdErr('NO_TABLES_USED', callback);
 			}
 
@@ -607,7 +614,7 @@
 				vals  = null;
 
 			var timer = calcExecTime(function() {
-				vals = getObjKeys(data, cols);
+				vals = getObjKeys(data[used], cols);
 
 				stdTermOut(cols, vals);
 
@@ -622,7 +629,7 @@
 		"updateSet" : function(table, cols, clause, callback) {
 			var $this = $(this),
 				used  = $this.data('_active_db'),
-				data  = $this.data('_database')[used],
+				data  = $this.data('_database'),
 				res   = [],
 				count = 0;
 
@@ -630,7 +637,7 @@
 				callback = clause;
 			}
 
-			if (!data) {
+			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
 			}
 
@@ -638,15 +645,15 @@
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
-			if (!data || !data.hasOwnProperty(table)) {
+			if (!data[used] || !data[used].hasOwnProperty(table)) {
 				return stdErr('UNKNOWN_TABLE', table, callback);
 			}
 
 			var timer = calcExecTime(function() {
-				var defs = data[table]['_defs'],
-					rows = data[table]['_data'];
+				var defs = data[used][table]['_defs'],
+					rows = data[used][table]['_data'];
 
-				res = $this.SQLinJS('_QueryDB', data, table, ['*'], clause, callback);
+				res = $this.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
 
 				for (var i = 0; i < res[1].length; i++) {
 					var obj = res[1][i];
@@ -674,6 +681,8 @@
 						count += 1;
 					}
 				}
+
+				$this.data('_database', data);
 			});
 
 			if (timer) {
@@ -702,10 +711,9 @@
 			runCallback(callback, true);
 		},
 
-		"_Create" : function() {
+		"_Create" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			switch (true) {
 				case /^CREATE\s+DATABASE/i.test(sql_query):
@@ -747,10 +755,9 @@
 			}
 		},
 
-		"_Delete" : function() {
+		"_Delete" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			try {
 				var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
@@ -770,10 +777,9 @@
 			}
 		},
 
-		"_Describe" : function() {
+		"_Describe" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			var regex = /^DESCRIBE\s+(\w+)*$/i,
 				table = sql_query.replace(regex,'$1');
@@ -781,10 +787,9 @@
 			$this.SQLinJS('describeTable', table, callback);
 		},
 
-		"_Drop" : function() {
+		"_Drop" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			switch (true) {
 				case /^DROP\s+DATABASE/i.test(sql_query):
@@ -806,12 +811,11 @@
 			}
 		},
 
-		"_Insert" : function() {
+		"_Insert" : function(callback) {
 			var $this = $(this),
 				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback'),
 				used      = $this.data('_active_db'),
-				data      = $this.data('_database')[used];
+				data      = $this.data('_database');
 
 			try {
 				var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
@@ -821,7 +825,7 @@
 					vals  = parts[2].split(/\s*\)\s*,\s*\(\s*/);
 
 				if (!cols[0]) {
-					cols = data[table]['_cols'];
+					cols = data[used][table]['_cols'];
 				}
 
 				var _vals = [];
@@ -844,10 +848,9 @@
 			}
 		},
 
-		"_Select" : function() {
+		"_Select" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			try {
 				var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
@@ -868,10 +871,9 @@
 			}
 		},
 
-		"_Show" : function() {
+		"_Show" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			switch (true) {
 				case /^SHOW\s+DATABASES;?$/i.test(sql_query):
@@ -887,10 +889,9 @@
 			}
 		},
 
-		"_Update" : function() {
+		"_Update" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			try {
 				var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
@@ -911,10 +912,9 @@
 			}
 		},
 
-		"_Use" : function() {
+		"_Use" : function(callback) {
 			var $this = $(this),
-				sql_query = $this.data('_sql_query'),
-				callback  = $this.data('_callback');
+				sql_query = $this.data('_sql_query');
 
 			var regex = /^USE\s+(\w+)$/i,
 				name  = sql_query.replace(regex,'$1');
@@ -1428,4 +1428,52 @@
 	function throwError(str) {
 		throw new Error(str);
 	}
+
+	/**
+	 * Use Web Storage when supported. Defaults to jQuery $.data()
+	 * @param {String} key
+	 * @param {*} val
+	 * @returns {*}
+	 */
+	var fn = $.fn.data = function(key, val) {
+
+		// HTML5 storage
+		if (window.sessionStorage) {
+			var storage = window.sessionStorage;
+
+			// set single value
+			if (typeof key === 'string' && val) {
+				storage.setItem(key, JSON.stringify(val));
+			}
+			else
+
+			// set group of values
+			if (typeof key === 'object' && !val) {
+				for (var arg in key) {
+					storage.setItem(arg, JSON.stringify(key[arg]));
+				}
+			}
+
+			var data = {};
+
+			// return single value
+			if (typeof key === 'string' && !val) {
+				return $.parseJSON(storage.getItem(key));
+			}
+
+			// return all values
+			for (var i = 0; i < storage.length; i++) {
+				var key = storage.key(i);
+
+				data[key] = $.parseJSON(storage.getItem(key));
+			}
+
+			return data;
+		}
+
+		// jQuery $.fn.data
+		else {
+			return fn.apply(this, arguments);
+		}	
+	};
 })(jQuery);
