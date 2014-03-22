@@ -9,7 +9,7 @@
 
 <h1>SQLinJS</h1>
 
-<p>Create web applications with offline capabilities using this simple embeddable DBMS written in Javascript. </p>
+<p>Create web applications with offline capabilities using this simple embeddable DBMS written in Javascript.</p>
 
 <h2>Features</h2>
 
@@ -17,9 +17,9 @@
 	<li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.</li>
 	<li>Compatible with iOS and Android mobile web browsers.</li>
 	<li>Includes SQL parsing and processing engine (refer to <a href="#syntax">Supported Syntax</a> for language support)</li>
-	<li>Provides command-line terminal for managing object data using the SQL syntax.</li>
+	<li>Provides command-line debug terminal for managing object data using the SQL syntax.</li>
 	<li>Provides API methods for managing object data from within your application.</li>
-	<li>Supports <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> for database storage.</li>
+	<li>Supports <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> and HTML5 <a href="http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute">sessionStorage</a> for database storage.</li>
 	<li>Fast and lightweight (jQuery plug-in *only 12 kB)</li>
 </ul>
 
@@ -444,6 +444,14 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <a class="back" href="#methods">Back to Top</a>
 
+<a name="storage"></a>
+
+<h2>Database Storage</h2>
+
+<p>HTML5 <a href="http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute">sessionStorage</a> is used, by default. In cases where this is not supported, jQuery <a href="http://api.jquery.com/jQuery.data">jQuery .data()</a> is used.</p>
+
+<a class="back" href="#methods">Back to Top</a>
+
 <a name="syntax"></a>
 
 <h2>Supported Syntax</h2>
@@ -536,7 +544,7 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <pre>UPDATE <em>tbl_name</em>
    SET <em>col_name1</em>=<em>expr1</em> [,<em>col_name2</em>=<em>expr2</em>] ...
-   [WHERE <em>where_condition</em>]</pre>
+   [WHERE <em>where_condition</em>]
    [ORDER BY <em>col_name</em> [ASC | DESC]]</pre>
 
 <a class="back" href="#syntax">Back to Top</a>
