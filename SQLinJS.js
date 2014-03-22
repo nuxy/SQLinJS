@@ -493,7 +493,7 @@
 					var obj  = {};
 
 					for (var col in vals[i]) {
-						var val = vals[i][col].replace(/['"](.*)['"]/,'$1');
+						var val = vals[i][col].replace(/['"](.*)["']/,'$1');
 
 						if (!defs.hasOwnProperty(col)) {
 							return stdErr('UNKNOWN_FIELD', col, table, callback);
@@ -673,7 +673,7 @@
 
 						// .. columns/values
 						for (var k = 0; k < cols.length; k++) {
-							var parts = cols[k].replace(/^(\w+)\s*=\s*(?:'|")*(.+?)(?:'|")*$/,'$1\0$2').split('\0'),
+							var parts = cols[k].replace(/^(\w+)\s*=\s*(?:'|")*(.+?)(?:"|')*$/,'$1\0$2').split('\0'),
 								col   = parts[0],
 								val   = parts[1];
 
@@ -1437,13 +1437,16 @@
 	}
 
 	/**
-	 * Use Web Storage when supported. Defaults to jQuery $.data()
+	 * Override jQuery $.data() method.
+	 */
+	var fn = $.fn.data;
+
+	/**
+	 * Default to HTML5 Web Storage when supported.
 	 * @param {String} key
 	 * @param {*} val
 	 * @returns {*}
 	 */
-	var fn = $.fn.data;
-
 	$.fn.data = function(key, val) {
 
 		// HTML5 storage
