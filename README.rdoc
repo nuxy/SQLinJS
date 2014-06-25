@@ -1,4 +1,4 @@
-= SQLinJS
+= SQLinJS {<img src="https://travis-ci.org/nuxy/SQLinJS.svg?branch=updates" alt="Build Status" />}[https://travis-ci.org/nuxy/SQLinJS]
 
 Create applications with offline capabilities using this simple embeddable DBMS written in Javascript.
 
