@@ -1,6 +1,6 @@
 /**
  *  SQLinJS
- *  Manage a Javascript object database using the SQL syntax
+ *  Manage a JavaScript object database using the SQL syntax
  *
  *  Copyright 2012-2014, Marc S. Brooks (http://mbrooks.info)
  *  Licensed under the MIT license:
