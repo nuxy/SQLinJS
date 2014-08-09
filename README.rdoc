@@ -2,13 +2,13 @@
 
 Create applications with offline capabilities using this simple embeddable DBMS written in JavaScript.
 
-http://github.com/nuxy/SQLinJS/raw/master/preview.jpg
+{<img src="https://github.com/nuxy/SQLinJS/raw/master/preview.jpg" alt="SQLinJS" />}[https://labs.mbrooks.info/demos/SQLinJS]
 
 == Features
 
 - Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.
 - Compatible with iOS and Android mobile web browsers.
-- Includes SQL parsing and processing engine (refer to {Supported Syntax}[http://labs.mbrooks.info/demos/SQLinJS/README.html#syntax] for language support)
+- Includes SQL parsing and processing engine (refer to {Supported Syntax}[https://labs.mbrooks.info/demos/SQLinJS/README.html#syntax] for language support)
 - Provides command-line terminal for managing object data using the SQL syntax.
 - Provides API methods for managing object data from within your application.
 - Supports {jQuery.data()}[http://api.jquery.com/jQuery.data] and HTML5 {sessionStorage}[http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute] for database storage.
@@ -23,7 +23,7 @@ http://github.com/nuxy/SQLinJS/raw/master/preview.jpg
 
 == Installation
 
-Download the latest {sources}[https://github.com/nuxy/SQLinJS/tags] and refer to the {README}[http://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
+Download the latest {sources}[https://github.com/nuxy/SQLinJS/tags] and refer to the {README}[https://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
 
 == Author
 
