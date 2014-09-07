@@ -12,7 +12,7 @@ Create applications with offline capabilities using this simple embeddable DBMS 
 - Provides command-line terminal for managing object data using the SQL syntax.
 - Provides API methods for managing object data from within your application.
 - Supports {jQuery.data()}[http://api.jquery.com/jQuery.data] and HTML5 {sessionStorage}[http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute] for database storage.
-- Fast and lightweight (jQuery plug-in *only 12 kB)
+- Fast and lightweight (jQuery plug-in *only 13.7 kB)
 
 == To Do
 
