@@ -10,6 +10,10 @@
  *    jquery.js
  */
 
+if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
+	alert('SQLinJS requires jQuery 1.8.3 or greater.');
+}
+
 (function($) {
 	var debug = false;     // SQL terminal
 
@@ -47,7 +51,7 @@
 				}
 			}
 			else
-			if (typeof callback === 'function') {
+			if ( $.isFunction(callback) ) {
 				callback();
 			}
 		},
@@ -491,7 +495,7 @@
 						// process values based on data type definition
 						var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
 							name = type[0],
-							size = (typeof type[1] === 'number') ? type[1] : val.length;
+							size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
 
 						switch (true) {
 							case /((VAR)*CHAR)/i.test(name):
@@ -529,7 +533,7 @@
 				res   = [],
 				count = 0;
 
-			if (typeof clause === 'function') {
+			if ( $.isFunction(clause) ) {
 				callback = clause;
 			}
 
@@ -629,7 +633,7 @@
 				res   = [],
 				count = 0;
 
-			if (typeof clause === 'function') {
+			if ( $.isFunction(clause) ) {
 				callback = clause;
 			}
 
@@ -1136,7 +1140,7 @@
 	 */
 	function calcExecTime(func) {
 		try {
-			if (typeof func === 'function') {
+			if ( $.isFunction(func) ) {
 				var start = new Date().getMilliseconds();
 				var error = func();
 				if (error) return 0;
@@ -1197,8 +1201,8 @@
 			var str1 = val1,
 				str2 = val2.replace(/'(.*)'/,'$1');
 
-			str1 = (typeof str1 !== 'number') ? str1.toLowerCase() : str1;
-			str2 = (typeof str2 !== 'number') ? str2.toLowerCase() : str2;
+			str1 = (! $.isNumeric(str1) ) ? str1.toLowerCase() : str1;
+			str2 = (! $.isNumeric(str2) ) ? str2.toLowerCase() : str2;
 
 			// .. string comparison
 			switch (op.toUpperCase()) {
@@ -1274,7 +1278,7 @@
 			return 1;
 		}
 
-		if (typeof func === 'function') {
+		if ( $.isFunction(func) ) {
 			runCallback(func, code);
 		}
 	}
@@ -1408,7 +1412,7 @@
 	 */
 	function runCallback(func, data) {
 		try {
-			if (typeof func === 'function') {
+			if ( $.isFunction(func) ) {
 				func(data);
 			}
 		}
