@@ -11,7 +11,7 @@ Create applications with offline capabilities using this simple embeddable DBMS 
 - Includes SQL parsing and processing engine (refer to {Supported Syntax}[https://labs.mbrooks.info/demos/SQLinJS/README.html#syntax] for language support)
 - Provides command-line terminal for managing object data using the SQL syntax.
 - Provides API methods for managing object data from within your application.
-- Supports {jQuery.data()}[http://api.jquery.com/jQuery.data] and HTML5 {sessionStorage}[http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute] for database storage.
+- Supports {jQuery .data()}[http://api.jquery.com/data] and HTML5 {sessionStorage}[http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute] for database storage.
 - Fast and lightweight (jQuery plug-in *only 13.7 kB)
 
 == To Do
