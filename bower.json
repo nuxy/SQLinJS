@@ -1,0 +1,20 @@
+{
+  "name": "sqlinjs",
+  "version": "0.8.0",
+  "homepage": "https://github.com/nuxy/SQLinJS",
+  "description": "Manage a JavaScript object database using the SQL syntax",
+  "main": "SQLinJS.js",
+  "keywords": [
+    "javascript",
+    "jquery",
+    "library"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "*.rdoc",
+    "Rakefile",
+    "test",
+    "test.html"
+  ]
+}
