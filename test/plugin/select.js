@@ -85,6 +85,23 @@ asyncTest("Test method 'selectFrom'", function() {
 
 	stop();
 
+	query = "SELECT id, name FROM user WHERE name != 'Mark' AND name != 'David'";
+
+	$this.SQLinJS('executeQuery', query,
+		function(res) {
+			ok(true, 'query executed: ' + query);
+			ok(res instanceof Array, 'response is Array');
+
+			var col = Object.keys(res[0]);
+			equal(col.length, 2,  col.length + ' of 2  columns exist');
+			equal(res.length, 12, res.length + ' of 12 results exist');
+
+			start();
+		}
+	);
+
+	stop();
+
 	query = "SELECT * FROM user WHERE name != 'Marc' AND id > 2 AND id != 3";
 
 	$this.SQLinJS('executeQuery', query,

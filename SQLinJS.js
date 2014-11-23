@@ -955,16 +955,20 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 						if (!clause.conds || skip) {
 							if (name != col) continue;
-							obj[name] = val;
+
+							if (!obj.hasOwnProperty(name)) {
+								obj[name] = val;
+							}
+
 							continue;
 						}
 
 						// test WHERE clause conditional expressions
 						for (var m = 0; m < clause.conds.length; m++) {
-							var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s*$/i,
+							var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s+/i,
 								parts = clause.conds[m].replace(regex,'$1\0$2\0$3').split('\0');
 
-							if (!$.inArray(parts[0], names) == -1) {
+							if (!$.inArray(parts[0], names) === -1) {
 								return stdErr('UNKNOWN_FIELD', parts[0], table, callback);
 							}
 
@@ -982,7 +986,12 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 								default:
 									if (name != col) continue;
-									obj[name] = val;
+
+									if (!obj.hasOwnProperty(name)) {
+										obj[name] = val;
+									}
+
+									break;
 							}
 						}
 					}
@@ -1210,8 +1219,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 			var str1 = val1,
 				str2 = val2.replace(/'(.*)'/,'$1');
 
-			str1 = (! $.isNumeric(str1) ) ? str1.toLowerCase() : str1;
-			str2 = (! $.isNumeric(str2) ) ? str2.toLowerCase() : str2;
+			str1 = ( !$.isNumeric(str1) ) ? str1.toLowerCase() : str1;
+			str2 = ( !$.isNumeric(str2) ) ? str2.toLowerCase() : str2;
 
 			// .. string comparison
 			switch (op.toUpperCase()) {
