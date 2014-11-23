@@ -227,6 +227,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 					$this.SQLinJS('_Use', callback);
 				break;
 
+				case /^clear|\\c/i.test(str):
+					clearTerminal();
+				break;
+
 				case /^help|\\h/i.test(str):
 					viewHelp();
 				break;
@@ -1255,7 +1259,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	 * Return help menu as a string
 	 */
 	function viewHelp() {
-		window.open('http://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
+		window.open('https://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
 	}
 
 	/**
