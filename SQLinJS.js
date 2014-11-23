@@ -1454,7 +1454,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	function cache(key, val) {
 
 		// HTML5 Web Storage
-		if (window.sessionStorage && JSON) {
+		if (window.sessionStorage && window.JSON) {
 			var storage = window.sessionStorage;
 
 			// set single value
