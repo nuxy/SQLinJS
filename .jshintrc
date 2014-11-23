@@ -1,0 +1,9 @@
+{
+  "globals": {
+    "jQuery": true
+  },
+  "browser": true,
+  "laxbreak": true,
+  "loopfunc": true,
+  "sub": true
+}

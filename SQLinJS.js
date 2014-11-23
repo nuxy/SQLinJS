@@ -97,7 +97,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 				switch (names[i]) {
 					case 'screen':
 						terminal
-							.on('click', function() { input.focus() });
+							.on('click', function() { input.focus(); });
 					break;
 
 					case 'input':
@@ -239,20 +239,20 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		"importDatabase": function(data, callback) {
 			if (typeof data === 'object') {
 				for (var key in data) {
-					if (!data.hasOwnProperty(key)) {
+					if (data.hasOwnProperty(key)) {
+						cache('_database', data);
+
+						runCallback(callback, true);
+					}
+					else {
 						return stdErr('CANT_CREATE_DB', key, callback);
 					}
-
-					cache('_database', data);
-
-					runCallback(callback, true);
 				}
 			}
 		},
 
 		"createDatabase": function(name, callback) {
-			var $this = $(this),
-				data  = cache('_database');
+			var data = cache('_database');
 
 			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
@@ -276,9 +276,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"createTable": function(name, defs, callback) {
-			var $this = $(this),
-				used  = cache('_active_db'),
-				data  = cache('_database');
+			var used = cache('_active_db'),
+				data = cache('_database');
 
 			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
@@ -301,7 +300,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 				}
 			}
 
-			if (cols.length == 0) {
+			if (cols.length === 0) {
 				return stdErr('SYNTAX_ERROR', callback);
 			}
 
@@ -373,9 +372,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"describeTable": function(name, callback) {
-			var $this = $(this),
-				used  = cache('_active_db'),
-				data  = cache('_database');
+			var used = cache('_active_db'),
+				data = cache('_database');
 
 			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
@@ -407,8 +405,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"dropDatabase": function(name, callback) {
-			var $this = $(this),
-				data  = cache('_database');
+			var data = cache('_database');
 
 			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
@@ -430,9 +427,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"dropTable": function(name, callback) {
-			var $this = $(this),
-				used  = cache('_active_db'),
-				data  = cache('_database');
+			var used = cache('_active_db'),
+				data = cache('_database');
 
 			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
@@ -458,9 +454,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"insertInto": function(table, vals, callback) {
-			var $this = $(this),
-				used  = cache('_active_db'),
-				data  = cache('_database');
+			var used = cache('_active_db'),
+				data = cache('_database');
 
 			if (!data[used]) {
 				return stdErr('NO_DB_SELECTED', callback);
@@ -483,30 +478,32 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 				var defs = data[used][table]['_defs'];
 
 				for (var i = 0; i < vals.length; i++) {
-					var obj  = {};
+					var obj = {};
 
 					for (var col in vals[i]) {
-						var val = vals[i][col].replace(/['"](.*)["']/,'$1');
+						if (vals[i].hasOwnProperty(col)) {
+							var val = vals[i][col].replace(/['"](.*)["']/,'$1');
 
-						if (!defs.hasOwnProperty(col)) {
-							return stdErr('UNKNOWN_FIELD', col, table, callback);
-						}
+							if (!defs.hasOwnProperty(col)) {
+								return stdErr('UNKNOWN_FIELD', col, table, callback);
+							}
 
-						// process values based on data type definition
-						var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
-							name = type[0],
-							size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
+							// process values based on data type definition
+							var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
+								name = type[0],
+								size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
 
-						switch (true) {
-							case /((VAR)*CHAR)/i.test(name):
+							switch (true) {
+								case /((VAR)*CHAR)/i.test(name):
 
-								// truncate value to defined type length
-								obj[col] = val.substring(0, size) || undefined;
-							break;
+									// truncate value to defined type length
+									obj[col] = val.substring(0, size) || undefined;
+								break;
 
-							case /INT/i.test(name):
-								obj[col] = parseInt(val);
-							break;
+								case /INT/i.test(name):
+									obj[col] = parseInt(val);
+								break;
+							}
 						}
 					}
 
@@ -572,8 +569,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"showDatabases": function(callback) {
-			var $this = $(this),
-				data  = cache('_database');
+			var data = cache('_database');
 
 			if (!data) {
 				return stdErr('NO_DB_EXISTS', callback);
@@ -597,9 +593,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"showTables": function(callback) {
-			var $this = $(this),
-				used  = cache('_active_db'),
-				data  = cache('_database');
+			var used = cache('_active_db'),
+				data = cache('_database');
 
 			if (!cache) {
 				return stdErr('NO_DB_SELECTED', callback);
@@ -693,8 +688,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"useDatabase": function(name, callback) {
-			var $this = $(this),
-				data  = cache('_database');
+			var data = cache('_database');
 
 			if (!validName(name)) {
 				return stdErr('SYNTAX_ERROR', callback);
@@ -717,37 +711,41 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			switch (true) {
 				case /^CREATE\s+DATABASE/i.test(sql_query):
-					try {
-						var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
-							name  = sql_query.replace(regex,'$1');
+					(function() {
+						try {
+							var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
+								name  = sql_query.replace(regex,'$1');
 
-						$this.SQLinJS('createDatabase', name, callback);
-					}
-					catch(err) {
-						stdErr('SYNTAX_ERROR', callback);
-					}
+							$this.SQLinJS('createDatabase', name, callback);
+						}
+						catch(err) {	
+							stdErr('SYNTAX_ERROR', callback);
+						}
+					})();
 				break;
 
 				case /^CREATE\s+TABLE/i.test(sql_query):
-					try {
-						var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
-							parts = sql_query.replace(regex,'$1|$2').split(/\|/),
-							name  = parts[0],
-							defs  = parts[1].split(/\s*,\s*/);
+					(function() {
+						try {
+							var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
+								parts = sql_query.replace(regex,'$1|$2').split(/\|/),
+								name  = parts[0],
+								defs  = parts[1].split(/\s*,\s*/);
 
-						var obj  = {};
+							var obj  = {};
 
-						// fold column type key/values into an object
-						for (var i = 0; i < defs.length; i++) {
-							var val = defs[i].split(/\s+/);
-							obj[ val[0] ] = val[1];
+							// fold column type key/values into an object
+							for (var i = 0; i < defs.length; i++) {
+								var val = defs[i].split(/\s+/);
+								obj[ val[0] ] = val[1];
+							}
+
+							$this.SQLinJS('createTable', name, obj, callback);
 						}
-
-						$this.SQLinJS('createTable', name, obj, callback);
-					}
-					catch(err) {
-						stdErr('SYNTAX_ERROR', callback);
-					}
+						catch(err) {
+							stdErr('SYNTAX_ERROR', callback);
+						}
+					})();
 				break;
 
 				default:
@@ -793,17 +791,21 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			switch (true) {
 				case /^DROP\s+DATABASE/i.test(sql_query):
-					var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
-						name  = sql_query.replace(regex,'$1');
+					(function() {
+						var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
+							name  = sql_query.replace(regex,'$1');
 
-					$this.SQLinJS('dropDatabase', name, callback);
+						$this.SQLinJS('dropDatabase', name, callback);
+					})();
 				break;
 
 				case /^DROP\s+TABLE/i.test(sql_query):
-					var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
-						name  = sql_query.replace(regex,'$1');
+					(function() {
+						var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
+							name  = sql_query.replace(regex,'$1');
 
-					$this.SQLinJS('dropTable', name, callback);
+						$this.SQLinJS('dropTable', name, callback);
+					})();
 				break;
 
 				default:
@@ -923,9 +925,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		},
 
 		"_QueryDB": function(data, table, cols, clause, callback) {
-			var $this = $(this),
-				names = data[table]['_cols'],
-				defs  = data[table]['_defs'],
+			var names = data[table]['_cols'],
 				rows  = data[table]['_data'],
 				vals  = [],
 				count = 0;
@@ -968,7 +968,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 							var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s+/i,
 								parts = clause.conds[m].replace(regex,'$1\0$2\0$3').split('\0');
 
-							if (!$.inArray(parts[0], names) === -1) {
+							if ($.inArray(parts[0], names) === -1) {
 								return stdErr('UNKNOWN_FIELD', parts[0], table, callback);
 							}
 
@@ -977,12 +977,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 							switch (res) {
 								case 0:
 									skip = true;
-									break;
 								break;
 
 								case 2:
 									return stdErr('SYNTAX_ERROR', callback);
-								break;
 
 								default:
 									if (name != col) continue;
@@ -1073,13 +1071,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	function getObjAsCols(names, obj) {
 		var vals = [];
 		for (var key in obj) {
-			if (!obj.hasOwnProperty(key)) continue;
+			if (obj.hasOwnProperty(key)) {
+				var new_obj = {};
+				for (var i = 0; i < names.length; i++) {
+					new_obj[ names[i] ] = (i === 0) ? key : obj[key];
+				}
 
-			var new_obj = {};
-			for (var i = 0; i < names.length; i++) {
-				new_obj[ names[i] ] = (i == 0) ? key : obj[key];
+				vals.push(new_obj);
 			}
-			vals.push(new_obj);
 		}
 		return vals;
 	}
@@ -1088,26 +1087,18 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	 * Return key names (1st child) as array of objects
 	 * @param {Object} data
 	 * @param {String} name
+	 * @returns {Array}
 	 */
 	function getObjKeys(data, name) {
 		var vals = [];
 		for (var key in data) {
-			if (!data.hasOwnProperty(key)) continue;
-
-			var new_obj = {};
-			new_obj[name] = key;
-			vals.push(new_obj);
+			if (data.hasOwnProperty(key)) {
+				var new_obj = {};
+				new_obj[name] = key;
+				vals.push(new_obj);
+			}
 		}
 		return vals;
-	}
-
-	/**
-	 * Returns object key total count
-	 * @param {Object} obj
-	 * @returns {String}
-	 */
-	function getObjSize(obj) {
-		return $.map(obj, function(val, index) { return index; }).length;
 	}
 
 	/**
@@ -1144,9 +1135,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	function reindexArray(arr) {
 		var new_arr = [];
 		for (var index in arr) {
-			if (arr[index] === undefined) continue;
-
-			new_arr.push(arr[index]);
+			if (arr.hasOwnProperty(index)) {
+				if (arr[index] === undefined) continue;
+				new_arr.push(arr[index]);
+			}
 		}
 		return new_arr;
 	}
@@ -1162,7 +1154,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 				var start = new Date().getMilliseconds();
 				var error = func();
 				if (error) return 0;
-				var stop  = new Date().getMilliseconds();
+				var stop = new Date().getMilliseconds();
 				return ((stop - start) / 100).toFixed(2);
 			}
 		}
@@ -1320,7 +1312,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 	function stdStatOut(count, timer, write) {
 		if (!debug) return;
 
-		var rows = count + ' row' + ((count == 0 || count > 1) ? 's' : '');
+		var rows = count + ' row' + ((count === 0 || count > 1) ? 's' : '');
 
 		if (arguments.length > 1 && !write) {
 			stdOut(rows + ' in set &#40;' + timer + ' sec&#41;');
@@ -1356,12 +1348,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 			sizes[name] = name.length;
 
 			for (var j = 0; j < data.length; j++) {
-				var rows = data[j],
-					len  = String(rows[name]).length;
+				(function() {
+					var rows = data[j],
+						len  = String(rows[name]).length;
 
-				if (len > sizes[name]) {
-					sizes[name] = len;
-				}
+					if (len > sizes[name]) {
+						sizes[name] = len;
+					}
+				})();
 			}
 
 			count += sizes[name] + 3;
@@ -1374,14 +1368,18 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 		genTermHeader(count, cols);
 
 		for (var k = 0; k < data.length; k++) {
-			var rows = data[k],
-				arr  = [];
+			(function() {
+				var rows = data[k],
+					arr  = [];
 
-			for (var key in rows) {
-				arr.push(padStrRgt(String(rows[key]), sizes[key]));
-			}
+				for (var key in rows) {
+					if (rows.hasOwnProperty(key)) {
+						arr.push(padStrRgt(String(rows[key]), sizes[key]));
+					}
+				}
 
-			genTermRow(sizes[key], arr);
+				genTermRow(sizes[key], arr);
+			})();
 		}
 
 		genTermRow(count);
@@ -1467,9 +1465,13 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			// set multiple
 			if (typeof key === 'object' && !val) {
-				for (var arg in key) {
-					storage.setItem(arg, JSON.stringify(key[arg]));
-				}
+				(function() {
+					for (var arg in key) {
+						if (key.hasOwnProperty(arg)) {
+							storage.setItem(arg, JSON.stringify(key[arg]));
+						}
+					}
+				})();
 			}
 
 			// return single value
@@ -1481,7 +1483,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			// return all values
 			for (var i = 0; i < storage.length; i++) {
-				var key = storage.key(i);
+				key = storage.key(i);
 
 				data[key] = $.parseJSON(storage.getItem(key));
 			}
@@ -1501,9 +1503,13 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			// set multiple
 			if (typeof key === 'object' && !val) {
-				for (var arg in key) {
-					$this.data(key, key[arg]);
-				}
+				(function() {
+					for (var arg in key) {
+						if (key.hasOwnProperty(arg)) {
+							$this.data(key, key[arg]);
+						}
+					}
+				})();
 			}
 
 			// return single value
