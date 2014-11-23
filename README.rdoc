@@ -23,7 +23,11 @@ Create applications with offline capabilities using this simple embeddable DBMS 
 
 == Installation
 
-Download the latest {sources}[https://github.com/nuxy/SQLinJS/tags] and refer to the {README}[https://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
+This package can be easily installed using {Bower}[http://bower.io].
+
+    $ bower install sqlinjs
+
+Please refer to the {README}[https://labs.mbrooks.info/demos/SQLinJS/README.html] for more information about this package.
 
 == Author
 

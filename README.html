@@ -25,9 +25,17 @@
 	<li>Fast and lightweight (jQuery plug-in *only 13.7 kB)</li>
 </ul>
 
+<p>Check out the <a href="demo.html">demo</a> provided with this package.</p>
+
 <a name="install"></a>
 
 <h2>Installation</h2>
+
+<p>This package can be easily installed using <a href="http://bower.io">Bower</a>.</p>
+
+<pre>$ bower install sqlinjs</pre>
+
+<p>Manual install:</p>
 
 <ol>
 	<li>Download the latest <a href="https://github.com/nuxy/SQLinJS/tags">sources</a> to your computer using a web browser.</li>
@@ -158,7 +166,7 @@ dbh.SQLinJS('createDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 <samp>sql&gt; CREATE DATABASE accounts</samp>
 
 <pre>
-dbh.SQLinJS('createDatabase','accounts',
+dbh.SQLinJS('createDatabase', 'accounts',
 	function(response) {
 		if (response === true) {
 
@@ -181,7 +189,7 @@ dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>handler</em>]);</p
 <samp>sql&gt; CREATE TABLE user (id int(10), name varchar(10))</samp>
 
 <pre>
-dbh.SQLinJS('createTable','user', { "id" : "int(10)", "name" : "varchar(10)" },
+dbh.SQLinJS('createTable', 'user', { "id": "int(10)", "name": "varchar(10)" },
 	function(response) {
 		if (response === true) {
 
@@ -204,9 +212,9 @@ dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>clause</em>] [,<em>handler</em>])
 <samp>sql&gt; DELETE FROM user WHERE id &gt; 2 AND id != 4</samp>
 
 <pre>
-dbh.SQLinJS('deleteFrom','user',
+dbh.SQLinJS('deleteFrom', 'user',
 	{
-		conds : ['id &gt; 2',"id != 4"]
+		conds: ['id &gt; 2',"id != 4"]
 	},
 	function(response) {
 		if (response === true) {
@@ -230,7 +238,7 @@ dbh.SQLinJS('describeTable', <em>name</em> [,<em>handler</em>]);</pre>
 <samp>sql&gt; DESCRIBE user</samp>
 
 <pre>
-dbh.SQLinJS('describeTable','user',
+dbh.SQLinJS('describeTable', 'user',
 	function(response) {
 		for (var key in response) {
 			alert('column=' + key + '; type=' + response[key]);
@@ -252,7 +260,7 @@ dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 <samp>sql&gt; DROP DATABASE accounts</samp>
 
 <pre>
-dbh.SQLinJS('dropDatabase','accounts',
+dbh.SQLinJS('dropDatabase', 'accounts',
 	function(response) {
 		if (response === true) {
 
@@ -275,7 +283,7 @@ dbh.SQLinJS('dropTable', <em>name</em> [,<em>handler</em>]);</pre>
 <samp>sql&gt; DROP TABLE user</samp>
 
 <pre>
-dbh.SQLinJS('dropTable','user',
+dbh.SQLinJS('dropTable', 'user',
 	function(response) {
 		if (response === true) {
 
@@ -295,14 +303,14 @@ dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>handler</em>]);</p
 
 <h4>Use Example:</h4>
 
-<samp>sql&gt; INSERT INTO user (id, name) VALUES ('1','Jerry'), ('2','Alice'), ('3','Mable')</samp>
+<samp>sql&gt; INSERT INTO user (id, name) VALUES ('1', 'Jerry'), ('2', 'Alice'), ('3', 'Mable')</samp>
 
 <pre>
-dbh.SQLinJS('insertInto','user',
+dbh.SQLinJS('insertInto', 'user',
 	[
-		{ id : '1', name : 'Jerry' },
-		{ id : '2', name : 'Alice' },
-		{ id : '3', name : 'Mable' }
+		{ id: '1', name: 'Jerry' },
+		{ id: '2', name: 'Alice' },
+		{ id: '3', name: 'Mable' }
 	],
 	function(response) {
 		if (response === true) {
@@ -326,12 +334,12 @@ dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em
 <samp>sql&gt; SELECT id, name FROM user WHERE id &gt; 2 AND name != 'John' ORDER BY id DESC LIMIT 3</samp>
 
 <pre>
-dbh.SQLinJS('selectFrom','user', ['id','name'],
+dbh.SQLinJS('selectFrom', 'user', ['id', 'name'],
 	{
-		conds    : ['id &gt; 2',"name != 'John'"],
-		order_by : 'id',
-		sort     : 'desc',
-		limit    : 3
+		conds:    ['id &gt; 2',"name != 'John'"],
+		order_by: 'id',
+		sort:     'desc',
+		limit:    3
 	},
 	function(response) {
 		for (var i = 0; i < response.length; i++) {
@@ -404,9 +412,9 @@ dbh.SQLinJS('updateSet', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>
 <samp>sql&gt; UPDATE user SET name = 'Fred' WHERE id &gt; 2 AND name != 'John'</samp>
 
 <pre>
-dbh.SQLinJS('updateSet','user', ["name = 'Fred'"],
+dbh.SQLinJS('updateSet', 'user', ["name = 'Fred'"],
 	{
-		conds : ['id &gt; 2',"name != 'John'"]
+		conds: ['id &gt; 2',"name != 'John'"]
 	},
 	function(response) {
 		if (response === true) {
@@ -429,7 +437,7 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 
 <samp>sql&gt; USE DATABASE accounts</samp>
 
-<pre>dbh.SQLinJS('useDatabase','accounts',
+<pre>dbh.SQLinJS('useDatabase', 'accounts',
 	function(response) {
 		if (response === true) {
 
