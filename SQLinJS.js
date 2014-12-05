@@ -11,7 +11,7 @@
  */
 
 if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
-	alert('SQLinJS requires jQuery 1.8.3 or greater.');
+	throw new Error('SQLinJS requires jQuery 1.8.3 or greater.');
 }
 
 (function($) {
@@ -81,7 +81,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
 			stdOut('Welcome to SQLinJS monitor. Command ends with ; or \\g.');
 			stdOut();
-			stdOut("Type 'help;' or '\\h' for help.");
+			stdOut("Type '\\h' for help. Type '\\c' to clear the terminal.");
 
 			runCallback(callback);
 		},
@@ -227,11 +227,11 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 					$this.SQLinJS('_Use', callback);
 				break;
 
-				case /^clear|\\c/i.test(str):
+				case /^\\c/i.test(str):
 					clearTerminal();
 				break;
 
-				case /^help|\\h/i.test(str):
+				case /^\\h/i.test(str):
 					viewHelp();
 				break;
 
@@ -245,6 +245,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 				for (var key in data) {
 					if (data.hasOwnProperty(key)) {
 						cache('_database', data);
+
+						stdOut('Imported database ' +  key);
 
 						runCallback(callback, true);
 					}
