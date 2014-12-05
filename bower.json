@@ -1,6 +1,6 @@
 {
   "name": "sqlinjs",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "homepage": "https://github.com/nuxy/SQLinJS",
   "description": "Manage a JavaScript object database using the SQL syntax",
   "main": "SQLinJS.js",
