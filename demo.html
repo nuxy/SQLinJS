@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
 
-	<!-- JavaScript insert start -->
+  <!-- JavaScript insert start -->
 
-	<script src="SQLinJS.min.js"></script>
-	<script>
-	$(document).ready(function() {
+  <script src="SQLinJS.min.js"></script>
+  <script>
+  $(document).ready(function() {
 
-		// import remote database
-		$.getJSON('demo.json', function(data) {
-			$('body').SQLinJS(data, function() {
+    // import remote database
+    $.getJSON('demo.json', function(data) {
+      $('body').SQLinJS(data, function() {
 
-				// launch debug terminal
-				$('body').SQLinJS('initTerminal');
-			});
-		});
-	});
-	</script>
+        // launch debug terminal
+        $('body').SQLinJS('initTerminal');
+      });
+    });
+  });
+  </script>
 
-	<!-- JavaScript insert end -->
-
-
-	<!-- CSS include start -->
-
-	<link rel="stylesheet" type="text/css" href="SQLinJS.min.css">
-
-	<!-- CSS include end -->
+  <!-- JavaScript insert end -->
 
 
-	<title>SQLinJS - Terminal</title>
+  <!-- CSS include start -->
+
+  <link rel="stylesheet" type="text/css" href="SQLinJS.min.css">
+
+  <!-- CSS include end -->
+
+
+  <title>SQLinJS - Terminal</title>
 </head>
 <body></body>
 </html>
