@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="stylesheet" type="text/css" href="https://mbrooks.info/readme.min.css">
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" type="text/css" href="https://mbrooks.info/readme.min.css">
 
-	<title>README</title>
+  <title>SQLinJS - README</title>
 </head>
 <body>
 
@@ -16,13 +18,13 @@
 <h2>Features</h2>
 
 <ul>
-	<li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.</li>
-	<li>Compatible with iOS and Android mobile web browsers.</li>
-	<li>Includes SQL parsing and processing engine (refer to <a href="#syntax">Supported Syntax</a> for language support)</li>
-	<li>Provides command-line debug terminal for managing object data using the SQL syntax.</li>
-	<li>Provides API methods for managing object data from within your application.</li>
-	<li>Supports <a href="http://api.jquery.com/data">jQuery .data()</a> and HTML5 <a href="http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute">sessionStorage</a> for database storage.</li>
-	<li>Fast and lightweight (jQuery plug-in *only 13.7 kB)</li>
+  <li>Compatible with Firefox 3+, Chrome, Safari 4+, Opera, and Internet Explorer 7+ web browsers.</li>
+  <li>Compatible with iOS and Android mobile web browsers.</li>
+  <li>Includes SQL parsing and processing engine (refer to <a href="#syntax">Supported Syntax</a> for language support)</li>
+  <li>Provides command-line debug terminal for managing object data using the SQL syntax.</li>
+  <li>Provides API methods for managing object data from within your application.</li>
+  <li>Supports <a href="http://api.jquery.com/data">jQuery .data()</a> and HTML5 <a href="http://www.w3.org/TR/webstorage/#the-sessionstorage-attribute">sessionStorage</a> for database storage.</li>
+  <li>Fast and lightweight (jQuery plug-in *only 13.7 kB)</li>
 </ul>
 
 <p>Check out the <a href="demo.html">demo</a> provided with this package.</p>
@@ -38,24 +40,24 @@
 <p>Manual install:</p>
 
 <ol>
-	<li>Download the latest <a href="https://github.com/nuxy/SQLinJS/tags">sources</a> to your computer using a web browser.</li>
-	<li>Extract the contents of the <em>.zip</em> into a folder on your local computer.</li>
-	<li>Upload the folder with the <strong>following files</strong> to your web site.</li>
+  <li>Download the latest <a href="https://github.com/nuxy/SQLinJS/tags">sources</a> to your computer using a web browser.</li>
+  <li>Extract the contents of the <em>.zip</em> into a folder on your local computer.</li>
+  <li>Upload the folder with the <strong>following files</strong> to your web site.</li>
 </ol>
 
 <table border="1">
-	<tr>
-		<th>Filename</th>
-		<th>Role</th>
-	</tr>
-	<tr>
-		<td>SQLinJS.min.js</td>
-		<td>The main script to be included from within your HTML document.</td>
-	</tr>
-	<tr>
-		<td>SQLinJS.min.css</td>
-		<td>This style sheet that defines the "look & feel" of the SQL terminal.</td>
-	</tr>
+  <tr>
+    <th>Filename</th>
+    <th>Role</th>
+  </tr>
+  <tr>
+    <td>SQLinJS.min.js</td>
+    <td>The main script to be included from within your HTML document.</td>
+  </tr>
+  <tr>
+    <td>SQLinJS.min.css</td>
+    <td>This style sheet that defines the "look & feel" of the SQL terminal.</td>
+  </tr>
 </table>
 
 <h2>Source Code</h2>
@@ -67,7 +69,7 @@
 &lt;script src="/path/to/SQLinJS.min.js"&gt;&lt;/script&gt;
 &lt;script&gt;
 $(document).ready(function() {
-	$('body').SQLinJS();
+  $('body').SQLinJS();
 });
 &lt;/script&gt;</pre>
 
@@ -83,26 +85,26 @@ var dbh = $(document).SQLinJS([<em>data</em>] [,<em>handler</em>]);    // initia
 <h4>General</h4>
 
 <ul>
-	<li><a href="#initTerminal">initTerminal</a></li>
-	<li><a href="#executeQuery">executeQuery</a></li>
-	<li><a href="#importDatabase">importDatabase</a></li>
+  <li><a href="#initTerminal">initTerminal</a></li>
+  <li><a href="#executeQuery">executeQuery</a></li>
+  <li><a href="#importDatabase">importDatabase</a></li>
 </ul>
 
 <h4>SQL common</h4>
 
 <ul>
-	<li><a href="#createDatabase">createDatabase</a></li>
-	<li><a href="#createTable">createTable</a></li>
-	<li><a href="#deleteFrom">deleteFrom</a></li>
-	<li><a href="#describeTable">describeTable</a></li>
-	<li><a href="#dropDatabase">dropDatabase</a></li>
-	<li><a href="#dropTable">dropTable</a></li>
-	<li><a href="#insertInto">insertInto</a></li>
-	<li><a href="#selectFrom">selectFrom</a></li>
-	<li><a href="#showDatabases">showDatabases</a></li>
-	<li><a href="#showTables">showTables</a></li>
-	<li><a href="#updateSet">updateSet</a></li>
-	<li><a href="#useDatabase">useDatabase</a></li>
+  <li><a href="#createDatabase">createDatabase</a></li>
+  <li><a href="#createTable">createTable</a></li>
+  <li><a href="#deleteFrom">deleteFrom</a></li>
+  <li><a href="#describeTable">describeTable</a></li>
+  <li><a href="#dropDatabase">dropDatabase</a></li>
+  <li><a href="#dropTable">dropTable</a></li>
+  <li><a href="#insertInto">insertInto</a></li>
+  <li><a href="#selectFrom">selectFrom</a></li>
+  <li><a href="#showDatabases">showDatabases</a></li>
+  <li><a href="#showTables">showTables</a></li>
+  <li><a href="#updateSet">updateSet</a></li>
+  <li><a href="#useDatabase">useDatabase</a></li>
 </ul>
 
 <h3><a name="initTerminal">initTerminal</a></h3>
@@ -125,10 +127,10 @@ dbh.SQLinJS('executeQuery', <em>string</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('executeQuery',"SELECT * FROM user WHERE id &gt; 2 AND name != 'John'"
-	function(response) {
+  function(response) {
 
-		// do something
-	}
+    // do something
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -144,10 +146,10 @@ dbh.SQLinJS('importDatabase', <em>data</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('importDatabase', data,
-	function(response) {
+  function(response) {
 
-		// do something
-	}
+    // do something
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -165,12 +167,12 @@ dbh.SQLinJS('createDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('createDatabase', 'accounts',
-	function(response) {
-		if (response === true) {
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -188,12 +190,12 @@ dbh.SQLinJS('createTable', <em>name</em>, <em>defs</em> [,<em>handler</em>]);</p
 
 <pre>
 dbh.SQLinJS('createTable', 'user', { "id": "int(10)", "name": "varchar(10)" },
-	function(response) {
-		if (response === true) {
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -211,15 +213,15 @@ dbh.SQLinJS('deleteFrom', <em>table</em> [,<em>clause</em>] [,<em>handler</em>])
 
 <pre>
 dbh.SQLinJS('deleteFrom', 'user',
-	{
-		conds: ['id &gt; 2',"id != 4"]
-	},
-	function(response) {
-		if (response === true) {
+  {
+    conds: ['id &gt; 2',"id != 4"]
+  },
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -237,11 +239,11 @@ dbh.SQLinJS('describeTable', <em>name</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('describeTable', 'user',
-	function(response) {
-		for (var key in response) {
-			alert('column=' + key + '; type=' + response[key]);
-		}
-	}
+  function(response) {
+    for (var key in response) {
+      alert('column=' + key + '; type=' + response[key]);
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -259,12 +261,12 @@ dbh.SQLinJS('dropDatabase', <em>name</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('dropDatabase', 'accounts',
-	function(response) {
-		if (response === true) {
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -282,12 +284,12 @@ dbh.SQLinJS('dropTable', <em>name</em> [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('dropTable', 'user',
-	function(response) {
-		if (response === true) {
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -305,17 +307,17 @@ dbh.SQLinJS('insertInto', <em>table</em>, <em>vals</em> [,<em>handler</em>]);</p
 
 <pre>
 dbh.SQLinJS('insertInto', 'user',
-	[
-		{ id: '1', name: 'Jerry' },
-		{ id: '2', name: 'Alice' },
-		{ id: '3', name: 'Mable' }
-	],
-	function(response) {
-		if (response === true) {
+  [
+    { id: '1', name: 'Jerry' },
+    { id: '2', name: 'Alice' },
+    { id: '3', name: 'Mable' }
+  ],
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -333,19 +335,19 @@ dbh.SQLinJS('selectFrom', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em
 
 <pre>
 dbh.SQLinJS('selectFrom', 'user', ['id', 'name'],
-	{
-		conds:    ['id &gt; 2',"name != 'John'"],
-		order_by: 'id',
-		sort:     'desc',
-		limit:    3
-	},
-	function(response) {
-		for (var i = 0; i < response.length; i++) {
-			for (var key in response[i]) {
-				alert('id=' + key.id + '; name=' + key.name);
-			}
-		}
-	}
+  {
+    conds:    ['id &gt; 2',"name != 'John'"],
+    order_by: 'id',
+    sort:     'desc',
+    limit:    3
+  },
+  function(response) {
+    for (var i = 0; i < response.length; i++) {
+      for (var key in response[i]) {
+        alert('id=' + key.id + '; name=' + key.name);
+      }
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -363,13 +365,13 @@ dbh.SQLinJS('showDatabases' [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('showDatabases',
-	function(response) {
-		for (var i = 0; i <= response.length; i++) {
-			for (var key in response[i]) {
-				alert(response[key]);
-			}
-		}
-	}
+  function(response) {
+    for (var i = 0; i <= response.length; i++) {
+      for (var key in response[i]) {
+        alert(response[key]);
+      }
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -387,13 +389,13 @@ dbh.SQLinJS('showTables' [,<em>handler</em>]);</pre>
 
 <pre>
 dbh.SQLinJS('showTables',
-	function(response) {
-		for (var i = 0; i <= response.length; i++) {
-			for (var key in response[i]) {
-				alert(response[key]);
-			}
-		}
-	}
+  function(response) {
+    for (var i = 0; i <= response.length; i++) {
+      for (var key in response[i]) {
+        alert(response[key]);
+      }
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -411,15 +413,15 @@ dbh.SQLinJS('updateSet', <em>table</em>, <em>cols</em> [,<em>clause</em>] [,<em>
 
 <pre>
 dbh.SQLinJS('updateSet', 'user', ["name = 'Fred'"],
-	{
-		conds: ['id &gt; 2',"name != 'John'"]
-	},
-	function(response) {
-		if (response === true) {
+  {
+    conds: ['id &gt; 2',"name != 'John'"]
+  },
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -436,12 +438,12 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 <samp>sql&gt; USE DATABASE accounts</samp>
 
 <pre>dbh.SQLinJS('useDatabase', 'accounts',
-	function(response) {
-		if (response === true) {
+  function(response) {
+    if (response === true) {
 
-			// do something
-		}
-	}
+      // do something
+    }
+  }
 );</pre>
 
 <a class="back" href="#methods">Back to Top</a>
@@ -461,18 +463,18 @@ dbh.SQLinJS('useDatabase', <em>name</em>);</pre>
 <p>In order to avoid creating a complex SQL parser I have provide limited support the following functions.</p>
 
 <ul>
-	<li><a href="#CREATE_DATABASE">CREATE DATABASE</a></li>
-	<li><a href="#CREATE_TABLE">CREATE TABLE</a></li>
-	<li><a href="#DELETE">DELETE</a></li>
-	<li><a href="#DESCRIBE">DESCRIBE</a></li>
-	<li><a href="#DROP_DATABASE">DROP DATABASE</a></li>
-	<li><a href="#DROP_DATABASE">DROP TABLE</a></li>
-	<li><a href="#INSERT">INSERT</a></li>
-	<li><a href="#SELECT">SELECT</a></li>
-	<li><a href="#SHOW_DATABASES">SHOW DATABASES</a></li>
-	<li><a href="#SHOW_TABLES">SHOW TABLES</a></li>
-	<li><a href="#UPDATE">UPDATE</a></li>
-	<li><a href="#USE">USE</a></li>
+  <li><a href="#CREATE_DATABASE">CREATE DATABASE</a></li>
+  <li><a href="#CREATE_TABLE">CREATE TABLE</a></li>
+  <li><a href="#DELETE">DELETE</a></li>
+  <li><a href="#DESCRIBE">DESCRIBE</a></li>
+  <li><a href="#DROP_DATABASE">DROP DATABASE</a></li>
+  <li><a href="#DROP_DATABASE">DROP TABLE</a></li>
+  <li><a href="#INSERT">INSERT</a></li>
+  <li><a href="#SELECT">SELECT</a></li>
+  <li><a href="#SHOW_DATABASES">SHOW DATABASES</a></li>
+  <li><a href="#SHOW_TABLES">SHOW TABLES</a></li>
+  <li><a href="#UPDATE">UPDATE</a></li>
+  <li><a href="#USE">USE</a></li>
 </ul>
 
 <h3><a name="CREATE_DATABASE">CREATE DATABASE</a></h3>
