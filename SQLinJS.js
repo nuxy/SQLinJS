@@ -1,8 +1,8 @@
 /**
  *  SQLinJS
- *  Manage a JavaScript object database using the SQL syntax
+ *  Manage a JavaScript object database using the SQL syntax.
  *
- *  Copyright 2012-2014, Marc S. Brooks (http://mbrooks.info)
+ *  Copyright 2012-2015, Marc S. Brooks (https://mbrooks.info)
  *  Licensed under the MIT license:
  *  http://www.opensource.org/licenses/mit-license.php
  *
@@ -10,7 +10,7 @@
  *    jquery.js
  */
 
-if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
+if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace('.', '')) < parseInt('1.8.3'.replace('.', '')))) {
   throw new Error('SQLinJS requires jQuery 1.8.3 or greater.');
 }
 
@@ -37,7 +37,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     "init": function(data, callback) {
       if ( $.isEmptyObject(cache()) ) {
 
-        // initialize cached objects
+        // Initialize cached objects.
         cache({
           _active_db: null,
           _sql_query: null,
@@ -45,7 +45,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
           _query_log: []
         });
 
-        // if database has been provided
+        // If database has been provided..
         if (typeof data === 'object') {
           $(this).SQLinJS('importDatabase', data, callback);
         }
@@ -66,9 +66,9 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       debug = true;
 
       var screen = $('<pre></pre>'),
-        input  = $('<textarea></textarea>');
+          input  = $('<textarea></textarea>');
 
-      // create terminal elements
+      // Create terminal elements
       $this.append(
         $('<div></div>')
           .attr('id', 'SQLinJS')
@@ -90,8 +90,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       var $this = $(this);
 
       var terminal = $('#SQLinJS'),
-        screen   = terminal.find('pre'),
-        input    = terminal.find('textarea');
+          screen   = terminal.find('pre'),
+          input    = terminal.find('textarea');
 
       for (var i = 0; i < names.length; i++) {
         switch (names[i]) {
@@ -109,7 +109,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
                 event.preventDefault();
 
-                // execute SQL queries seperated by semicolon
+                // Execute SQL queries seperated by semicolon.
                 var str = $(this).val();
 
                 var queries =
@@ -131,14 +131,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
                 var buffer = cache('_query_log');
                 index = buffer.length;
 
-                // force scroll positioning
+                // Force scroll positioning
                 screen.scrollTop( screen.prop('scrollHeight') );
               })
               .on('keyup', function(event) {
                 var buffer = cache('_query_log'),
-                  count  = buffer.length;
+                    count  = buffer.length;
 
-                // scroll command buffer
+                // Scroll command buffer
                 switch (event.which) {
                   case 38:
 
@@ -170,14 +170,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "executeQuery": function(str, callback) {
       var $this = $(this),
-        data  = cache();
+          data  = cache();
 
       if (debug) {
         str = $.trim(str);
 
         stdOut('\r\nsql> ' + str);
 
-        // log queries
+        // Log queries
         data['_query_log'].push( logFormat(str) );
 
         cache('_query_log', data['_query_log']);
@@ -187,7 +187,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         return throwError(errors.NO_DB_SELECTED);
       }
 
-      // record SQL query
+      // Record SQL query
       cache('_sql_query', str);
 
       switch (true) {
@@ -270,7 +270,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
       var timer = calcExecTime(function() {
 
-        // create an empty database
+        // Create an empty database
         data[name] = {};
 
         cache('_database', data);
@@ -283,7 +283,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "createTable": function(name, defs, callback) {
       var used = cache('_active_db'),
-        data = cache('_database');
+          data = cache('_database');
 
       if (!data[used]) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -299,7 +299,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
       var cols = [];
 
-      // check supported data types
+      // Check supported data types
       for (var type in defs) {
         if (/^((VAR)*CHAR|INT)(\(\d+\))*$/i.test(defs[type])) {
           cols.push(type);
@@ -312,7 +312,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
       var timer = calcExecTime(function() {
 
-        // create table properties
+        // Create table properties
         data[used][name] = {
           _cols: cols,
           _defs: defs,
@@ -329,10 +329,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "deleteFrom": function(table, clause, callback) {
       var $this = $(this),
-        used  = cache('_active_db'),
-        data  = cache('_database'),
-        res   = [],
-        count = 0;
+          used  = cache('_active_db'),
+          data  = cache('_database'),
+          res   = [],
+          count = 0;
 
       if (!data[used]) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -354,7 +354,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         for (var i = 0; i < res[1].length; i++) {
           var obj = res[1][i];
 
-          // iterate table rows
+          // Iterate table rows
           for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
 
@@ -366,7 +366,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
           }
         }
 
-        // remove 'undefined' buckets from array
+        // Remove 'undefined' buckets from array
         data[used][table]['_data'] = reindexArray(rows);
 
         cache('_database', data);
@@ -379,7 +379,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "describeTable": function(name, callback) {
       var used = cache('_active_db'),
-        data = cache('_database');
+          data = cache('_database');
 
       if (!data[used]) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -394,7 +394,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       }
 
       var defs  = data[used][name]['_defs'],
-        count = 0;
+          count = 0;
 
       var timer = calcExecTime(function() {
         var cols  = ['Field', 'Type'],
@@ -434,7 +434,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "dropTable": function(name, callback) {
       var used = cache('_active_db'),
-        data = cache('_database');
+          data = cache('_database');
 
       if (!data[used]) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -461,7 +461,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "insertInto": function(table, vals, callback) {
       var used = cache('_active_db'),
-        data = cache('_database');
+          data = cache('_database');
 
       if (!data[used]) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -475,7 +475,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         return stdErr('UNKNOWN_TABLE', table, callback);
       }
 
-      // support Object values for backwards compatibility
+      // Support Object values for backwards compatibility.
       if (!vals instanceof Array) {
            vals = new Array(vals);
       }
@@ -494,15 +494,15 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
                 return stdErr('UNKNOWN_FIELD', col, table, callback);
               }
 
-              // process values based on data type definition
+              // Process values based on data type definition.
               var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
-                name = type[0],
-                size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
+                  name = type[0],
+                  size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
 
               switch (true) {
                 case /((VAR)*CHAR)/i.test(name):
 
-                  // truncate value to defined type length
+                  // Truncate value to defined type length.
                   obj[col] = val.substring(0, size) || undefined;
                 break;
 
@@ -516,7 +516,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
           if (obj) {
             data[used][table]['_data'].push(obj);
 
-            // insert new record
+            // Insert new record
             cache('_database', data);
           }
         }
@@ -531,10 +531,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "selectFrom": function(table, cols, clause, callback) {
       var $this = $(this),
-        used  = cache('_active_db'),
-        data  = cache('_database'),
-        res   = [],
-        count = 0;
+          used  = cache('_active_db'),
+          data  = cache('_database'),
+          res   = [],
+          count = 0;
 
       if ( $.isFunction(clause) ) {
         callback = clause;
@@ -582,8 +582,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       }
 
       var cols  = ['Database'],
-        count = 0,
-        vals  = null;
+          count = 0,
+          vals  = null;
 
       var timer = calcExecTime(function() {
         vals = getObjKeys(data, cols);
@@ -600,7 +600,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "showTables": function(callback) {
       var used = cache('_active_db'),
-        data = cache('_database');
+          data = cache('_database');
 
       if (!cache) {
         return stdErr('NO_DB_SELECTED', callback);
@@ -611,8 +611,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       }
 
       var cols  = ['Tables' + '_in_' + used],
-        count = 0,
-        vals  = null;
+          count = 0,
+          vals  = null;
 
       var timer = calcExecTime(function() {
         vals = getObjKeys(data[used], cols);
@@ -629,10 +629,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "updateSet": function(table, cols, clause, callback) {
       var $this = $(this),
-        used  = cache('_active_db'),
-        data  = cache('_database'),
-        res   = [],
-        count = 0;
+          used  = cache('_active_db'),
+          data  = cache('_database'),
+          res   = [],
+          count = 0;
 
       if ( $.isFunction(clause) ) {
         callback = clause;
@@ -659,7 +659,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         for (var i = 0; i < res[1].length; i++) {
           var obj = res[1][i];
 
-          // iterate table rows
+          // Iterate table rows
           for (var j = 0; j < rows.length; j++) {
             var row = rows[j];
 
@@ -668,8 +668,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
             // .. columns/values
             for (var k = 0; k < cols.length; k++) {
               var parts = cols[k].replace(/^(\w+)\s*=\s*(?:'|")*(.+?)(?:"|')*$/,'$1\0$2').split('\0'),
-                col   = parts[0],
-                val   = parts[1];
+                  col   = parts[0],
+                  val   = parts[1];
 
               if (!defs.hasOwnProperty(col)) {
                 return stdErr('UNKNOWN_FIELD', col, table, callback);
@@ -713,14 +713,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Create": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       switch (true) {
-        case /^CREATE\s+DATABASE/i.test(sql_query):
+        case /^CREATE\s+DATABASE/i.test(query):
           (function() {
             try {
               var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
-                name  = sql_query.replace(regex,'$1');
+                  name  = query.replace(regex,'$1');
 
               $this.SQLinJS('createDatabase', name, callback);
             }
@@ -730,17 +730,17 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
           })();
         break;
 
-        case /^CREATE\s+TABLE/i.test(sql_query):
+        case /^CREATE\s+TABLE/i.test(query):
           (function() {
             try {
               var regex = /^CREATE\s+TABLE\s+(\w+)\s+\((.+)\)$/i,
-                parts = sql_query.replace(regex,'$1|$2').split(/\|/),
-                name  = parts[0],
-                defs  = parts[1].split(/\s*,\s*/);
+                  parts = query.replace(regex,'$1|$2').split(/\|/),
+                  name  = parts[0],
+                  defs  = parts[1].split(/\s*,\s*/);
 
               var obj  = {};
 
-              // fold column type key/values into an object
+              // Fold column type key/values into an object.
               for (var i = 0; i < defs.length; i++) {
                 var val = defs[i].split(/\s+/);
                 obj[ val[0] ] = val[1];
@@ -761,13 +761,13 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Delete": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       try {
         var regex = /^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
-          parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
-          table = parts[0],
-          conds = parts[1].split(/AND/i);
+            parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
+            table = parts[0],
+            conds = parts[1].split(/AND/i);
 
         $this.SQLinJS('deleteFrom', table, {
           conds:    ((conds[0]) ? conds : undefined),
@@ -783,32 +783,32 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Describe": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       var regex = /^DESCRIBE\s+(\w+)*$/i,
-        table = sql_query.replace(regex,'$1');
+          table = query.replace(regex,'$1');
 
       $this.SQLinJS('describeTable', table, callback);
     },
 
     "_Drop": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       switch (true) {
-        case /^DROP\s+DATABASE/i.test(sql_query):
+        case /^DROP\s+DATABASE/i.test(query):
           (function() {
             var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
-              name  = sql_query.replace(regex,'$1');
+                name  = query.replace(regex,'$1');
 
             $this.SQLinJS('dropDatabase', name, callback);
           })();
         break;
 
-        case /^DROP\s+TABLE/i.test(sql_query):
+        case /^DROP\s+TABLE/i.test(query):
           (function() {
             var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
-              name  = sql_query.replace(regex,'$1');
+                name  = query.replace(regex,'$1');
 
             $this.SQLinJS('dropTable', name, callback);
           })();
@@ -821,16 +821,16 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Insert": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query'),
-        used      = cache('_active_db'),
-        data      = cache('_database');
+          query = cache('_sql_query'),
+          used      = cache('_active_db'),
+          data      = cache('_database');
 
       try {
         var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
-          parts = sql_query.replace(regex,'$1\0$2\0$3').split('\0'),
-          table = parts[0],
-          cols  = parts[1].split(/\s*,\s*/),
-          vals  = parts[2].split(/\s*\)\s*,\s*\(\s*/);
+            parts = query.replace(regex,'$1\0$2\0$3').split('\0'),
+            table = parts[0],
+            cols  = parts[1].split(/\s*,\s*/),
+            vals  = parts[2].split(/\s*\)\s*,\s*\(\s*/);
 
         if (!cols[0]) {
           cols = data[used][table]['_cols'];
@@ -838,7 +838,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
         var _vals = [];
 
-        // convert string VALUES to an array of object(s)
+        // Convert string VALUES to an array of object(s).
         for (var i = 0; i < vals.length; i++) {
           var items = vals[i].split(/\s*,\s*/);
 
@@ -858,14 +858,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Select": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       try {
         var regex = /^SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
-          parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5\0$6').split('\0'),
-          table = parts[1],
-          cols  = parts[0].split(/\s*,\s*/),
-          conds = parts[2].split(/AND/i);
+            parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5\0$6').split('\0'),
+            table = parts[1],
+            cols  = parts[0].split(/\s*,\s*/),
+            conds = parts[2].split(/AND/i);
 
         $this.SQLinJS('selectFrom', table, cols, {
           conds:    ((conds[0]) ? conds : undefined),
@@ -881,14 +881,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Show": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       switch (true) {
-        case /^SHOW\s+DATABASES;?$/i.test(sql_query):
+        case /^SHOW\s+DATABASES;?$/i.test(query):
           $this.SQLinJS('showDatabases', callback);
         break;
 
-        case /^SHOW\s+TABLES;?$/i.test(sql_query):
+        case /^SHOW\s+TABLES;?$/i.test(query):
           $this.SQLinJS('showTables', callback);
         break;
 
@@ -899,14 +899,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Update": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       try {
         var regex = /^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+?))*(?:(?:\s+ORDER\s+BY\s+(\w+))*(?:\s+(ASC|DESC)*)*(?:\s+LIMIT\s+(\d+))*)*$/i,
-          parts = sql_query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
-          table = parts[0],
-          cols  = parts[1].split(/\s*,\s*/),
-          conds = parts[2].split(/AND/i);
+            parts = query.replace(regex,'$1\0$2\0$3\0$4\0$5').split('\0'),
+            table = parts[0],
+            cols  = parts[1].split(/\s*,\s*/),
+            conds = parts[2].split(/AND/i);
 
         $this.SQLinJS('updateSet', table, cols, {
           conds:    ((conds[0]) ? conds : undefined),
@@ -922,38 +922,38 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
     "_Use": function(callback) {
       var $this = $(this),
-        sql_query = cache('_sql_query');
+          query = cache('_sql_query');
 
       var regex = /^USE\s+(\w+)$/i,
-        name  = sql_query.replace(regex,'$1');
+          name  = query.replace(regex,'$1');
 
       $this.SQLinJS('useDatabase', name, callback);
     },
 
     "_QueryDB": function(data, table, cols, clause, callback) {
       var names = data[table]['_cols'],
-        rows  = data[table]['_data'],
-        vals  = [],
-        count = 0;
+          rows  = data[table]['_data'],
+          vals  = [],
+          count = 0;
 
-      // iterate table rows
+      // Iterate table rows
       for (var i = 0; i < rows.length; i++) {
         var row  = rows[i],
-          obj  = {},
-          skip = null;
+            obj  = {},
+            skip = null;
 
-        // return all columns; boolean or wildcard
+        // Return all columns; boolean or wildcard.
         if (cols[0] == '1' || cols[0] == '*') {
           cols = names;
         }
 
-        // process columns/values
+        // Process columns/values
         for (var j = 0; j < cols.length; j++) {
           var col = cols[j];
 
           for (var k = 0; k < names.length; k++) {
             var name = names[k],
-              val  = (row[name] !== undefined) ? row[name] : 'NULL';
+                val  = (row[name] !== undefined) ? row[name] : 'NULL';
 
             if (row[col] === undefined) {
               return stdErr('UNKNOWN_FIELD', col, table, callback);
@@ -969,10 +969,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
               continue;
             }
 
-            // test WHERE clause conditional expressions
+            // Test WHERE clause conditional expressions.
             for (var m = 0; m < clause.conds.length; m++) {
               var regex = /^\s*(\w+)\s*([!=<>]+|LIKE)\s*(.*)\s+/i,
-                parts = clause.conds[m].replace(regex,'$1\0$2\0$3').split('\0');
+                  parts = clause.conds[m].replace(regex,'$1\0$2\0$3').split('\0');
 
               if ($.inArray(parts[0], names) === -1) {
                 return stdErr('UNKNOWN_FIELD', parts[0], table, callback);
@@ -1009,7 +1009,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         }
       }
 
-      // sort results array of objects, by key (column name)
+      // Sort results array of objects, by key (column name).
       if (clause.order_by && clause.sort == 'desc') {
         vals.sort(function(a, b) {
           return (a[clause.order_by] < b[clause.order_by])
@@ -1037,7 +1037,9 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
   /**
    * Return true if in valid format - [a-zA-Z0-9_]
+   *
    * @param {String} str
+   *
    * @returns {Boolean}
    */
   function validName(str) {
@@ -1046,8 +1048,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return true if an integer
+   * Return true if an integer.
+   *
    * @param {String} val
+   *
    * @returns {Boolean}
    */
   function validNum(val) {
@@ -1055,9 +1059,11 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return array values (folded) as an object
+   * Return array values (folded) as an object.
+   *
    * @param {Array} names
    * @param {Array} vals
+   *
    * @returns {Object}
    */
   function getValsAsObj(names, vals) {
@@ -1069,9 +1075,11 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return key/values as array of object(s)
+   * Return key/values as array of object(s).
+   *
    * @param {Array}  names
    * @param {Object} obj
+   *
    * @returns {Array}
    */
   function getObjAsCols(names, obj) {
@@ -1090,9 +1098,11 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return key names (1st child) as array of objects
+   * Return key names (1st child) as array of objects.
+   *
    * @param {Object} data
    * @param {String} name
+   *
    * @returns {Array}
    */
   function getObjKeys(data, name) {
@@ -1109,8 +1119,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
   /**
    * Perform single-level comparison of two objects
+   *
    * @param {Object} obj1
    * @param {Object} obj2
+   *
    * @returns Boolean
    */
   function compareObj(obj1, obj2) {
@@ -1134,8 +1146,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Remove 'undefined' buckets from an array
+   * Remove 'undefined' buckets from an array.
+   *
    * @param {Array} arr
+   *
    * @returns {Array}
    */
   function reindexArray(arr) {
@@ -1150,15 +1164,17 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Calculate execution time of a function (not precise, but simple)
+   * Calculate execution time of a function (not precise, but simple).
+   *
    * @param {Function} func
+   *
    * @returns {String}
    */
   function calcExecTime(func) {
     try {
       if ( $.isFunction(func) ) {
-        var start = new Date().getMilliseconds();
-        var error = func();
+        var start = new Date().getMilliseconds(),
+            error = func();
         if (error) return 0;
         var stop = new Date().getMilliseconds();
         return ((stop - start) / 100).toFixed(2);
@@ -1170,10 +1186,12 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return values based on expression result
+   * Return values based on expression result.
+   *
    * @param {Array} conds
    * @param {String} col1
    * @param {String} val1
+   *
    * @returns {Integer}
    *
    *  0 - Expression result is false
@@ -1184,15 +1202,15 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     if (conds.length != 3 || !conds[2]) return 2;
 
     var col2 = conds[0],
-      op   = conds[1],
-      val2 = conds[2];
+        op   = conds[1],
+        val2 = conds[2];
 
     if (col1 != col2) return;
 
-    // test expression by type
+    // Test expression by type
     if (!/^([!=]+|<>|LIKE)$/i.test(op) && validNum(val1) && validNum(val2)) {
       var num1 = val1,
-        num2 = val2;
+          num2 = val2;
 
       // .. numeric operations
       switch (op) {
@@ -1215,7 +1233,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     }
     else {
       var str1 = val1,
-        str2 = val2.replace(/'(.*)'/,'$1');
+          str2 = val2.replace(/'(.*)'/,'$1');
 
       str1 = ( !$.isNumeric(str1) ) ? str1.toLowerCase() : str1;
       str2 = ( !$.isNumeric(str2) ) ? str2.toLowerCase() : str2;
@@ -1237,7 +1255,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         case 'LIKE':
           var regex = str2.replace(/^%+|%+$/g,'(.*)');
 
-          // use per-character matching
+          // Use per-character matching
           if (val1.match(new RegExp('^' + regex + '$', 'i'))) {
             return 1;
           }
@@ -1250,7 +1268,9 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
   /**
    * Return 'query_log' entry as an object
+   *
    * @param {String} str
+   *
    * @returns {Object}
    */
   function logFormat(str) {
@@ -1258,28 +1278,29 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Return help menu as a string
+   * Return help menu as a string.
    */
   function viewHelp() {
     window.open('https://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
   }
 
   /**
-   * Clear all messages in screen
+   * Clear all messages in screen.
    */
   function clearTerminal() {
     $('#SQLinJS pre').empty();
   }
 
   /**
-   * Print error message to screen
+   * Print error message to screen.
+   *
    * @param {String}   code
    * @param {Function} func
    */
   function stdErr() {
     var args = arguments,
-      code = args[0],
-      func = args[args.length -1];
+        code = args[0],
+        func = args[args.length -1];
 
     if (!errors.hasOwnProperty(code)) return;
 
@@ -1300,7 +1321,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Print message to screen; add newline to output
+   * Print message to screen; add newline to output.
+   *
    * @param {String} str
    */
   function stdOut(str) {
@@ -1311,6 +1333,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
   /**
    * Print query response message to screen
+   *
    * @param {String}  count
    * @param {String}  timer
    * @param {Boolean} write
@@ -1329,7 +1352,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Print tablular format message to screen
+   * Print tablular format message to screen.
+   *
    * @param {Array} cols
    * @param {Array} data
    *
@@ -1346,7 +1370,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     if (!debug) return;
 
     var sizes = {},
-      count = 0;
+        count = 0;
 
     for (var i = 0; i < cols.length; i++) {
       var name = cols[i];
@@ -1356,7 +1380,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
       for (var j = 0; j < data.length; j++) {
         (function() {
           var rows = data[j],
-            len  = String(rows[name]).length;
+              len  = String(rows[name]).length;
 
           if (len > sizes[name]) {
             sizes[name] = len;
@@ -1376,7 +1400,7 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     for (var k = 0; k < data.length; k++) {
       (function() {
         var rows = data[k],
-          arr  = [];
+            arr  = [];
 
         for (var key in rows) {
           if (rows.hasOwnProperty(key)) {
@@ -1392,7 +1416,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Print tablular format header to screen
+   * Print tablular format header to screen.
+   *
    * @param {String} len
    * @param {Array}  cols
    */
@@ -1403,7 +1428,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Print tablular format row to screen
+   * Print tablular format row to screen.
+   *
    * @param {String} len
    * @param {Array}  cols
    */
@@ -1418,7 +1444,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Append white space to the right side of a string
+   * Append white space to the right side of a string.
+   *
    * @param {String} str
    * @param {String} len
    * @param {String}
@@ -1428,7 +1455,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Run callback function; die on errors
+   * Run callback function; die on errors.
+   *
    * @param {Function} func
    * @param {*} data
    */
@@ -1444,7 +1472,8 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
   }
 
   /**
-   * Output errors including caller object
+   * Output errors including caller object.
+   *
    * @param {String} str
    */
   function throwError(str) {
@@ -1453,8 +1482,10 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
 
   /**
    * Cache data using jQuery.data, by default; Web Storage when supported.
+   *
    * @param {String} key
    * @param {*} val
+   *
    * @returns {*}
    */
   function cache(key, val) {
@@ -1463,13 +1494,13 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     if (window.sessionStorage && window.JSON) {
       var storage = window.sessionStorage;
 
-      // set single value
+      // Set single value
       if (typeof key === 'string' && val) {
         storage.setItem(key, JSON.stringify(val));
       }
       else
 
-      // set multiple
+      // Set multiple
       if (typeof key === 'object' && !val) {
         (function() {
           for (var arg in key) {
@@ -1480,14 +1511,14 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         })();
       }
 
-      // return single value
+      // Return single value
       if (typeof key === 'string' && !val) {
         return $.parseJSON(storage.getItem(key));
       }
 
       var data = {};
 
-      // return all values
+      // Return all values
       for (var i = 0; i < storage.length; i++) {
         key = storage.key(i);
 
@@ -1501,13 +1532,13 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
     else {
       var $this = $(this);
 
-      // set single value
+      // Set single value
       if (typeof key === 'string' && val) {
         $this.data(key, val);
       }
       else
 
-      // set multiple
+      // Set multiple
       if (typeof key === 'object' && !val) {
         (function() {
           for (var arg in key) {
@@ -1518,12 +1549,12 @@ if (!window.jQuery || (window.jQuery && window.jQuery.fn.jquery < '1.8.3')) {
         })();
       }
 
-      // return single value
+      // Return single value
       if (typeof key === 'string' && !val) {
         return $this.data(key);
       }
 
-      // return all values
+      // Return all values
       else {
         return $this.data();
       }
