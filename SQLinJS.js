@@ -1712,7 +1712,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
    * @protected
    */
   function viewHelp() {
-    window.open('https://labs.mbrooks.info/demos/SQLinJS/README.html#syntax');
+    window.open('http://nuxy.github.io/SQLinJS/#syntax');
   }
 
   /**
