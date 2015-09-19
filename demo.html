@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+  <!-- JavaScript insert start -->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="SQLinJS.min.js"></script>
+  <script>
+  $(document).ready(function() {
+
+    // Import remote database.
+    $.getJSON('demo.json', function(data) {
+      $('body').SQLinJS(data, function() {
+
+        // Launch debug terminal.
+        $(this).SQLinJS('initTerminal');
+      });
+    });
+  });
+  </script>
+
+  <!-- JavaScript insert end -->
+
+
+  <!-- CSS include start -->
+
+  <link rel="stylesheet" type="text/css" href="SQLinJS.min.css">
+
+  <!-- CSS include end -->
+
+
+  <title>SQLinJS - Terminal</title>
+</head>
+<body></body>
+</html>
