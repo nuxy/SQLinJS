@@ -49,6 +49,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      *
      * @param {Object} data
      * @param {Object} callback
+     *
+     * @returns {Object} jQuery object
      */
     "init": function(data, callback) {
       var $this = $(this);
@@ -961,7 +963,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * Add event handlers to select elements.
      *
      * @memberof SQLinJS
-     * @method bindEvents
+     * @method _bindEvents
      * @private
      *
      * @param {Array} names
