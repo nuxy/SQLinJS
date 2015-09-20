@@ -14,11 +14,10 @@
 
     // Import remote database.
     $.getJSON('demo.json', function(data) {
-      $('body').SQLinJS(data, function() {
+      var dbh = $.fn.SQLinJS(data);
 
-        // Launch debug terminal.
-        $(this).SQLinJS('initTerminal');
-      });
+      // Launch debug terminal.
+      dbh.SQLinJS('initTerminal');
     });
   });
   </script>
