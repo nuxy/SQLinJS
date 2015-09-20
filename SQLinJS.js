@@ -51,6 +51,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Object} callback
      */
     "init": function(data, callback) {
+      var $this = $(this);
+
       if ( $.isEmptyObject(cache()) ) {
 
         // Initialize cached objects.
@@ -63,13 +65,15 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
 
         // If database has been provided..
         if (typeof data === 'object') {
-          $(this).SQLinJS('importDatabase', data, callback);
+          $this.SQLinJS('importDatabase', data, callback);
         }
       }
       else
       if ( $.isFunction(callback) ) {
         callback();
       }
+
+      return $this;
     },
 
     /**
@@ -106,7 +110,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
           input  = $('<textarea></textarea>');
 
       // Create terminal elements.
-      $this.append(
+      $('body').append(
         $('<div></div>')
           .attr('id', 'SQLinJS')
           .append(screen, input)
