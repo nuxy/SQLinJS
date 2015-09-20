@@ -1,5 +1,5 @@
 asyncTest("Test method 'importDatabase'", function() {
-  $.getJSON('demo.json', function(data) {
+  $.getJSON('http://nuxy.github.io/SQLinJS/demo.json', function(data) {
     $this.SQLinJS('importDatabase', data,
       function(res) {
         ok(typeof res === 'boolean', 'response is Boolean');
