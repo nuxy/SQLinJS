@@ -29,8 +29,8 @@ html, body {
 
 #SQLinJS pre {
   color: #00CC00;
-  font-family: Courier;
-  font-size: 16px;
+  font-family: Monospace;
+  font-size: 18px;
   height: 85%;
   overflow-y: scroll;
   padding: 10px 10px 0px 10px;
@@ -44,8 +44,8 @@ html, body {
   border-top: 1px solid #1C1C1C;
   bottom: 0px;
   color: #FFFFFF;
-  font-family: Courier;
-  font-size: 16px;
+  font-family: Monospace;
+  font-size: 18px;
   height: 15%;
   margin-top: 10px;
   min-height: 60px;
