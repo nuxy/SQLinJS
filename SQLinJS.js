@@ -5,16 +5,11 @@
  *  Copyright 2012-2016, Marc S. Brooks (https://mbrooks.info)
  *  Licensed under the MIT license:
  *  http://www.opensource.org/licenses/mit-license.php
- *
- *  Dependencies:
- *    jquery.js
  */
 
-if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace('.', '')) < parseInt('1.8.3'.replace('.', '')))) {
-  throw new Error('SQLinJS requires jQuery 1.8.3 or greater.');
-}
+(function() {
+  "use strict";
 
-(function($) {
   var debug = false;  // SQL terminal
 
   var errors = {
@@ -45,17 +40,17 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @method init
      *
      * @example
-     * var dbh = $.SQLinJS(data, callback);
+     * var dbh = SQLinJS(data, callback);
      *
      * @param {Object} data
      * @param {Object} callback
      *
-     * @returns {Object} jQuery object
+     * @returns {Object} DOM element
      */
     "init": function(data, callback) {
-      var $this = $(this);
+      var _self = this;
 
-      if ( $.isEmptyObject(cache()) ) {
+      if (typeof cache() === 'undefined') {
 
         // Initialize cached objects.
         cache({
@@ -67,15 +62,15 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
 
         // If database has been provided..
         if (typeof data === 'object') {
-          $this.SQLinJS('importDatabase', data, callback);
+          _self.SQLinJS('importDatabase', data, callback);
         }
       }
       else
-      if ( $.isFunction(callback) ) {
+      if (typeof callback === 'function') {
         callback();
       }
 
-      return $this;
+      return _self;
     },
 
     /**
@@ -85,10 +80,10 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @method destroy
      *
      * @example
-     * dbh.SQLinJS('destroy');
+     * document.getElementById('container').SQLinJS('destroy');
      */
     "destroy": function() {
-      $(this).removeData();
+      this.remove();
     },
 
     /**
@@ -104,21 +99,21 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "initTerminal": function(callback) {
-      var $this = $(this);
+      var _self = this;
 
       debug = true;
 
-      var screen = $('<pre></pre>'),
-          input  = $('<textarea></textarea>');
+      var screen = document.createElement('pre'),
+          input  = document.createElement('textarea');
 
       // Create terminal elements.
-      $('body').append(
-        $('<div></div>')
-          .attr('id', 'SQLinJS')
-          .append(screen, input)
+      document.body.appendChild(
+        document.createElement('div')
+          .setAttribute('id', 'SQLinJS')
+          .appendChild(screen, input)
       );
 
-      $this.SQLinJS('_bindEvents', ['screen', 'input']);
+      _self.SQLinJS('_bindEvents', ['screen', 'input']);
 
       input.focus();
 
@@ -147,21 +142,21 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "executeQuery": function(str, callback) {
-      var $this = $(this),
+      var _self = this,
           data  = cache();
 
       if (debug) {
-        str = $.trim(str);
+        str = str.trim();
 
         stdOut('\r\nsql> ' + str);
 
         // Log queries
-        data['_query_log'].push( logFormat(str) );
+        data['_query_log'].push(logFormat(str));
 
         cache('_query_log', data['_query_log']);
       }
       else
-      if ( $.isEmptyObject(cache('_database')) ) {
+      if (typeof cache('_database') === 'undefined') {
         return throwError(errors.NO_DB_SELECTED);
       }
 
@@ -170,39 +165,39 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
 
       switch (true) {
         case /^CREATE/i.test(str):
-          $this.SQLinJS('_Create', callback);
+          _self.SQLinJS('_Create', callback);
         break;
 
         case /^DELETE/i.test(str):
-          $this.SQLinJS('_Delete', callback);
+          _self.SQLinJS('_Delete', callback);
         break;
 
         case /^DESCRIBE/i.test(str):
-          $this.SQLinJS('_Describe', callback);
+          _self.SQLinJS('_Describe', callback);
         break;
 
         case /^DROP/i.test(str):
-          $this.SQLinJS('_Drop', callback);
+          _self.SQLinJS('_Drop', callback);
         break;
 
         case /^INSERT/i.test(str):
-          $this.SQLinJS('_Insert', callback);
+          _self.SQLinJS('_Insert', callback);
         break;
 
         case /^SELECT/i.test(str):
-          $this.SQLinJS('_Select', callback);
+          _self.SQLinJS('_Select', callback);
         break;
 
         case /^SHOW/i.test(str):
-          $this.SQLinJS('_Show', callback);
+          _self.SQLinJS('_Show', callback);
         break;
 
         case /^UPDATE/i.test(str):
-          $this.SQLinJS('_Update', callback);
+          _self.SQLinJS('_Update', callback);
         break;
 
         case /^USE/i.test(str):
-          $this.SQLinJS('_Use', callback);
+          _self.SQLinJS('_Use', callback);
         break;
 
         case /^\\c/i.test(str):
@@ -386,7 +381,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "deleteFrom": function(table, clause, callback) {
-      var $this = $(this),
+      var _self = this,
           used  = cache('_active_db'),
           data  = cache('_database'),
           res   = [],
@@ -405,9 +400,11 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         var rows = data[used][table]['_data'];
 
-        res = $this.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
+        res = _self.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
 
         for (var i = 0; i < res[1].length; i++) {
           var obj = res[1][i];
@@ -473,8 +470,10 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
           count = 0;
 
       var timer = calcExecTime(function() {
-        var cols  = ['Field', 'Type'],
-          vals = getObjAsCols(cols, defs);
+
+        // Perform action
+        var cols = ['Field', 'Type'],
+            vals = getObjAsCols(cols, defs);
 
         stdTermOut(cols, vals);
 
@@ -517,6 +516,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         delete data[name];
 
         cache('_database', data);
@@ -563,6 +564,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         delete data[used][name];
 
         cache('_database', data);
@@ -620,6 +623,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         var defs = data[used][table]['_defs'];
 
         for (var i = 0; i < vals.length; i++) {
@@ -636,7 +641,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
               // Process values based on data type definition.
               var type = defs[col].replace(/^([a-zA-Z]+)(?:\((\d+)\))*$/,'$1\0$2').split('\0'),
                   name = type[0],
-                  size = ( $.isNumeric(type[1]) ) ? type[1] : val.length;
+                  size = (isNumeric(type[1])) ? type[1] : val.length;
 
               switch (true) {
                 case /((VAR)*CHAR)/i.test(name):
@@ -697,13 +702,13 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "selectFrom": function(table, cols, clause, callback) {
-      var $this = $(this),
+      var _self = this,
           used  = cache('_active_db'),
           data  = cache('_database'),
           res   = [],
           count = 0;
 
-      if ( $.isFunction(clause) ) {
+      if (typeof clause === 'function')) {
         callback = clause;
       }
 
@@ -720,7 +725,9 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
-        res = $this.SQLinJS('_QueryDB', data[used], table, cols, clause, callback);
+
+        // Perform action
+        res = _self.SQLinJS('_QueryDB', data[used], table, cols, clause, callback);
 
         if (res[1]) {
           count = res[1].length;
@@ -772,6 +779,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
           vals  = null;
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         vals = getObjKeys(data, cols);
 
         stdTermOut(cols, vals);
@@ -811,7 +820,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
         return stdErr('NO_DB_SELECTED', callback);
       }
 
-      if ( $.isEmptyObject(data[used]) ) {
+      if (typeof data[used] === 'undefined') {
         return stdErr('NO_TABLES_USED', callback);
       }
 
@@ -820,6 +829,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
           vals  = null;
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         vals = getObjKeys(data[used], cols);
 
         stdTermOut(cols, vals);
@@ -857,13 +868,13 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "updateSet": function(table, cols, clause, callback) {
-      var $this = $(this),
+      var _self = this,
           used  = cache('_active_db'),
           data  = cache('_database'),
           res   = [],
           count = 0;
 
-      if ( $.isFunction(clause) ) {
+      if (typeof clause === 'function') {
         callback = clause;
       }
 
@@ -880,10 +891,12 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       }
 
       var timer = calcExecTime(function() {
+
+        // Perform action
         var defs = data[used][table]['_defs'],
             rows = data[used][table]['_data'];
 
-        res = $this.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
+        res = _self.SQLinJS('_QueryDB', data[used], table, ['*'], clause, callback);
 
         for (var i = 0; i < res[1].length; i++) {
           var obj = res[1][i];
@@ -969,11 +982,11 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Array} names
      */
     "_bindEvents": function(names) {
-      var $this = $(this);
+      var _self = this;
 
-      var terminal = $('#SQLinJS'),
-          screen   = terminal.find('pre'),
-          input    = terminal.find('textarea');
+      var terminal = document.getElementById('SQLinJS'),
+          screen   = terminal.executeQuery('pre'),
+          input    = terminal.executeQuery('textarea');
 
       for (var i = 0; i < names.length; i++) {
         switch (names[i]) {
@@ -992,10 +1005,10 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
                 event.preventDefault();
 
                 // Execute SQL queries seperated by semicolon.
-                var str = $(this).val();
+                var str = this.val();
 
                 var queries =
-                  $.grep(str.split(/;|\\g/), function(bucket) {
+                  $.grep(str.split(/;|\\g/), function(bucket) { // TODO
                     if (!/^(\s+|\\g+|;)*$/.test(bucket)) {
                       return bucket;
                     }
@@ -1004,11 +1017,11 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
                 var count = queries.length;
                 if (count > 0) {
                   for (var i = 0; i < count; i++) {
-                    $this.SQLinJS('executeQuery', queries[i]);
+                    _self.SQLinJS('executeQuery', queries[i]);
                   }
                 }
 
-                $(this).val(null).focus();
+                this.val(null).focus();
 
                 var buffer = cache('_query_log');
                 index = buffer.length;
@@ -1042,7 +1055,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
                 }
 
                 if (count > 1) {
-                  $(this).val(buffer[index].query);
+                  this.val(buffer[index].query);
                 }
               });
           break;
@@ -1058,7 +1071,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Create": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       switch (true) {
@@ -1068,7 +1081,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
               var regex = /^CREATE\s+DATABASE\s+(\w+)$/i,
                   name  = query.replace(regex,'$1');
 
-              $this.SQLinJS('createDatabase', name, callback);
+              _self.SQLinJS('createDatabase', name, callback);
             }
             catch(err) {
               stdErr('SYNTAX_ERROR', callback);
@@ -1092,7 +1105,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
                 obj[ val[0] ] = val[1];
               }
 
-              $this.SQLinJS('createTable', name, obj, callback);
+              _self.SQLinJS('createTable', name, obj, callback);
             }
             catch(err) {
               stdErr('SYNTAX_ERROR', callback);
@@ -1113,7 +1126,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Delete": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       try {
@@ -1122,7 +1135,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
             table = parts[0],
             conds = parts[1].split(/AND/i);
 
-        $this.SQLinJS('deleteFrom', table, {
+        _self.SQLinJS('deleteFrom', table, {
           conds:    ((conds[0]) ? conds : undefined),
           order_by: parts[2],
           sort:     parts[3],
@@ -1142,13 +1155,13 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Describe": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       var regex = /^DESCRIBE\s+(\w+)*$/i,
           table = query.replace(regex,'$1');
 
-      $this.SQLinJS('describeTable', table, callback);
+      _self.SQLinJS('describeTable', table, callback);
     },
 
     /**
@@ -1159,7 +1172,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Drop": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       switch (true) {
@@ -1168,7 +1181,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
             var regex = /^DROP\s+DATABASE\s+(\w+)*$/i,
                 name  = query.replace(regex,'$1');
 
-            $this.SQLinJS('dropDatabase', name, callback);
+            _self.SQLinJS('dropDatabase', name, callback);
           })();
         break;
 
@@ -1177,7 +1190,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
             var regex = /^DROP\s+TABLE\s+(\w+)*$/i,
                 name  = query.replace(regex,'$1');
 
-            $this.SQLinJS('dropTable', name, callback);
+            _self.SQLinJS('dropTable', name, callback);
           })();
         break;
 
@@ -1194,10 +1207,10 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Insert": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query'),
-          used      = cache('_active_db'),
-          data      = cache('_database');
+          used  = cache('_active_db'),
+          data  = cache('_database');
 
       try {
         var regex = /^INSERT\s+INTO\s+(.+?)\s+(?:\((.+)\)\s+)*VALUES\s+\((.+)\)$/i,
@@ -1223,7 +1236,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
           _vals.push( getValsAsObj(cols, items) );
         }
 
-        $this.SQLinJS('insertInto', table, _vals, callback);
+        _self.SQLinJS('insertInto', table, _vals, callback);
       }
       catch(err) {
         stdErr('SYNTAX_ERROR', callback);
@@ -1238,7 +1251,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Select": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       try {
@@ -1248,7 +1261,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
             cols  = parts[0].split(/\s*,\s*/),
             conds = parts[2].split(/AND/i);
 
-        $this.SQLinJS('selectFrom', table, cols, {
+        _self.SQLinJS('selectFrom', table, cols, {
           conds:    ((conds[0]) ? conds : undefined),
           order_by: parts[3],
           sort:     parts[4],
@@ -1268,16 +1281,16 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Show": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       switch (true) {
         case /^SHOW\s+DATABASES;?$/i.test(query):
-          $this.SQLinJS('showDatabases', callback);
+          _self.SQLinJS('showDatabases', callback);
         break;
 
         case /^SHOW\s+TABLES;?$/i.test(query):
-          $this.SQLinJS('showTables', callback);
+          _self.SQLinJS('showTables', callback);
         break;
 
         default:
@@ -1293,7 +1306,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Update": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       try {
@@ -1303,7 +1316,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
             cols  = parts[1].split(/\s*,\s*/),
             conds = parts[2].split(/AND/i);
 
-        $this.SQLinJS('updateSet', table, cols, {
+        _self.SQLinJS('updateSet', table, cols, {
           conds:    ((conds[0]) ? conds : undefined),
           order_by: parts[3],
           sort:     parts[4],
@@ -1323,13 +1336,13 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
      * @param {Function} callback
      */
     "_Use": function(callback) {
-      var $this = $(this),
+      var _self = this,
           query = cache('_sql_query');
 
       var regex = /^USE\s+(\w+)$/i,
           name  = query.replace(regex,'$1');
 
-      $this.SQLinJS('useDatabase', name, callback);
+      _self.SQLinJS('useDatabase', name, callback);
     },
 
     /**
@@ -1437,7 +1450,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
     }
   };
 
-  $.fn.SQLinJS = function(method) {
+  Element.prototype.SQLinJS = function(method) {
     if (methods[method]) {
       return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
     }
@@ -1446,7 +1459,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       return methods.init.apply(this, arguments);
     }
     else {
-      $.error('Method ' +  method + ' does not exist in SQLinJS');
+      throw new Error('Method ' +  method + ' does not exist in SQLinJS');
     }
   };
 
@@ -1603,7 +1616,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
    */
   function calcExecTime(func) {
     try {
-      if ( $.isFunction(func) ) {
+      if (typeof func === 'function') {
         var start = new Date().getMilliseconds(),
             error = func();
         if (error) return 0;
@@ -1668,8 +1681,8 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       var str1 = val1,
           str2 = val2.replace(/'(.*)'/,'$1');
 
-      str1 = ( !$.isNumeric(str1) ) ? str1.toLowerCase() : str1;
-      str2 = ( !$.isNumeric(str2) ) ? str2.toLowerCase() : str2;
+      str1 = (!isNumeric(str1)) ? str1.toLowerCase() : str1;
+      str2 = (!isNumeric(str2)) ? str2.toLowerCase() : str2;
 
       // .. string comparison
       switch (op.toUpperCase()) {
@@ -1727,7 +1740,10 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
    * @protected
    */
   function clearTerminal() {
-    $('#SQLinJS pre').empty();
+    var elm = document.getElementById('SQLinJS').executeQuery('pre');
+    while (elm.firstChild) {
+      elm.removeChild(elm.firstChild);
+    }
   }
 
   /**
@@ -1756,7 +1772,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       return 1;
     }
 
-    if ( $.isFunction(func) ) {
+    if (type func === 'function') {
       runCallback(func, code);
     }
   }
@@ -1771,7 +1787,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
   function stdOut(str) {
     if (!debug) return;
 
-    $('#SQLinJS pre').append(((str) ? str : '') + '\r\n');
+    document.getElementById('SQLinJS').executeQuery('pre').appendChild(((str) ? str : '') + '\r\n');
   }
 
   /**
@@ -1838,7 +1854,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
       count += sizes[name] + 3;
     }
 
-    cols = $.map(cols, function(val) {
+    cols = $.map(cols, function(val) {    // TODO
       return padStrRgt(String(val), sizes[val]);
     });
 
@@ -1917,7 +1933,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
    */
   function runCallback(func, data) {
     try {
-      if ( $.isFunction(func) ) {
+      if (typeof func === 'function') {
         func(data);
       }
     }
@@ -1938,7 +1954,7 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
   }
 
   /**
-   * Cache data using jQuery.data, by default; Web Storage when supported.
+   * Cache data using HTML5 Web Storage.
    *
    * @protected
    *
@@ -1948,75 +1964,52 @@ if (!window.jQuery || (window.jQuery && parseInt(window.jQuery.fn.jquery.replace
    * @returns {*}
    */
   function cache(key, val) {
+    var storage = window.sessionStorage;
 
-    // HTML5 Web Storage
-    if (window.sessionStorage && window.JSON) {
-      var storage = window.sessionStorage;
+    // Set single value
+    if (typeof key === 'string' && val) {
+      storage.setItem(key, JSON.stringify(val));
+    }
+    else
 
-      // Set single value
-      if (typeof key === 'string' && val) {
-        storage.setItem(key, JSON.stringify(val));
-      }
-      else
-
-      // Set multiple
-      if (typeof key === 'object' && !val) {
-        (function() {
-          for (var arg in key) {
-            if (key.hasOwnProperty(arg)) {
-              storage.setItem(arg, JSON.stringify(key[arg]));
-            }
+    // Set multiple
+    if (typeof key === 'object' && !val) {
+      (function() {
+        for (var arg in key) {
+          if (key.hasOwnProperty(arg)) {
+            storage.setItem(arg, JSON.stringify(key[arg]));
           }
-        })();
-      }
-
-      // Return single value
-      if (typeof key === 'string' && !val) {
-        return $.parseJSON(storage.getItem(key));
-      }
-
-      var data = {};
-
-      // Return all values
-      for (var i = 0; i < storage.length; i++) {
-        key = storage.key(i);
-
-        data[key] = $.parseJSON(storage.getItem(key));
-      }
-
-      return data;
+        }
+      })();
     }
 
-    // jQuery.data
-    else {
-      var $this = $(this);
-
-      // Set single value
-      if (typeof key === 'string' && val) {
-        $this.data(key, val);
-      }
-      else
-
-      // Set multiple
-      if (typeof key === 'object' && !val) {
-        (function() {
-          for (var arg in key) {
-            if (key.hasOwnProperty(arg)) {
-              $this.data(key, key[arg]);
-            }
-          }
-        })();
-      }
-
-      // Return single value
-      if (typeof key === 'string' && !val) {
-        return $this.data(key);
-      }
-
-      // Return all values
-      else {
-        return $this.data();
-      }
+    // Return single value
+    if (typeof key === 'string' && !val) {
+      return JSON.parse(storage.getItem(key));
     }
+
+    var data = {};
+
+    // Return all values
+    for (var i = 0; i < storage.length; i++) {
+      key = storage.key(i);
+
+      data[key] = JSON.parse(storage.getItem(key));
+    }
+
+    return data;
   }
-})(jQuery);
+
+  /**
+   * Check is value is a number.
+   *
+   * @protected
+   *
+   * @param {*} val
+   *
+   * @returns {Boolean}
+   */
+  function isNumber(val) {
+    return val && !isNaN(parseFloat(val));
+  }
+})();
